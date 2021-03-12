@@ -1,1 +1,1 @@
-# dydacticdecisionmaking
+# dyadicdecisionmaking
