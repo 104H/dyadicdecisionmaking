@@ -20,7 +20,7 @@ This is problem is resolved by forcing the Kernel to `flush` the buffer. This is
 Avoid writing the output of your experiment timings into a csv file during the execution of the experiment. Append all the values to a Pandas Dataframe or a String. After you have looped through the entire experiment, dump the content into a csv file.
 
 Take the following staircase experiment example for Psychopy tutorials:
-`
+```
 # make a text file to save data
 fileName = expInfo['observer'] + expInfo['dateStr']
 dataFile = open(fileName+'.csv', 'w')  # a simple text file with 'comma-separated-values'
@@ -39,10 +39,10 @@ for thisIncrement in staircase:  # will continue the staircase until it terminat
     dataFile.write('%i,%.3f,%i\n' %(targetSide, thisIncrement, thisResp))
 
     core.wait(1)
-`
+```
 
 An alternate approach is to:
-`
+```
 # make a empty dataframe to save data
 df = pd.DataFrame(columns=['targetSide', 'oriIncrement', 'correct'])
 
@@ -66,5 +66,5 @@ for thisIncrement in staircase:  # will continue the staircase until it terminat
 fileName = expInfo['observer'] + expInfo['dateStr']
 # save dataframe as a file
 df.to_csv(fileName)
-`
+```
 
