@@ -20,7 +20,7 @@ This is problem is resolved by forcing the Kernel to `flush` the buffer. This is
 Avoid writing the output of your experiment timings into a csv file during the execution of the experiment. Append all the values to a Pandas Dataframe or a String. After you have looped through the entire experiment, dump the content into a csv file.
 
 Take the following staircase experiment example for Psychopy tutorials:
-```
+```python3
 # make a text file to save data
 fileName = expInfo['observer'] + expInfo['dateStr']
 dataFile = open(fileName+'.csv', 'w')  # a simple text file with 'comma-separated-values'
@@ -42,7 +42,7 @@ for thisIncrement in staircase:  # will continue the staircase until it terminat
 ```
 
 An alternate approach is to:
-```
+```python3
 # make a empty dataframe to save data
 df = pd.DataFrame(columns=['targetSide', 'oriIncrement', 'correct'])
 
@@ -75,7 +75,7 @@ Access to RAM is faster than Backing Store (HDD/SDD). RAM is built of transistor
 
 Pre-loading an image is as simple as creating a variable which has the image in it. When you want to display it, you display the variable.
 Use example code I found <a href="https://discourse.psychopy.org/t/colour-imagestim-inconsistent-timing/1817/5">here</a>
-```
+```python3
 """ PRELOAD IMAGES"""
 imgList = []
 path = os.getcwd()
