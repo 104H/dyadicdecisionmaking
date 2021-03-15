@@ -68,3 +68,24 @@ fileName = expInfo['observer'] + expInfo['dateStr']
 df.to_csv(fileName)
 ```
 
+#### Pre Load the Stimuli
+If you're going to display pictorial the stimuli, it is important to pre-load it.
+
+Access to RAM is faster than Backing Store (HDD/SDD). RAM is built of transistors, is small and closer to the processor. Therefore, if you read the file from disk everytime you want to display it, not only will the OS take longer but also an inconsistent amount of time because look up and fetch are affected by the physical location and size of the file.
+
+Pre-loading an image is as simple as creating a variable which has the image in it. When you want to display it, you display the variable.
+Use example code I found <a href="https://discourse.psychopy.org/t/colour-imagestim-inconsistent-timing/1817/5">here</a>
+```
+""" PRELOAD IMAGES"""
+imgList = []
+path = os.getcwd()
+for infile in glob.glob(os.path.join(path, '*.jpg')):
+    imgList.append(infile)
+pictures = [visual.ImageStim(win, img, ori=0, pos=[0, 0]) for img in imgList]
+
+""" DISPLAY PRELOADED IMAGES """
+for picture in pictures:
+    for frame in range(15):
+        picture.draw()
+        win.flip()
+```
