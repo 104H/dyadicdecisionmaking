@@ -94,9 +94,9 @@ for picture in pictures:
 #### Use io.Hub
 Newly generated stimulus is updated on the screen using the [`window.flip()`](https://www.psychopy.org/api/visual/window.html#psychopy.visual.Window.flip) function. This function takes the input from the monitor buffer and dumps it on the screen. Execution moves forward after the buffer is released<sup>[Source](https://discourse.psychopy.org/t/understanding-the-flip-method/6164)</sup>. Even if the stimulus is not changing, the screen is redrawn bottom to top at the refresh rate of the monitor.
 
-If you have a `event.wait()` function in the same sequence, this function will not <i>fetch</i> the new button press from the keyboard or kernel buffer till it is called. The dependency of these two events which are executed at uncertain times can cause randomness is recorded times of button press.
+If you have a `event.waitKeys()`<sup>[Docs](https://www.psychopy.org/api/event.html#psychopy.event.waitKeys)</sup> function in the same sequence, this function will not <i>fetch</i> the new button press from the keyboard or kernel buffer till it is called. The dependency of these two events which are executed at uncertain times can cause randomness is recorded times of button press.
 
-The problem is remedied (not fully resolved) by io.Hub<sup>[Docs](https://www.psychopy.org/api/iohub/index.html). Which creates a separate process which waits on the input devices to provide input. This makes this process independant of calling `window.flip()`.
+The problem is remedied (not fully resolved) by io.Hub<sup>[Docs](https://www.psychopy.org/api/iohub/index.html)</sup>. Which creates a separate process which waits on the input devices to provide input. This makes this process independant of calling `window.flip()`.
 
 ### Important Links
 - [Interpretation of different time logs](https://discourse.psychopy.org/t/response-times-in-log-files-key-press-vs-release-and-exp-log-messages/19127)
