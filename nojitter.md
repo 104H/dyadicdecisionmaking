@@ -1,4 +1,4 @@
-## How to Avoid Jitter in Experiment Display
+## How to Avoid Time Jitter in Psychophysical Experiments
 
 ### Introduction
 #### Aim of this Document
@@ -97,6 +97,11 @@ Newly generated stimulus is updated on the screen using the [`window.flip()`](ht
 If you have a `event.waitKeys()`<sup>[Docs](https://www.psychopy.org/api/event.html#psychopy.event.waitKeys)</sup> function in the same sequence, this function will not <i>fetch</i> the new button press from the keyboard or kernel buffer till it is called. The dependency of these two events which are executed at uncertain times can cause randomness is recorded times of button press.
 
 The problem is remedied (not fully resolved) by io.Hub<sup>[Docs](https://www.psychopy.org/api/iohub/index.html)</sup>. Which creates a separate process which waits on the input devices to provide input. This makes this process independant of calling `window.flip()`.
+
+#### Use a Button Box for Input
+A regular keyboard has its own buffer, so if you time faster than the operating system can use you input, there is a place where it can stay. The downside is that you can't be sure when will the input be used.
+
+A button box has a small or no buffer and forces the operating system to collect input regularly.
 
 ### Important Links
 - [Interpretation of different time logs](https://discourse.psychopy.org/t/response-times-in-log-files-key-press-vs-release-and-exp-log-messages/19127)
