@@ -1,0 +1,119 @@
+
+```{R}
+library("tidyverse")
+library("rstan")
+```
+
+```{R}
+df <- read_csv("dummydata")
+```
+
+```{R}
+head(df)
+```
+
+# Bayesian Analysis
+
+### Regression of Observation Length Against Response Time Without Prior
+
+```{r}
+temp <- df %>% 
+  filter(!is.na(obsc)) %>% 
+  select(c(rt, obsc))
+
+data = list(
+  N = temp$rt %>% length(),
+  y = temp$rt,
+  x = temp$obsc
+)
+```
+
+```{stan output.var="rt"}
+data {
+  int<lower=0> N;
+  vector[N] x;
+  vector[N] y;
+}
+parameters {
+  real constant;
+  real gradient;
+  real<lower=0> sigma;
+}
+model {
+  y ~ normal(constant + gradient * x, sigma);
+}
+```
+
+
+```{R}
+fit <- sampling(rt, data=data, chains = 2, iter = 1000, refresh = 0)
+
+fit
+```
+
+    Warning message in normalizePath(file):
+    “path[1]="
+    data {
+      int<lower=0> N;
+      vector[N] x;
+      vector[N] y;
+    }
+    parameters {
+      real alpha;
+      real beta;
+      real<lower=0> sigma;
+    }
+    model {
+      y ~ normal(alpha + beta * x, sigma);
+    }
+    ": No such file or directory”
+    Warning message in file(fname, "rt"):
+    “cannot open file '
+    data {
+      int<lower=0> N;
+      vector[N] x;
+      vector[N] y;
+    }
+    parameters {
+      real alpha;
+      real beta;
+      real<lower=0> sigma;
+    }
+    model {
+      y ~ normal(alpha + beta * x, sigma);
+    }
+    ': No such file or directory”
+
+
+    Error in file(fname, "rt") : cannot open the connection
+
+
+
+    Error in get_model_strcode(file, model_code): cannot open model file "
+    data {
+      int<lower=0> N;
+      vector[N] x;
+      vector[N] y;
+    }
+    parameters {
+      real alpha;
+      real beta;
+      real<lower=0> sigma;
+    }
+    model {
+      y ~ normal(alpha + beta * x, sigma);
+    }
+    "
+    Traceback:
+
+
+    1. stan_model(stancode)
+
+    2. stanc(file = file, model_code = model_code, model_name = model_name, 
+     .     verbose = verbose, obfuscate_model_name = obfuscate_model_name, 
+     .     allow_undefined = allow_undefined, isystem = isystem)
+
+    3. get_model_strcode(file, model_code)
+
+    4. stop(paste("cannot open model file \"", fname, "\"", sep = ""))
+
