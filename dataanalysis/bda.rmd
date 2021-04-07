@@ -6,6 +6,7 @@ library("rstan")
 
 ```{R}
 df <- read_csv("dummydata")
+head(df)
 ```
 
 ```{R}
@@ -49,6 +50,13 @@ model {
 fit <- sampling(rt, data=data, chains = 2, iter = 1000, refresh = 0)
 
 fit
+```
+```{r}
+traceplot(fit)
+pairs(fit)
+```
+```{r}
+
 ```
 
     Warning message in normalizePath(file):
