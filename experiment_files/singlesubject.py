@@ -1,10 +1,13 @@
 # 10 April 2021
-# Author: Hunaid Hameed hunaidhameed@hotmail.com and Saurabh Biswas sbiswas@uni-osnabrueck.de
 
 import os
 import numpy as np
 import psychtoolbox as ptb
-from psychopy import visual, event, core, gui, data, sound
+from psychopy import visual, event, core, gui, data, prefs
+
+# setting PTB as our preferred sound library and then import sound
+prefs.hardware['audioLib'] = ['PTB']
+
 from psychopy.sound import Sound
 from numpy.random import random
 
@@ -33,7 +36,7 @@ signal = visual.GratingStim(
 # noise patch
 # the annulus is created by passing a matrix of zeros to the texture argument
 annulus = visual.GratingStim(
-    win = window, mask='circle', tex=np.zeros((X,X)),
+    win = window, mask='circle', tex=np.zeros((64,64)),
     size = 50, contrast = 1.0, opacity = 1.0,
 )
 
@@ -55,7 +58,8 @@ greendot = visual.GratingStim(
     sf=0, color='green', mask='circle'
 )
 
-beep = sound.Sound('A', secs=0.5)
+# create beep for decision interval
+beep = Sound('A', secs=0.5)
 
 
 def geninstruction (window):
@@ -129,13 +133,14 @@ def genendscreen (nextcondition):
                                     color='black', height=20)
 
 
-def fetchbuttonpress (connector):
+def fetchbuttonpress (connector, clock):
     '''
         Looks for input from a pyserial connector
         Args:
             connector: PySerial object of connection to button box
+            clock: PsychoPy clock object
     '''
-    pass
+    return event.waitKeys(maxWait=2.5, timeStamped=clock, clearEvents=True)
 
 def selectdyad ():
     '''
@@ -154,6 +159,9 @@ triallist = [
 
 expinfo = {'participant': 'john doe', 'pair': 1}
 
+# preparing the clocks
+responsetime = core.Clock()
+
 trials = data.TrialHandler(triallist, nReps=ntrials, extraInfo=expinfo, method='random', originPath=-1)
 
 for block in blocks:
@@ -161,23 +169,37 @@ for block in blocks:
     for trial in trials:
         # display baseline
         genbaseline(window)
+        # we prepare the stimulus, but don't display with a flip() call. fist reset the clock
         window.flip()
-        core.wait(2)
+        # wait for a random time between 2 to 4 seconds
+        core.wait( np.random.uniform(2,4) )
 
+        # preparing time for next window flip, to precisely co-ordinate window flip and beep
+        nextflip = window.getFutureFlipTime(clock='ptb')
+        beep.play(when=nextflip)
         # display stimulus
         gendecisionint(window, trials.thisTrial['condition'])
+        # we prepare the stimulus, but don't display with a flip() call. fist reset the clock
         window.flip()
-        core.wait(2)
+        # we decided to reset the clock after flipping (redrawing) the window
+        responsetime.reset()
 
         # fetch button press
-        fetchbuttonpress(None)
+        response = fetchbuttonpress(None, responsetime)
+        print(response)
+
+        # need to explicity call stop() to go back to the beginning of the track
+        # we reset after collecting a response, otherwise the beep is stopped too early
+        beep.stop()
 
         # display inter trial interval
         genintertrial(window)
         window.flip()
+        # inter trial interval is 2s
         core.wait(2)
 
     # decide between continuing with next block, take a break
 
 # write to file
 print(trials.data)
+
