@@ -24,9 +24,9 @@ Following Urai et al. (2019), from the collected choices and response times of t
 * starting point of the decision variable
 * separation of the decision bounds
 * mean drift rate
-* drift criterion (a stimulus-independent constant added to the mean drift), cf. Ratcliff and McKoon (2008)
+* drift criterion (a stimulus-independent constant added to the mean drift), cf. Ratcliff and McKoon (2008). Note: Urai et al. 2019 call this parameter "drift bias."
 
-Let drift bias, starting point bias or both to vary as a function of previous choice (made either by oneself or by the second participant)
+Let drift criterion (drift bias), starting point bias or both to vary as a function of previous choice (made either by oneself or by the second participant)
 
 ## References
 * Urai et al. eLife 2019. DOI: <https://doi.org/10.7554/eLife.46331>
