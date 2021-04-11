@@ -1,5 +1,15 @@
 # 10 April 2021
 
+'''
+Remaining
+    - Integration of button box input:
+        The last development was that we unplug the keyboard and have only the button box connected to the computer. This avoids having to use pyusb. The input of the button box and exactly what ASCII representation they have needs to be determined
+    - Integrating participant ID and dyad ID:
+        At start up, the file should take as an input the ID of the subject and the dyad. There could be a pop up dialog box with a text field or a we could use the sys module to take arguments from the terminal
+    - Naming convention of data file:
+        The data file needs to be given a disciminant name incorporating unique information
+'''
+
 import os
 import numpy as np
 import psychtoolbox as ptb
