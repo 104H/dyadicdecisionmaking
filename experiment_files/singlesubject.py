@@ -14,8 +14,8 @@ from numpy.random import random
 ### Global variables for rendering stimuli
 window = visual.Window(size=(1024,768), units='pix', fullscr=False)
 
-blocks = range(3)
-ntrials = 5
+blocks = range(2)
+ntrials = 2
 sthresh = 0.3 # contrast threshold for subject determined after titration
 X = 512; # width of the gabor patch in pixels
 sf = .02; # spatial frequency, cycles per pixel
@@ -140,6 +140,7 @@ def fetchbuttonpress (connector, clock):
             connector: PySerial object of connection to button box
             clock: PsychoPy clock object
     '''
+    # we only need the first index of the event array
     return event.waitKeys(maxWait=2.5, timeStamped=clock, clearEvents=True)
 
 def selectdyad ():
@@ -153,8 +154,8 @@ def selectdyad ():
 
 # create trial handler
 triallist = [
-        {"condition": "signal", "correct_response": "a"},
-        {"condition": "noise", "correct_response": "d"}
+        {"condition": "signal"},
+        {"condition": "noise"}
         ]
 
 expinfo = {'participant': 'john doe', 'pair': 1}
@@ -162,7 +163,7 @@ expinfo = {'participant': 'john doe', 'pair': 1}
 # preparing the clocks
 responsetime = core.Clock()
 
-trials = data.TrialHandler(triallist, nReps=ntrials, extraInfo=expinfo, method='random', originPath=-1)
+trials = data.TrialHandler(triallist, nReps=ntrials, method='sequential', originPath=-1, extraInfo=expinfo)
 
 for block in blocks:
     # traverse through trials
@@ -198,8 +199,9 @@ for block in blocks:
         # inter trial interval is 2s
         core.wait(2)
 
+        # save data
+        trials.addData('response', response)
     # decide between continuing with next block, take a break
 
 # write to file
-print(trials.data)
-
+trials.saveAsWideText("data")
