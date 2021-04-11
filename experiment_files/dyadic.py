@@ -4,6 +4,22 @@
     Naming Convention:
         The subjects are either refered to as 'sone' or 'stwo'
         The variables for each are prepended with `sone_` or `stwo_`
+
+    To Do:
+        - There is significant delay in stimulus display. Need to test if it still applies on the lab computer
+        - The data needs to be packaged properly using the experiment handler
+        - There is a warning that a providing data file can prevent data loss in case of crash. Is it writing to the disk and should we have this?
+        - Instruction, thank you and break screens are missing
+        - There is no mechanism to input subject ids
+        - How do we decide to alternate between act and obs conditions
+        - There is only a blue dot denote the observation condition, needs and update based on what Artur says
+        - Figure out the right way to traverse through the experiment handlers set of trials
+        - How do we switch from dyadic to individual condition when both are acting
+        - Figure out how to exactly fetch input form different button boxes. The rusocsci library seems promising
+        - Do we have manually send the two screens to the two monitors or can this be automated
+        - How do we send the same beep to two speakers which are far apart? Do we have a splitter at the lab computer? How do we feel about the lag introduced by the splitter?
+        - In the individual trials, how do we send the beep to different headphones the two subjects have? We will need USB headphone and write to their USB directly.
+        - Do we have speakers of headphones? Do we need headphones because the other subject might head the beep
 '''
 
 import os
@@ -52,7 +68,7 @@ sone = subject(1, "act", 0.3, None)
 stwo = subject(2, "obs", 0.3, None)
 subjects = [sone, stwo]
 
-blocks = range(2)
+blocks = range(4)
 ntrials = 2
 
 noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
@@ -232,9 +248,11 @@ expinfo = {'participant1': sone.id, 'participant2' : stwo.id, 'pair': 1}
 # preparing the clocks
 responsetime = core.Clock()
 
-trials = data.TrialHandler(triallist, nReps=ntrials, method='sequential', originPath=-1, extraInfo=expinfo)
+exphandler = data.ExperimentHandler(extraInfo=expinfo)
+for b in blocks:
+    exphandler.addLoop( data.TrialHandler(triallist, nReps=ntrials, method='random', originPath=-1, extraInfo=expinfo) )
 
-for block in blocks:
+for trials in exphandler.loops:
     # traverse through trials
     for trial in trials:
         # display baseline
@@ -268,7 +286,9 @@ for block in blocks:
 
         # save data
         trials.addData('response', response)
+    exphandler.nextEntry()
     # decide between continuing with next block, take a break
 
 # write to file
-trials.saveAsWideText("data")
+trials.saveAsWideText("data", delim=",")
+exphandler.saveAsWideText("datae", delim=",")
