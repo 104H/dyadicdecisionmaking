@@ -1,5 +1,4 @@
 # 10 April 2021
-# Author: Hunaid Hameed hunaidhameed@hotmail.com and Saurabh Biswas sbiswas@uni-osnabrueck.de
 
 import os
 import numpy as np
