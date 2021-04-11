@@ -33,7 +33,7 @@ signal = visual.GratingStim(
 # noise patch
 # the annulus is created by passing a matrix of zeros to the texture argument
 annulus = visual.GratingStim(
-    win = window, mask='circle', tex=np.zeros((50,50)),
+    win = window, mask='circle', tex=np.zeros((X,X)),
     size = 50, contrast = 1.0, opacity = 1.0,
 )
 
@@ -181,4 +181,3 @@ for block in blocks:
 
 # write to file
 print(trials.data)
-
