@@ -17,40 +17,47 @@ prefs.hardware['audioLib'] = ['PTB']
 from psychopy.sound import Sound
 from numpy.random import random
 
+# Gabor patch global variables
+X = 512; # width of the gabor patch in pixels
+sf = .02; # spatial frequency, cycles per pixel
+
+gabortexture = (
+    visual.filters.makeGrating(res=X, cycles=X * sf) *
+    visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
+)
+
 class subject:
-    def __init__(self, state, threshold):
+    def __init__(self, sid, state, threshold, inputdevice):
         '''
             state is either 'obs' or 'act' for observing or acting conditions, respectively
             window is the psychopy window object for the subject
             signal is the signal according to the subjects threshold
             inputdevice is the pyusb connector to the subject's buttonbox
         '''
+        self.id = sid
         self.state = state
         self.window = visual.Window(size=(1024,768), units='pix', fullscr=False)
         self.signal = visual.GratingStim(
-            win = window, tex = gabortexture, mask = 'circle',
+            win = self.window, tex = gabortexture, mask = 'circle',
             size = X, contrast = 1.0, opacity = threshold,
         )
         self.inputdevice = inputdevice
 
-        return self
+    def __repr__ (self):
+        return str(self.id)
 
 
 ### Global variables for rendering stimuli
-sone = subject("act", 0.3)
-stwo = subject("obs", 0.3)
+sone = subject(1, "act", 0.3, None)
+stwo = subject(2, "obs", 0.3, None)
+subjects = [sone, stwo]
 
 blocks = range(2)
 ntrials = 2
 
-X = 512; # width of the gabor patch in pixels
-sf = .02; # spatial frequency, cycles per pixel
 noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
-gabortexture = (
-    visual.filters.makeGrating(res=X, cycles=X * sf) *
-    visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
-)
+window = visual.Window(size=(1024,768), units='pix', fullscr=False)
 
 # the annulus is created by passing a matrix of zeros to the texture argument
 annulus = visual.GratingStim(
@@ -78,7 +85,7 @@ greendot = visual.GratingStim(
 
 # a dot which indicates to the subject they are in the observation state
 obsindicator = visual.GratingStim(
-    win = window, size=5, units='pix', pos=[100, 100],
+    win = window, size=50, units='pix', pos=[250, 250],
     sf=0, color='blue', mask='circle'
 )
 
@@ -112,7 +119,10 @@ def genbaseline (subjects):
         if s.state == 'obs':
             obsindicator.draw(s.window)
 
-def gendecisionint (subject, condition):
+    subjects[0].window.flip()
+    subjects[1].window.flip()
+
+def gendecisionint (subjects, condition):
     '''
         Generate the stimulus
         condition:
@@ -120,27 +130,33 @@ def gendecisionint (subject, condition):
             'n' for Noise
     '''
     if condition == 'noise':
-        genbaseline(subject)
+        genbaseline(subjects)
     elif condition == 'signal':
         for s in subjects:
-            noise.draw(window)
-            signal.draw(window)
-            annulus.draw(window)
-            reddot.draw(window)
+            noise.draw(s.window)
+            s.signal.draw(s.window)
+            annulus.draw(s.window)
+            reddot.draw(s.window)
 
             if s.state == 'obs':
                 obsindicator.draw(s.window)
     else:
         raise("Please provide s for signal and n for noise in condition argument")
 
+    subjects[0].window.flip()
+    subjects[1].window.flip()
+
 def genintertrial (subjects):
-    for s in subject:
+    for s in subjects:
         noise.draw(s.window)
         annulus.draw(s.window)
         greendot.draw(s.window)
 
         if s.state == 'obs':
             obsindicator.draw(s.window)
+
+    subjects[0].window.flip()
+    subjects[1].window.flip()
 
 def genbreakscreen (window):
     '''
@@ -152,6 +168,9 @@ def genbreakscreen (window):
     instructions = visual.TextStim(window,
                                     text=instructions,
                                     color='black', height=20)
+
+    subjects[0].window.flip()
+    subjects[1].window.flip()
 
 def genendscreen (nextcondition):
     '''
@@ -183,13 +202,21 @@ def fetchbuttonpress (subjects, clock):
             # we only need the first index of the event array
             # How do I tell waitKeys to look for input from the specific subject input device and not the other?
             response = event.waitKeys(maxWait=2.5, timeStamped=clock, clearEvents=True)
+            # waitButtons is from the rucosci library
+            # https://github.com/wilberth/RuSocSci/blob/18569aa014ff7e4be5f4aa6ddd0aa4202f601393/rusocsci/buttonbox.py#L116
+            # need to add a mechanism where both subjects are acting, in such a condition response variable will be overwritten
+            # response = s.inputdevice.waitButtons(maxWait=2.5, timeStamped=clock, flush=True)
     return response
 
-def selectdyad ():
+def updatestate ():
     '''
         Which dyad makes the button box
     '''
-    pass
+    for s in subjects:
+        if s.state == 'act':
+            s.state = 'obs'
+        else:
+            s.state = 'act'
 
 
 # generate file for storing data
@@ -200,7 +227,7 @@ triallist = [
         {"condition": "noise"}
         ]
 
-expinfo = {'participant': 'john doe', 'pair': 1}
+expinfo = {'participant1': sone.id, 'participant2' : stwo.id, 'pair': 1}
 
 # preparing the clocks
 responsetime = core.Clock()
@@ -211,9 +238,7 @@ for block in blocks:
     # traverse through trials
     for trial in trials:
         # display baseline
-        genbaseline(window)
-        # we prepare the stimulus, but don't display with a flip() call. fist reset the clock
-        window.flip()
+        genbaseline(subjects)
         # wait for a random time between 2 to 4 seconds
         core.wait( np.random.uniform(2,4) )
 
@@ -221,14 +246,12 @@ for block in blocks:
         nextflip = window.getFutureFlipTime(clock='ptb')
         beep.play(when=nextflip)
         # display stimulus
-        gendecisionint(window, trials.thisTrial['condition'])
-        # we prepare the stimulus, but don't display with a flip() call. fist reset the clock
-        window.flip()
+        gendecisionint(subjects, trials.thisTrial['condition'])
         # we decided to reset the clock after flipping (redrawing) the window
         responsetime.reset()
 
         # fetch button press
-        response = fetchbuttonpress(None, responsetime)
+        response = fetchbuttonpress(subjects, responsetime)
         print(response)
 
         # need to explicity call stop() to go back to the beginning of the track
@@ -236,10 +259,12 @@ for block in blocks:
         beep.stop()
 
         # display inter trial interval
-        genintertrial(window)
-        window.flip()
+        genintertrial(subjects)
         # inter trial interval is 2s
         core.wait(2)
+
+        # state switch
+        updatestate()
 
         # save data
         trials.addData('response', response)
