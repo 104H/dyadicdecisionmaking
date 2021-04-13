@@ -15,9 +15,9 @@
         - There is only a blue dot denote the observation condition, needs and update based on what Artur says
         - Figure out the right way to traverse through the experiment handlers set of trials
         - How do we switch from dyadic to individual condition when both are acting
-        - Figure out how to exactly fetch input form different button boxes. The rusocsci library seems promising
+        - Figure out how to exactly fetch input form different button boxes. The rusocsci library seems promising -- I don't think we need the rusocsci library if we use the same approach as in the Hyperscanning experiment, we'll register ['1','2'] keys presses for participant one's button box, and ['7', '8'] for participant two's button box. 
         - Do we have manually send the two screens to the two monitors or can this be automated
-        - How do we send the same beep to two speakers which are far apart? Do we have a splitter at the lab computer? How do we feel about the lag introduced by the splitter?
+        - How do we send the same beep to two speakers which are far apart? Do we have a splitter at the lab computer? -- Yes, there is a splitter. How do we feel about the lag introduced by the splitter?
         - In the individual trials, how do we send the beep to different headphones the two subjects have? We will need USB headphone and write to their USB directly.
         - Do we have speakers of headphones? Do we need headphones because the other subject might head the beep
 '''
