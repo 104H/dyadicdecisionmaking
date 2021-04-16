@@ -264,17 +264,20 @@ exphandler = data.ExperimentHandler(extraInfo=expinfo)
 for b in blocks:
     exphandler.addLoop( data.TrialHandler(triallist, nReps=ntrials, method='random', originPath=-1, extraInfo=expinfo) )
 
+
+# diplay "press space bar to start"
+genstartscreen()
+window.flip()
+keys = event.waitKeys(keyList=['space'])
+
+# display instructions
+geninstructions()
+window.flip()
+keys = event.waitKeys(keyList=['space'])
+
 for trials in exphandler.loops:
     # traverse through trials
     for trial in trials:
-        genstartscreen()
-        window.flip()
-        keys = event.waitKeys(keyList=['space'])
-
-        geninstructions()
-        window.flip()
-        keys = event.waitKeys(keyList=['space'])
-
         # display baseline
         genbaseline(subjects)
         window.flip()
