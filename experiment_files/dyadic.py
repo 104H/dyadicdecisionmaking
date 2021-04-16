@@ -111,7 +111,16 @@ ntrials = 2
 # create beep for decision interval
 beep = Sound('A', secs=0.5)
 
-def geninstruction (window):
+def genstartscreen ():
+    visual.TextStim(window,
+                    text="Press spacebar to start.", pos=[0 + sone.xoffset,0],
+                    color='black', height=20).draw()
+
+    visual.TextStim(window,
+                    text="Press spacebar to start.", pos=[0 + stwo.xoffset,0],
+                    color='black', height=20).draw()
+
+def geninstructions ():
     instructions = "Instructions:\n\
     Your task is to indicate if you see a vertical grating or not.\n\
     1. At the start of each trial, a red dot is shown in the middle of the screen.\n\
@@ -123,9 +132,23 @@ def geninstruction (window):
     7. There will be a total of 6 blocks. \n\n\
     Press spacebar when ready."
 
-    instructions = visual.TextStim(window,
-                                    text=instructions,
-                                    color='black', height=20)
+    visual.TextStim(window,
+                    text=instructions, pos=[0 + sone.xoffset,0],
+                    color='black', height=20).draw()
+
+    visual.TextStim(window,
+                    text=instructions, pos=[0 + stwo.xoffset,0],
+                    color='black', height=20).draw()
+
+def genendscreen ():
+    visual.TextStim(window,
+                    text="Thank you for participating.", pos=[0 + stwo.xoffset,0],
+                    color='black', height=20).draw()
+
+    visual.TextStim(window,
+                    text="Thank you for participating.", pos=[0 + stwo.xoffset,0],
+                    color='black', height=20).draw()
+
 
 def genbaseline (subjects):
     for s in subjects:
@@ -244,6 +267,14 @@ for b in blocks:
 for trials in exphandler.loops:
     # traverse through trials
     for trial in trials:
+        genstartscreen()
+        window.flip()
+        keys = event.waitKeys(keyList=['space'])
+
+        geninstructions()
+        window.flip()
+        keys = event.waitKeys(keyList=['space'])
+
         # display baseline
         genbaseline(subjects)
         window.flip()
@@ -280,6 +311,7 @@ for trials in exphandler.loops:
         trials.addData('response', response)
     exphandler.nextEntry()
     # decide between continuing with next block, take a break
+genendscreen()
 
 # write to file
 trials.saveAsWideText("data", delim=",")
