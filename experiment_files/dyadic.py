@@ -57,6 +57,7 @@ class subject:
         self.id = sid
         self.state = state
         self.xoffset = xoffset
+        self.response = None
         self.signal = visual.GratingStim(
             win = window, tex = gabortexture, mask = 'circle', pos=[0 + xoffset,0],
             size = X, contrast = 1.0, opacity = threshold,
@@ -93,6 +94,21 @@ class subject:
             sf=0, color='blue', mask='circle'
         )
 
+        # a dot which indicates to the subject they are in the observation state
+        self.indicatordict = {
+                "yes" : visual.GratingStim(
+                            win = window, size=50, units='pix', pos=[250 + xoffset, 200],
+                            sf=0, mask='circle', color='green'
+                        ),
+                "no" : visual.GratingStim(
+                            win = window, size=50, units='pix', pos=[250 + xoffset, 200],
+                            sf=0, mask='circle', color='red'
+                        ),
+                "noresponse" : visual.GratingStim(
+                            win = window, size=50, units='pix', pos=[250 + xoffset, 200],
+                            sf=0, mask='circle', color='yellow'
+                        )
+                }
 
     def __repr__ (self):
         return str(self.id)
@@ -189,6 +205,12 @@ def genintertrial (subjects):
         if s.state == 'obs':
             s.obsindicator.draw()
 
+    # if subject one/two is in an acting state, add their response to the response box of subject two/one
+    if stwo.state == "act":
+        sone.indicatordict[stwo.response].draw()
+    if sone.state == "act":
+        stwo.indicatordict[sone.response].draw()
+
 def genbreakscreen (window):
     '''
         Generate the screen shown when the break is in progress
@@ -227,14 +249,17 @@ def fetchbuttonpress (subjects, clock):
         if s.state == 'obs':
             continue
         else:
-            # we only need the first index of the event array
             # How do I tell waitKeys to look for input from the specific subject input device and not the other?
             response = event.waitKeys(maxWait=2.5, timeStamped=clock, clearEvents=True)
+
+            keystroke = response[0][0] if response is not None else response
+            if keystroke == 'right': s.response = 'yes'
+            elif keystroke == 'left': s.response = 'no'
+            else: s.response = 'noresponse'
             # waitButtons is from the rucosci library
             # https://github.com/wilberth/RuSocSci/blob/18569aa014ff7e4be5f4aa6ddd0aa4202f601393/rusocsci/buttonbox.py#L116
             # need to add a mechanism where both subjects are acting, in such a condition response variable will be overwritten
             # response = s.inputdevice.waitButtons(maxWait=2.5, timeStamped=clock, flush=True)
-    return None
     return response
 
 def updatestate ():
