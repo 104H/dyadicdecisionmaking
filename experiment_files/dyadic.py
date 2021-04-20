@@ -23,6 +23,7 @@
 '''
 
 import os
+from subprocess import run
 import numpy as np
 import psychtoolbox as ptb
 from psychopy import visual, event, core, gui, data, prefs
@@ -47,12 +48,13 @@ window = visual.Window(size=(2048, 768), units='pix', fullscr=False)
 noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
 class subject:
-    def __init__(self, sid, state, threshold, inputdevice, xoffset):
+    def __init__(self, sid, state, threshold, inputdevice, xoffset, position):
         '''
             state is either 'obs' or 'act' for observing or acting conditions, respectively
             xoffset is the constant added to all stimuli rendered for the subject
             signal is the signal according to the subjects threshold
             inputdevice is the pyusb connector to the subject's buttonbox
+            position is either left of right. it is used to determine the speaker of the subject
         '''
         self.id = sid
         self.state = state
@@ -63,6 +65,7 @@ class subject:
             size = X, contrast = 1.0, opacity = threshold,
         )
         self.inputdevice = inputdevice
+        self.actingheadphonebalance = "100%,0%" if position == "left" else "0%,100%"
 
         # the annulus is created by passing a matrix of zeros to the texture argument
         self.annulus = visual.GratingStim(
@@ -114,8 +117,8 @@ class subject:
         return str(self.id)
 
 ### Global variables for rendering stimuli
-sone = subject(1, "act", 0.3, None, window.size[0]/-4)
-stwo = subject(2, "obs", 0.7, None, window.size[0]/4)
+sone = subject(1, "act", 0.3, None, window.size[0]/-4, "right")
+stwo = subject(2, "obs", 0.7, None, window.size[0]/4, "left")
 subjects = [sone, stwo]
 
 expinfo = {'participant1': sone.id, 'participant2' : stwo.id, 'pair': 1}
@@ -262,6 +265,13 @@ def fetchbuttonpress (subjects, clock):
             # response = s.inputdevice.waitButtons(maxWait=2.5, timeStamped=clock, flush=True)
     return response
 
+def updatespeakerbalance ():
+    # we can a terminal command to shift the balance. it does not work if both the subject are acting (in the individual condition)
+    # but it is a more efficient solution if we don't have a condition where both are acting
+    for s in subjects:
+        if s.state == "act":
+            run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
+
 def updatestate ():
     '''
         Which dyad makes the button box
@@ -325,6 +335,9 @@ for trials in exphandler.loops:
         # need to explicity call stop() to go back to the beginning of the track
         # we reset after collecting a response, otherwise the beep is stopped too early
         beep.stop()
+
+        # update the speaker balance to play the beep for the right subject
+        updatespeakerbalance()
 
         # display inter trial interval
         genintertrial(subjects)
