@@ -56,13 +56,14 @@ window = visual.Window(size=(2048, 768), units='pix', fullscr=False)
 noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
 class subject:
-    def __init__(self, sid, state, threshold, inputdevice, xoffset, position):
+    def __init__(self, sid, state, threshold, inputdevice, xoffset, position, keys):
         '''
             state is either 'obs' or 'act' for observing or acting conditions, respectively
             xoffset is the constant added to all stimuli rendered for the subject
             signal is the signal according to the subjects threshold
             inputdevice is the pyusb connector to the subject's buttonbox
             position is either left of right. it is used to determine the speaker of the subject
+            keys is a list of keys expected from the user. it has to be in the order of yes and no
         '''
         self.id = sid
         self.state = state
@@ -74,6 +75,12 @@ class subject:
         )
         self.inputdevice = inputdevice
         self.actingheadphonebalance = "100%,0%" if position == "left" else "0%,100%"
+
+        self.buttons = {
+                keys[0] : "yes",
+                keys[1] : "no",
+                None : "noresponse"
+                }
 
         # the annulus is created by passing a matrix of zeros to the texture argument
         self.annulus = visual.GratingStim(
@@ -115,7 +122,7 @@ class subject:
                 "no" : visual.TextStim(
                             win = window, text="No", units='pix', pos=[0 + xoffset, 0]
                         ),
-                "no" : visual.TextStim(
+                "noresponse" : visual.TextStim(
                             win = window, text="No Response", units='pix', pos=[0 + xoffset, 0]
                         ),
                 }
@@ -124,8 +131,8 @@ class subject:
         return str(self.id)
 
 ### Global variables for rendering stimuli
-sone = subject(1, "act", 0.3, None, window.size[0]/-4, "right")
-stwo = subject(2, "obs", 0.7, None, window.size[0]/4, "left")
+sone = subject(1, "act", 0.3, None, window.size[0]/-4, "right", ["9", "0"])
+stwo = subject(2, "obs", 0.7, None, window.size[0]/4, "left", ["1", "2"])
 subjects = [sone, stwo]
 
 expinfo = {'participant1': sone.id, 'participant2' : stwo.id, 'pair': 1}
@@ -266,12 +273,10 @@ def fetchbuttonpress (subjects, clock):
             continue
         else:
             # How do I tell waitKeys to look for input from the specific subject input device and not the other?
-            response = event.waitKeys(maxWait=2.5, timeStamped=clock, clearEvents=True)
+            response = event.waitKeys(maxWait=2.5, timeStamped=clock, clearEvents=True, keyList=s.buttons.keys())
 
             keystroke = response[0][0] if response is not None else response
-            if keystroke == 'right': s.response = 'yes'
-            elif keystroke == 'left': s.response = 'no'
-            else: s.response = 'noresponse'
+            s.response = s.buttons[keystroke]
             # waitButtons is from the rucosci library
             # https://github.com/wilberth/RuSocSci/blob/18569aa014ff7e4be5f4aa6ddd0aa4202f601393/rusocsci/buttonbox.py#L116
             # need to add a mechanism where both subjects are acting, in such a condition response variable will be overwritten
@@ -294,7 +299,6 @@ def updatestate ():
             s.state = 'obs'
         else:
             s.state = 'act'
-
 
 # generate file for storing data
 
