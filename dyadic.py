@@ -23,12 +23,21 @@
 '''
 
 import os
+from subprocess import run
 import numpy as np
 import psychtoolbox as ptb
 from psychopy import visual, event, core, gui, data, prefs
 
 # setting PTB as our preferred sound library and then import sound
-prefs.hardware['audioLib'] = ['PTB']
+
+'''
+To obtain your sounddevices run
+import psychopy as p p.sound.backend_sounddevice.getDevices()
+Copy the `name` attribute of your device to the audioDevice
+'''
+
+prefs.hardware['audioLib'] = ['sounddevice']
+prefs.hardware['audioDevice'] = ['Logitech USB Headset: Audio (hw:2,0)', 'default']
 
 from psychopy.sound import Sound
 from numpy.random import random
@@ -47,12 +56,14 @@ window = visual.Window(size=(2048, 768), units='pix', fullscr=False)
 noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
 class subject:
-    def __init__(self, sid, state, threshold, inputdevice, xoffset):
+    def __init__(self, sid, state, threshold, inputdevice, xoffset, position, keys):
         '''
             state is either 'obs' or 'act' for observing or acting conditions, respectively
             xoffset is the constant added to all stimuli rendered for the subject
             signal is the signal according to the subjects threshold
             inputdevice is the pyusb connector to the subject's buttonbox
+            position is either left of right. it is used to determine the speaker of the subject
+            keys is a list of keys expected from the user. it has to be in the order of yes and no
         '''
         self.id = sid
         self.state = state
@@ -63,6 +74,13 @@ class subject:
             size = X, contrast = 1.0, opacity = threshold,
         )
         self.inputdevice = inputdevice
+        self.actingheadphonebalance = "100%,0%" if position == "left" else "0%,100%"
+
+        self.buttons = {
+                keys[0] : "yes",
+                keys[1] : "no",
+                None : "noresponse"
+                }
 
         # the annulus is created by passing a matrix of zeros to the texture argument
         self.annulus = visual.GratingStim(
@@ -88,34 +106,33 @@ class subject:
             sf=0, color='green', mask='circle'
         )
 
+        '''
         # a dot which indicates to the subject they are in the observation state
         self.obsindicator = visual.GratingStim(
             win = window, size=50, units='pix', pos=[250 + xoffset, 250],
             sf=0, color='blue', mask='circle'
         )
+        '''
 
         # a dot which indicates to the subject they are in the observation state
         self.indicatordict = {
-                "yes" : visual.GratingStim(
-                            win = window, size=50, units='pix', pos=[250 + xoffset, 200],
-                            sf=0, mask='circle', color='green'
+                "yes" : visual.TextStim(
+                            win = window, text="Yes", units='pix', pos=[0 + xoffset, 0]
                         ),
-                "no" : visual.GratingStim(
-                            win = window, size=50, units='pix', pos=[250 + xoffset, 200],
-                            sf=0, mask='circle', color='red'
+                "no" : visual.TextStim(
+                            win = window, text="No", units='pix', pos=[0 + xoffset, 0]
                         ),
-                "noresponse" : visual.GratingStim(
-                            win = window, size=50, units='pix', pos=[250 + xoffset, 200],
-                            sf=0, mask='circle', color='yellow'
-                        )
+                "noresponse" : visual.TextStim(
+                            win = window, text="No Response", units='pix', pos=[0 + xoffset, 0]
+                        ),
                 }
 
     def __repr__ (self):
         return str(self.id)
 
 ### Global variables for rendering stimuli
-sone = subject(1, "act", 0.3, None, window.size[0]/-4)
-stwo = subject(2, "obs", 0.7, None, window.size[0]/4)
+sone = subject(1, "act", 0.3, None, window.size[0]/-4, "right", ["9", "0"])
+stwo = subject(2, "obs", 0.7, None, window.size[0]/4, "left", ["1", "2"])
 subjects = [sone, stwo]
 
 expinfo = {'participant1': sone.id, 'participant2' : stwo.id, 'pair': 1}
@@ -172,8 +189,10 @@ def genbaseline (subjects):
         s.annulus.draw()
         s.reddot.draw()
 
+        '''
         if s.state == 'obs':
             s.obsindicator.draw()
+        '''
 
 def gendecisionint (subjects, condition):
     '''
@@ -191,10 +210,12 @@ def gendecisionint (subjects, condition):
             s.annulus.draw()
             s.reddot.draw()
 
+            '''
             if s.state == 'obs':
                 s.obsindicator.draw()
+            '''
     else:
-        raise("Please provide s for signal and n for noise in condition argument")
+        raise NotImplementedError
 
 def genintertrial (subjects):
     for s in subjects:
@@ -202,8 +223,10 @@ def genintertrial (subjects):
         s.annulus.draw()
         s.greendot.draw()
 
+        '''
         if s.state == 'obs':
             s.obsindicator.draw()
+        '''
 
     # if subject one/two is in an acting state, add their response to the response box of subject two/one
     if stwo.state == "act":
@@ -250,17 +273,22 @@ def fetchbuttonpress (subjects, clock):
             continue
         else:
             # How do I tell waitKeys to look for input from the specific subject input device and not the other?
-            response = event.waitKeys(maxWait=2.5, timeStamped=clock, clearEvents=True)
+            response = event.waitKeys(maxWait=2.5, timeStamped=clock, clearEvents=True, keyList=s.buttons.keys())
 
             keystroke = response[0][0] if response is not None else response
-            if keystroke == 'right': s.response = 'yes'
-            elif keystroke == 'left': s.response = 'no'
-            else: s.response = 'noresponse'
+            s.response = s.buttons[keystroke]
             # waitButtons is from the rucosci library
             # https://github.com/wilberth/RuSocSci/blob/18569aa014ff7e4be5f4aa6ddd0aa4202f601393/rusocsci/buttonbox.py#L116
             # need to add a mechanism where both subjects are acting, in such a condition response variable will be overwritten
             # response = s.inputdevice.waitButtons(maxWait=2.5, timeStamped=clock, flush=True)
     return response
+
+def updatespeakerbalance ():
+    # we can a terminal command to shift the balance. it does not work if both the subject are acting (in the individual condition)
+    # but it is a more efficient solution if we don't have a condition where both are acting
+    for s in subjects:
+        if s.state == "act":
+            run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
 
 def updatestate ():
     '''
@@ -271,7 +299,6 @@ def updatestate ():
             s.state = 'obs'
         else:
             s.state = 'act'
-
 
 # generate file for storing data
 
@@ -334,6 +361,9 @@ for trials in exphandler.loops:
 
         # state switch
         updatestate()
+
+        # update the speaker balance to play the beep for the right subject
+        updatespeakerbalance()
 
         # save data
         trials.addData('response', response)
