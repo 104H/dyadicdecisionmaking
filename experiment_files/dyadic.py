@@ -27,6 +27,7 @@ from subprocess import run
 import numpy as np
 import psychtoolbox as ptb
 from psychopy import visual, event, core, gui, data, prefs
+from titration import calculate_threshold
 
 # setting PTB as our preferred sound library and then import sound
 
@@ -130,9 +131,13 @@ class subject:
     def __repr__ (self):
         return str(self.id)
 
+
+### Starting threshold calculation routine 
+threshold = calculate_threshold()
+
 ### Global variables for rendering stimuli
-sone = subject(1, "act", 0.3, None, window.size[0]/-4, "right", ["9", "0"])
-stwo = subject(2, "obs", 0.7, None, window.size[0]/4, "left", ["1", "2"])
+sone = subject(1, "act", threshold, None, window.size[0]/-4, "right", ["9", "0"])
+stwo = subject(2, "obs", threshold, None, window.size[0]/4, "left", ["1", "2"])
 subjects = [sone, stwo]
 
 expinfo = {'participant1': sone.id, 'participant2' : stwo.id, 'pair': 1}
