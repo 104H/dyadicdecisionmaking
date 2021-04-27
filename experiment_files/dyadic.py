@@ -29,7 +29,15 @@ import psychtoolbox as ptb
 from psychopy import visual, event, core, gui, data, prefs
 
 # setting PTB as our preferred sound library and then import sound
-prefs.hardware['audioLib'] = ['PTB']
+
+'''
+To obtain your sounddevices run
+import psychopy as p p.sound.backend_sounddevice.getDevices()
+Copy the `name` attribute of your device to the audioDevice
+'''
+
+prefs.hardware['audioLib'] = ['sounddevice']
+prefs.hardware['audioDevice'] = ['Logitech USB Headset: Audio (hw:2,0)', 'default']
 
 from psychopy.sound import Sound
 from numpy.random import random
@@ -91,26 +99,25 @@ class subject:
             sf=0, color='green', mask='circle'
         )
 
+        '''
         # a dot which indicates to the subject they are in the observation state
         self.obsindicator = visual.GratingStim(
             win = window, size=50, units='pix', pos=[250 + xoffset, 250],
             sf=0, color='blue', mask='circle'
         )
+        '''
 
         # a dot which indicates to the subject they are in the observation state
         self.indicatordict = {
-                "yes" : visual.GratingStim(
-                            win = window, size=50, units='pix', pos=[250 + xoffset, 200],
-                            sf=0, mask='circle', color='green'
+                "yes" : visual.TextStim(
+                            win = window, text="Yes", units='pix', pos=[0 + xoffset, 0]
                         ),
-                "no" : visual.GratingStim(
-                            win = window, size=50, units='pix', pos=[250 + xoffset, 200],
-                            sf=0, mask='circle', color='red'
+                "no" : visual.TextStim(
+                            win = window, text="No", units='pix', pos=[0 + xoffset, 0]
                         ),
-                "noresponse" : visual.GratingStim(
-                            win = window, size=50, units='pix', pos=[250 + xoffset, 200],
-                            sf=0, mask='circle', color='yellow'
-                        )
+                "no" : visual.TextStim(
+                            win = window, text="No Response", units='pix', pos=[0 + xoffset, 0]
+                        ),
                 }
 
     def __repr__ (self):
@@ -175,8 +182,10 @@ def genbaseline (subjects):
         s.annulus.draw()
         s.reddot.draw()
 
+        '''
         if s.state == 'obs':
             s.obsindicator.draw()
+        '''
 
 def gendecisionint (subjects, condition):
     '''
@@ -194,10 +203,12 @@ def gendecisionint (subjects, condition):
             s.annulus.draw()
             s.reddot.draw()
 
+            '''
             if s.state == 'obs':
                 s.obsindicator.draw()
+            '''
     else:
-        raise("Please provide s for signal and n for noise in condition argument")
+        raise NotImplementedError
 
 def genintertrial (subjects):
     for s in subjects:
@@ -205,8 +216,10 @@ def genintertrial (subjects):
         s.annulus.draw()
         s.greendot.draw()
 
+        '''
         if s.state == 'obs':
             s.obsindicator.draw()
+        '''
 
     # if subject one/two is in an acting state, add their response to the response box of subject two/one
     if stwo.state == "act":
@@ -336,9 +349,6 @@ for trials in exphandler.loops:
         # we reset after collecting a response, otherwise the beep is stopped too early
         beep.stop()
 
-        # update the speaker balance to play the beep for the right subject
-        updatespeakerbalance()
-
         # display inter trial interval
         genintertrial(subjects)
         window.flip()
@@ -347,6 +357,9 @@ for trials in exphandler.loops:
 
         # state switch
         updatestate()
+
+        # update the speaker balance to play the beep for the right subject
+        updatespeakerbalance()
 
         # save data
         trials.addData('response', response)
