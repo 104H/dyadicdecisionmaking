@@ -23,6 +23,7 @@
 '''
 
 import os
+import sys
 from subprocess import run
 import numpy as np
 import psychtoolbox as ptb
@@ -44,6 +45,18 @@ sound.setDevice('Logitech USB Headset: Audio (hw:2,0)')
 
 from psychopy.sound import Sound
 from numpy.random import random
+
+# subject ids global variables
+if len(sys.argv) < 3:
+    # for the testing phase we leave it like this
+    sub1 = 1
+    sub2 = 2
+    # later for the experiment the system will stop if no subject ids are given
+    #print("Please enter the subjects ids as command line arguments!")
+    #sys.exit()
+else:
+    sub1 = sys.argv[1]
+    sub2 = sys.argv[2]
 
 # Gabor patch global variables
 X = 512; # width of the gabor patch in pixels
@@ -134,8 +147,8 @@ class subject:
         return str(self.id)
 
 ### Global variables for rendering stimuli
-sone = subject(1, "act", 0.3, None, window.size[0]/-4, "right", ["9", "0"])
-stwo = subject(2, "obs", 0.7, None, window.size[0]/4, "left", ["1", "2"])
+sone = subject(sub1, "act", 0.3, None, window.size[0]/-4, "right", ["9", "0"])
+stwo = subject(sub2, "obs", 0.7, None, window.size[0]/4, "left", ["1", "2"])
 subjects = [sone, stwo]
 
 expinfo = {'participant1': sone.id, 'participant2' : stwo.id, 'pair': 1}
