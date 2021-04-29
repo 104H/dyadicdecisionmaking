@@ -32,12 +32,15 @@ from psychopy import visual, event, core, gui, data, prefs
 
 '''
 To obtain your sounddevices run
-import psychopy as p p.sound.backend_sounddevice.getDevices()
+from psychopy.sound.backend_sounddevice import getDevices
+getDevices()
 Copy the `name` attribute of your device to the audioDevice
 '''
 
-prefs.hardware['audioLib'] = ['sounddevice']
-prefs.hardware['audioDevice'] = ['Logitech USB Headset: Audio (hw:2,0)', 'default']
+prefs.hardware['audioLib'] = ['PTB']
+
+from psychopy import sound
+sound.setDevice('Logitech USB Headset: Audio (hw:2,0)')
 
 from psychopy.sound import Sound
 from numpy.random import random
@@ -117,13 +120,13 @@ class subject:
         # a dot which indicates to the subject they are in the observation state
         self.indicatordict = {
                 "yes" : visual.TextStim(
-                            win = window, text="Yes", units='pix', pos=[0 + xoffset, 0]
+                            win = window, text="Yes", units='pix', pos=[0 - xoffset, 0]
                         ),
                 "no" : visual.TextStim(
-                            win = window, text="No", units='pix', pos=[0 + xoffset, 0]
+                            win = window, text="No", units='pix', pos=[0 - xoffset, 0]
                         ),
                 "noresponse" : visual.TextStim(
-                            win = window, text="No Response", units='pix', pos=[0 + xoffset, 0]
+                            win = window, text="No Response", units='pix', pos=[0 - xoffset, 0]
                         ),
                 }
 
