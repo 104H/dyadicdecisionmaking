@@ -21,6 +21,7 @@
         - In the individual trials, how do we send the beep to different headphones the two subjects have? We will need USB headphone and write to their USB directly.
         - Do we have speakers of headphones? Do we need headphones because the other subject might head the beep
 '''
+from typing import Any, Callable
 
 import os
 import sys
@@ -151,14 +152,15 @@ sone = subject(sub1, "act", 0.3, None, window.size[0]/-4, "right", ["9", "0"])
 stwo = subject(sub2, "obs", 0.7, None, window.size[0]/4, "left", ["1", "2"])
 subjects = [sone, stwo]
 
-expinfo = {'participant1': sone.id, 'participant2' : stwo.id, 'pair': 1}
+expinfo = {'date': data.getDateStr(), 'pair': 1, 'participant1': sone.id, 'participant2' : stwo.id}
 #expinfo = {'participant1': sone.id}
 
-blocks = range(4)
-ntrials = 2
+blocks = range(2)
+ntrials = 1
 
 # create beep for decision interval
 beep = Sound('A', secs=0.5)
+
 
 def genstartscreen ():
     visual.TextStim(window,
@@ -328,10 +330,14 @@ triallist = [
 # preparing the clocks
 responsetime = core.Clock()
 
-exphandler = data.ExperimentHandler(extraInfo=expinfo)
-for b in blocks:
-    exphandler.addLoop( data.TrialHandler(triallist, nReps=ntrials, method='random', originPath=-1, extraInfo=expinfo) )
+# specifications of output file
+_thisDir = os.path.dirname(os.path.abspath(__file__))
+expName = 'DDM'
+filename = _thisDir + os.sep + u'data/%s_pair%s_%s' % (expName, expinfo['pair'], data.getDateStr())
 
+exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideText=True, dataFileName=filename)
+for b in blocks:
+    exphandler.addLoop(data.TrialHandler(triallist, nReps=ntrials, method='random', originPath=-1, extraInfo=expinfo) )
 
 # diplay "press space bar to start"
 genstartscreen()
@@ -343,9 +349,26 @@ geninstructions()
 window.flip()
 keys = event.waitKeys(keyList=['space'])
 
+# variables for data saving
+block=0
+trialInBlock=0
+
 for trials in exphandler.loops:
+    # variables for data saving
+    block+=1
+    trialInBlock=0
     # traverse through trials
     for trial in trials:
+
+        # save trial data to file
+        trialInBlock += 1
+        exphandler.addData('block', block)
+        exphandler.addData('trial', trialInBlock)
+        exphandler.addData('totalTrials', (block-1)*2*ntrials+trialInBlock)
+        exphandler.addData('condition', trials.thisTrial['condition'])
+        exphandler.addData('s1_state', sone.state)
+        exphandler.addData('s2_state', stwo.state)
+
         # display baseline
         genbaseline(subjects)
         window.flip()
@@ -364,6 +387,14 @@ for trials in exphandler.loops:
         # fetch button press
         response = fetchbuttonpress(subjects, responsetime)
         print(response)
+        # save response to file
+        if response is not None:
+            exphandler.addData('response', response[0][0])
+            exphandler.addData('rt', response[0][1])
+        else:
+            exphandler.addData('response', 'None')
+            exphandler.addData('rt', 'None')
+
 
         # need to explicity call stop() to go back to the beginning of the track
         # we reset after collecting a response, otherwise the beep is stopped too early
@@ -381,12 +412,10 @@ for trials in exphandler.loops:
         # update the speaker balance to play the beep for the right subject
         updatespeakerbalance()
 
-        # save data
-        trials.addData('response', response)
-    exphandler.nextEntry()
+        # move to next row in output file
+        exphandler.nextEntry()
+
     # decide between continuing with next block, take a break
 genendscreen()
 
-# write to file
-trials.saveAsWideText("data", delim=",")
-exphandler.saveAsWideText("datae", delim=",")
+
