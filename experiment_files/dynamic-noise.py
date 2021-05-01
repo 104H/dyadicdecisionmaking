@@ -1,4 +1,4 @@
-from psychopy import visual, core, event
+from psychopy import visual, core, event, tools, monitors
 import numpy as np
 
 # open window
@@ -12,18 +12,43 @@ annulus = visual.GratingStim(
     size = 50, contrast = 1.0, opacity = 1.0,
 )
 
+mon = monitors.Monitor('testMonitor')
+stim_size = tools.monitorunittools.deg2pix(4.8,mon) # have to check that this value is a square power of two (e.g. 256, 512, etc.)
+
+sf = .02 # spatial frequency, cycles per pixel
+
+gabortexture = (
+    visual.filters.makeGrating(res=stim_size, cycles=stim_size * sf) *
+    visual.filters.makeMask(matrixSize=stim_size, shape="circle", range=[0, 1])
+)
+
+signal = visual.GratingStim(
+    win = win, tex = gabortexture, mask = 'circle',
+    size = stim_size, contrast = 1.0, opacity = 0.5,
+)
+
 noise = visual.NoiseStim(
     win=win, mask='circle', ori=1.0, pos=(0,0),
-    size=(512, 512), sf=None, phase=0, color=[1,1,1], colorSpace='rgb', opacity=1,
-    blendmode='add', contrast=1.0, texRes=512, filter='None',noiseType='Uniform',
+    size=stim_size, sf=None, phase=0, color=[1,1,1], colorSpace='rgb', opacity=1,
+    blendmode='add', contrast=1, texRes=512, filter='None',noiseType='Uniform',
     noiseElementSize=1, noiseBaseSf=32.0/512, noiseBW=1.0, noiseBWO=30,
     noiseFractalPower=-1,noiseFilterLower=3/512, noiseFilterUpper=8.0/512.0,
     noiseFilterOrder=3.0, noiseClip=3.0, interpolate=False, depth=-1.0
 )
 
-while not event.getKeys():
+# display signal for 600 frames
+for frame in range(600):
     noise.draw()
     noise.updateNoise() # update noise on every frame
+    signal.draw()
+    annulus.draw()
+    fixation.draw()
+    win.flip()
+
+# display noise until any key is pressed
+while not event.getKeys():
+    noise.draw()
+    noise.updateNoise() # update noise
     annulus.draw()
     fixation.draw()
     win.flip()
