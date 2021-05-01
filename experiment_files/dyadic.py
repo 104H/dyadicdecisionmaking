@@ -75,7 +75,7 @@ noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 class subject:
     def __init__(self, sid, state, threshold, inputdevice, xoffset, position, keys):
         '''
-            state is either 'obs' or 'act' for observing or acting conditions, respectively
+            state is either 0 or 1 for observing or acting conditions, respectively
             xoffset is the constant added to all stimuli rendered for the subject
             signal is the signal according to the subjects threshold
             inputdevice is the pyusb connector to the subject's buttonbox
@@ -148,8 +148,8 @@ class subject:
         return str(self.id)
 
 ### Global variables for rendering stimuli
-sone = subject(sub1, "act", 0.3, None, window.size[0]/-4, "right", ["9", "0"])
-stwo = subject(sub2, "obs", 0.7, None, window.size[0]/4, "left", ["1", "2"])
+sone = subject(sub1, 1, 0.3, None, window.size[0]/-4, "right", ["9", "0"])
+stwo = subject(sub2, 0, 0.7, None, window.size[0]/4, "left", ["1", "2"])
 subjects = [sone, stwo]
 
 expinfo = {'date': data.getDateStr(), 'pair': 1, 'participant1': sone.id, 'participant2' : stwo.id}
@@ -208,7 +208,7 @@ def genbaseline (subjects):
         s.reddot.draw()
 
         '''
-        if s.state == 'obs':
+        if s.state == 0:
             s.obsindicator.draw()
         '''
 
@@ -229,7 +229,7 @@ def gendecisionint (subjects, condition):
             s.reddot.draw()
 
             '''
-            if s.state == 'obs':
+            if s.state == 0:
                 s.obsindicator.draw()
             '''
     else:
@@ -242,14 +242,14 @@ def genintertrial (subjects):
         s.greendot.draw()
 
         '''
-        if s.state == 'obs':
+        if s.state == 0:
             s.obsindicator.draw()
         '''
 
     # if subject one/two is in an acting state, add their response to the response box of subject two/one
-    if stwo.state == "act":
+    if stwo.state == 1:
         sone.indicatordict[stwo.response].draw()
-    if sone.state == "act":
+    if sone.state == 1:
         stwo.indicatordict[sone.response].draw()
 
 def genbreakscreen (window):
@@ -287,7 +287,7 @@ def fetchbuttonpress (subjects, clock):
             clock: PsychoPy clock object
     '''
     for s in subjects:
-        if s.state == 'obs':
+        if s.state == 0:
             continue
         else:
             # How do I tell waitKeys to look for input from the specific subject input device and not the other?
@@ -305,7 +305,7 @@ def updatespeakerbalance ():
     # we can a terminal command to shift the balance. it does not work if both the subject are acting (in the individual condition)
     # but it is a more efficient solution if we don't have a condition where both are acting
     for s in subjects:
-        if s.state == "act":
+        if s.state == 1:
             run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
 
 def updatestate ():
@@ -313,10 +313,10 @@ def updatestate ():
         Which dyad makes the button box
     '''
     for s in subjects:
-        if s.state == 'act':
-            s.state = 'obs'
+        if s.state == 1:
+            s.state = 0
         else:
-            s.state = 'act'
+            s.state = 1
 
 # generate file for storing data
 
