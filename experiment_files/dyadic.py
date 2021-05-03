@@ -48,16 +48,14 @@ from psychopy.sound import Sound
 from numpy.random import random
 
 # subject ids global variables
-if len(sys.argv) < 3:
+if len(sys.argv) < 2:
     # for the testing phase we leave it like this
-    sub1 = 1
-    sub2 = 2
+    pair_id = 1
     # later for the experiment the system will stop if no subject ids are given
-    #print("Please enter the subjects ids as command line arguments!")
+    #print("Experiment was stopped! Please enter the pair id as command line argument!")
     #sys.exit()
 else:
-    sub1 = sys.argv[1]
-    sub2 = sys.argv[2]
+    pair_id = sys.argv[1]
 
 # Gabor patch global variables
 X = 512; # width of the gabor patch in pixels
@@ -148,11 +146,11 @@ class subject:
         return str(self.id)
 
 ### Global variables for rendering stimuli
-sone = subject(sub1, 1, 0.3, None, window.size[0]/-4, "right", ["9", "0"])
-stwo = subject(sub2, 0, 0.7, None, window.size[0]/4, "left", ["1", "2"])
+sone = subject(1, 1, 0.3, None, window.size[0]/-4, "right", ["9", "0"])
+stwo = subject(2, 0, 0.7, None, window.size[0]/4, "left", ["1", "2"])
 subjects = [sone, stwo]
 
-expinfo = {'date': data.getDateStr(), 'pair': 1, 'participant1': sone.id, 'participant2' : stwo.id}
+expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2' : stwo.id}
 #expinfo = {'participant1': sone.id}
 
 blocks = range(2)
