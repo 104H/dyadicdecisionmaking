@@ -297,6 +297,7 @@ triallist = [
         {"condition": "noise"}
         ]
 
+# update speaker balance for the first time
 updatespeakerbalance()
 
 # preparing the clocks
