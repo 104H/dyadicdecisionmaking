@@ -139,7 +139,6 @@ stwo = subject(2, "obs", 0.7, None, window.size[0]/4, "left", ["1", "2"])
 subjects = [sone, stwo]
 
 expinfo = {'participant1': sone.id, 'participant2' : stwo.id, 'pair': 1}
-#expinfo = {'participant1': sone.id}
 
 blocks = range(4)
 ntrials = 2

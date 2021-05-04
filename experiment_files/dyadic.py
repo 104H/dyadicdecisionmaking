@@ -6,21 +6,11 @@
         The variables for each are prepended with `sone_` or `stwo_`
 
     To Do:
-        - There is significant delay in stimulus display. Need to test if it still applies on the lab computer
         - The data needs to be packaged properly using the experiment handler
         - There is a warning that a providing data file can prevent data loss in case of crash. Is it writing to the disk and should we have this?
         - Instruction, thank you and break screens are missing
-        - There is no mechanism to input subject ids
-        - How do we decide to alternate between act and obs conditions
-        - There is only a blue dot denote the observation condition, needs and update based on what Artur says
-        - Figure out the right way to traverse through the experiment handlers set of trials
-        - How do we switch from dyadic to individual condition when both are acting
-        - Figure out how to exactly fetch input form different button boxes. The rusocsci library seems promising
-        - Do we have manually send the two screens to the two monitors or can this be automated
-        - How do we send the same beep to two speakers which are far apart? Do we have a splitter at the lab computer? How do we feel about the lag introduced by the splitter?
-        - In the individual trials, how do we send the beep to different headphones the two subjects have? We will need USB headphone and write to their USB directly.
-        - Do we have speakers of headphones? Do we need headphones because the other subject might head the beep
 '''
+
 from typing import Any, Callable
 
 import os
@@ -62,6 +52,8 @@ else:
 # Gabor patch global variables
 X = 512; # width of the gabor patch in pixels
 sf = .02; # spatial frequency, cycles per pixel
+
+REFRESH_RATE = 60
 
 gabortexture = (
     visual.filters.makeGrating(res=X, cycles=X * sf) *
@@ -106,9 +98,10 @@ class subject:
         )
 
         # noise patch
-        self.noise = visual.RadialStim(
-            win = window, mask='none', tex = noisetexture, pos=[0 + xoffset,0],
+        self.noise = visual.NoiseStim(
+            win = window, mask='circle', pos=[0 + xoffset,0],
             size = X, contrast = 1.0, opacity = 1.0,
+            noiseType='normal'
         )
 
         # red fixation dot for decision phase
@@ -122,14 +115,6 @@ class subject:
             win = window, size=5, units='pix', pos=[0 + xoffset,0],
             sf=0, color='green', mask='circle'
         )
-
-        '''
-        # a dot which indicates to the subject they are in the observation state
-        self.obsindicator = visual.GratingStim(
-            win = window, size=50, units='pix', pos=[250 + xoffset, 250],
-            sf=0, color='blue', mask='circle'
-        )
-        '''
 
         # a dot which indicates to the subject they are in the observation state
         self.indicatordict = {
@@ -204,13 +189,9 @@ def genendscreen ():
 def genbaseline (subjects):
     for s in subjects:
         s.noise.draw()
+        s.noise.updateNoise()
         s.annulus.draw()
         s.reddot.draw()
-
-        '''
-        if s.state == 0:
-            s.obsindicator.draw()
-        '''
 
 def gendecisionint (subjects, condition):
     '''
@@ -224,27 +205,19 @@ def gendecisionint (subjects, condition):
     elif condition == 'signal':
         for s in subjects:
             s.noise.draw()
+            s.noise.updateNoise()
             s.signal.draw()
             s.annulus.draw()
             s.reddot.draw()
-
-            '''
-            if s.state == 0:
-                s.obsindicator.draw()
-            '''
     else:
         raise NotImplementedError
 
 def genintertrial (subjects):
     for s in subjects:
         s.noise.draw()
+        s.noise.updateNoise()
         s.annulus.draw()
         s.greendot.draw()
-
-        '''
-        if s.state == 0:
-            s.obsindicator.draw()
-        '''
 
     # if subject one/two is in an acting state, add their response to the response box of subject two/one
     if stwo.state == 1:
@@ -291,14 +264,11 @@ def fetchbuttonpress (subjects, clock):
             continue
         else:
             # How do I tell waitKeys to look for input from the specific subject input device and not the other?
-            response = event.waitKeys(maxWait=2.5, timeStamped=clock, clearEvents=True, keyList=s.buttons.keys())
+            response = event.getKeys(timeStamped=clock, keyList=s.buttons.keys())
 
-            keystroke = response[0][0] if response is not None else response
+            if len(response) == 0: response = [(None, 0)]
+            keystroke = response[0][0]
             s.response = s.buttons[keystroke]
-            # waitButtons is from the rucosci library
-            # https://github.com/wilberth/RuSocSci/blob/18569aa014ff7e4be5f4aa6ddd0aa4202f601393/rusocsci/buttonbox.py#L116
-            # need to add a mechanism where both subjects are acting, in such a condition response variable will be overwritten
-            # response = s.inputdevice.waitButtons(maxWait=2.5, timeStamped=clock, flush=True)
     return response
 
 def updatespeakerbalance ():
@@ -318,6 +288,9 @@ def updatestate ():
         else:
             s.state = 1
 
+def secondstoframes (seconds):
+    return range( int( np.rint(seconds * REFRESH_RATE) ) )
+
 # generate file for storing data
 
 # create trial handler
@@ -326,6 +299,7 @@ triallist = [
         {"condition": "noise"}
         ]
 
+updatespeakerbalance()
 
 # preparing the clocks
 responsetime = core.Clock()
@@ -370,23 +344,40 @@ for trials in exphandler.loops:
         exphandler.addData('s2_state', stwo.state)
 
         # display baseline
-        genbaseline(subjects)
-        window.flip()
         # wait for a random time between 2 to 4 seconds
-        core.wait( np.random.uniform(2,4) )
+        for frame in secondstoframes( np.random.uniform(2, 4) ):
+            genbaseline(subjects)
+            window.flip()
 
         # preparing time for next window flip, to precisely co-ordinate window flip and beep
         nextflip = window.getFutureFlipTime(clock='ptb')
         beep.play(when=nextflip)
         # display stimulus
-        gendecisionint(subjects, trials.thisTrial['condition'])
-        window.flip()
-        # we decided to reset the clock after flipping (redrawing) the window
         responsetime.reset()
 
-        # fetch button press
-        response = fetchbuttonpress(subjects, responsetime)
-        print(response)
+        for frame in secondstoframes(2.5):
+            gendecisionint(subjects, trials.thisTrial['condition'])
+            window.flip()
+            # we decided to reset the clock after flipping (redrawing) the window
+
+            # fetch button press
+            response = fetchbuttonpress(subjects, responsetime)
+
+        # need to explicity call stop() to go back to the beginning of the track
+        # we reset after collecting a response, otherwise the beep is stopped too early
+        beep.stop()
+
+        # display inter trial interval for 2s
+        for frame in secondstoframes(2):
+            genintertrial(subjects)
+            window.flip()
+
+        # state switch
+        updatestate()
+
+        # update the speaker balance to play the beep for the right subject
+        updatespeakerbalance()
+
         # save response to file
         if response is not None:
             exphandler.addData('response', response[0][0])
@@ -394,23 +385,6 @@ for trials in exphandler.loops:
         else:
             exphandler.addData('response', 'None')
             exphandler.addData('rt', 'None')
-
-
-        # need to explicity call stop() to go back to the beginning of the track
-        # we reset after collecting a response, otherwise the beep is stopped too early
-        beep.stop()
-
-        # display inter trial interval
-        genintertrial(subjects)
-        window.flip()
-        # inter trial interval is 2s
-        core.wait(2)
-
-        # state switch
-        updatestate()
-
-        # update the speaker balance to play the beep for the right subject
-        updatespeakerbalance()
 
         # move to next row in output file
         exphandler.nextEntry()
