@@ -286,10 +286,18 @@ def updatestate ():
     '''
     sone.state = next(iterstates)
     stwo.state = 1 - sone.state
-    print(sone.state)
 
 def secondstoframes (seconds):
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
+
+def getacknowledgements ():
+    sone_ack, stwo_ack = None, None
+
+    while (sone_ack != 'yes') or (stwo_ack != 'yes'):
+        response = event.getKeys()
+        for r in response:
+            if sone_ack != 'yes': sone_ack = sone.buttons.get(r)
+            if stwo_ack != 'yes': stwo_ack = stwo.buttons.get(r)
 
 # generate file for storing data
 
@@ -317,12 +325,12 @@ for b in blocks:
 # diplay "press space bar to start"
 genstartscreen()
 window.flip()
-keys = event.waitKeys(keyList=['space'])
+getacknowledgements()
 
 # display instructions
 geninstructions()
 window.flip()
-keys = event.waitKeys(keyList=['space'])
+getacknowledgements()
 
 # variables for data saving
 block=0
