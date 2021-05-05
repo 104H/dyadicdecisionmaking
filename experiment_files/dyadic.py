@@ -138,7 +138,7 @@ subjects = [sone, stwo]
 expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2' : stwo.id}
 
 blocks = range(2)
-ntrials = 6
+ntrials = 6 # total trials per block = 2 * ntrials ??? is this correct? @Hunaid please update
 
 # make an array of 0 and 1, denoting observe and act, respectively and scale it up by half of the number of trials
 states = [0, 1] * int(ntrials/2)
@@ -232,7 +232,7 @@ def genbreakscreen (window):
         Generate the screen shown when the break is in progress
     '''
     instructions = "Instructions:\n\
-    Enjoy your break. Press any key to resume."
+    Enjoy your break. Press any key when you're ready to resume."
 
     instructions = visual.TextStim(window,
                                     text=instructions,
@@ -299,13 +299,6 @@ def getacknowledgements ():
             if sone_ack != 'yes': sone_ack = sone.buttons.get(r)
             if stwo_ack != 'yes': stwo_ack = stwo.buttons.get(r)
 
-# generate file for storing data
-
-# create trial handler
-triallist = [
-        {"condition": "signal"},
-        {"condition": "noise"}
-        ]
 
 # update speaker balance for the first time
 updatespeakerbalance()
@@ -318,9 +311,23 @@ _thisDir = os.path.dirname(os.path.abspath(__file__))
 expName = 'DDM'
 filename = _thisDir + os.sep + u'data/%s_pair%s_%s' % (expName, expinfo['pair'], data.getDateStr())
 
+
+# set up trial handler and experiment handler
+''' Zora's still working on this, please don't remove 
+triallist=[]
+for Idx in range(ntrials):
+    triallist.append({"condition": "signal"})
+    triallist.append({"condition": "noise"})
+'''
+
+triallist = [
+    {"condition": "signal"},
+    {"condition": "noise"}
+]
+
 exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideText=True, dataFileName=filename)
 for b in blocks:
-    exphandler.addLoop(data.TrialHandler(triallist, nReps=ntrials/2, method='random', originPath=-1, extraInfo=expinfo) )
+    exphandler.addLoop(data.TrialHandler(trialList=triallist, nReps=ntrials/2, method='random', originPath=-1, extraInfo=expinfo) )
 
 # diplay "press space bar to start"
 genstartscreen()
