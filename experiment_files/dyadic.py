@@ -136,10 +136,14 @@ stwo = subject(2, 0, 0.7, None, window.size[0]/4, "left", ["1", "2"])
 subjects = [sone, stwo]
 
 expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2' : stwo.id}
-#expinfo = {'participant1': sone.id}
 
 blocks = range(2)
-ntrials = 1
+ntrials = 6
+
+# make an array of 0 and 1, denoting observe and act, respectively and scale it up by half of the number of trials
+states = [0, 1] * int(ntrials/2)
+# shuffle the array using Fischer-Yates shuffling
+np.random.shuffle(states)
 
 # create beep for decision interval
 beep = Sound('A', secs=0.5)
@@ -234,7 +238,7 @@ def genbreakscreen (window):
                                     text=instructions,
                                     color='black', height=20)
 
-def genendscreen (nextcondition):
+def genendscreen ():
     '''
         Generate the end screen
         Args:
@@ -280,11 +284,9 @@ def updatestate ():
     '''
         Which dyad makes the button box
     '''
-    for s in subjects:
-        if s.state == 1:
-            s.state = 0
-        else:
-            s.state = 1
+    sone.state = next(iterstates)
+    stwo.state = 1 - sone.state
+    print(sone.state)
 
 def secondstoframes (seconds):
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
@@ -310,7 +312,7 @@ filename = _thisDir + os.sep + u'data/%s_pair%s_%s' % (expName, expinfo['pair'],
 
 exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideText=True, dataFileName=filename)
 for b in blocks:
-    exphandler.addLoop(data.TrialHandler(triallist, nReps=ntrials, method='random', originPath=-1, extraInfo=expinfo) )
+    exphandler.addLoop(data.TrialHandler(triallist, nReps=ntrials/2, method='random', originPath=-1, extraInfo=expinfo) )
 
 # diplay "press space bar to start"
 genstartscreen()
@@ -324,12 +326,15 @@ keys = event.waitKeys(keyList=['space'])
 
 # variables for data saving
 block=0
-trialInBlock=0
 
 for trials in exphandler.loops:
     # variables for data saving
     block+=1
     trialInBlock=0
+
+    # make an iterator object
+    iterstates = iter(states)
+
     # traverse through trials
     for trial in trials:
 
@@ -341,6 +346,9 @@ for trials in exphandler.loops:
         exphandler.addData('condition', trials.thisTrial['condition'])
         exphandler.addData('s1_state', sone.state)
         exphandler.addData('s2_state', stwo.state)
+
+        # subject state update
+        updatestate()
 
         # display baseline
         # wait for a random time between 2 to 4 seconds
@@ -370,9 +378,6 @@ for trials in exphandler.loops:
         for frame in secondstoframes(2):
             genintertrial(subjects)
             window.flip()
-
-        # state switch
-        updatestate()
 
         # update the speaker balance to play the beep for the right subject
         updatespeakerbalance()
