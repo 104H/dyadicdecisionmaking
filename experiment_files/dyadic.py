@@ -138,7 +138,7 @@ subjects = [sone, stwo]
 expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2' : stwo.id}
 
 blocks = range(2)
-ntrials = 6 # total trials per block = 2 * ntrials ??? is this correct? @Hunaid please update
+ntrials = 12 # trials per block
 
 # make an array of 0 and 1, denoting observe and act, respectively and scale it up by half of the number of trials
 states = [0, 1] * int(ntrials/2)
@@ -313,21 +313,16 @@ filename = _thisDir + os.sep + u'data/%s_pair%s_%s' % (expName, expinfo['pair'],
 
 
 # set up trial handler and experiment handler
-''' Zora's still working on this, please don't remove 
 triallist=[]
-for Idx in range(ntrials):
+# make sure signal is present on 50% of trials
+for Idx in range(ntrials//2):
     triallist.append({"condition": "signal"})
     triallist.append({"condition": "noise"})
-'''
-
-triallist = [
-    {"condition": "signal"},
-    {"condition": "noise"}
-]
 
 exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideText=True, dataFileName=filename)
 for b in blocks:
-    exphandler.addLoop(data.TrialHandler(trialList=triallist, nReps=ntrials/2, method='random', originPath=-1, extraInfo=expinfo) )
+    exphandler.addLoop(data.TrialHandler(trialList=triallist, nReps=1, method='random', originPath=-1, extraInfo=expinfo) )
+
 
 # diplay "press space bar to start"
 genstartscreen()
@@ -357,7 +352,7 @@ for trials in exphandler.loops:
         trialInBlock += 1
         exphandler.addData('block', block)
         exphandler.addData('trial', trialInBlock)
-        exphandler.addData('totalTrials', (block-1)*2*ntrials+trialInBlock)
+        exphandler.addData('totalTrials', (block-1)*ntrials+trialInBlock)
         exphandler.addData('condition', trials.thisTrial['condition'])
         exphandler.addData('s1_state', sone.state)
         exphandler.addData('s2_state', stwo.state)
@@ -403,7 +398,7 @@ for trials in exphandler.loops:
             exphandler.addData('rt', response[0][1])
         else:
             exphandler.addData('response', 'None')
-            exphandler.addData('rt', 'None')
+            exphandler.addData('rt', 'None') # why does this write 0 now instead of None? used to be None
 
         # move to next row in output file
         exphandler.nextEntry()
