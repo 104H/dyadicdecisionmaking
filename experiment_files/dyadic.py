@@ -137,8 +137,8 @@ subjects = [sone, stwo]
 
 expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2' : stwo.id}
 
-blocks = range(2)
-ntrials = 12 # trials per block
+blocks = range(10)
+ntrials = 2 # trials per block
 
 '''
 # make an array of 0 and 1, denoting observe and act, respectively and scale it up by half of the number of trials
@@ -153,11 +153,11 @@ beep = Sound('A', secs=0.5)
 
 def genstartscreen ():
     visual.TextStim(window,
-                    text="Press spacebar to start.", pos=[0 + sone.xoffset,0],
+                    text="Press yes to start.", pos=[0 + sone.xoffset,0],
                     color='black', height=20).draw()
 
     visual.TextStim(window,
-                    text="Press spacebar to start.", pos=[0 + stwo.xoffset,0],
+                    text="Press yes to start.", pos=[0 + stwo.xoffset,0],
                     color='black', height=20).draw()
 
 def geninstructions ():
@@ -170,7 +170,7 @@ def geninstructions ():
     5. After 80 trials, you will have a break.\n\
     6. After the break, press the spacebar when ready to continue.\n\
     7. There will be a total of 6 blocks. \n\n\
-    Press spacebar when ready."
+    Press yes when ready."
 
     visual.TextStim(window,
                     text=instructions, pos=[0 + sone.xoffset,0],
@@ -182,7 +182,7 @@ def geninstructions ():
 
 def genendscreen ():
     visual.TextStim(window,
-                    text="Thank you for participating.", pos=[0 + stwo.xoffset,0],
+                    text="Thank you for participating.", pos=[0 + sone.xoffset,0],
                     color='black', height=20).draw()
 
     visual.TextStim(window,
@@ -229,16 +229,35 @@ def genintertrial (subjects):
     if sone.state == 1:
         stwo.indicatordict[sone.response].draw()
 
-def genbreakscreen (window):
+def genbreakscreen ():
     '''
         Generate the screen shown when the break is in progress
     '''
     instructions = "Instructions:\n\
-    Enjoy your break. Press any key when you're ready to resume."
+    Enjoy your break. Press yes when you're ready to resume."
 
-    instructions = visual.TextStim(window,
-                                    text=instructions,
-                                    color='black', height=20)
+    visual.TextStim(window,
+                    text=instructions, pos = [0 + sone.xoffset, 0],
+                    color='black', height=20).draw()
+
+    visual.TextStim(window,
+                    text=instructions, pos = [0 + stwo.xoffset, 0],
+                    color='black', height=20).draw()
+
+def genmandatorybreakscreen ():
+    '''
+        Generate the screen shown when the mandatory break is in progress
+    '''
+    instructions = "Instructions:\n\
+    Enjoy your break. The experimenter will resume the experiment."
+
+    visual.TextStim(window,
+                    text=instructions, pos = [0 + sone.xoffset, 0],
+                    color='black', height=20).draw()
+
+    visual.TextStim(window,
+                    text=instructions, pos = [0 + stwo.xoffset, 0],
+                    color='black', height=20).draw()
 
 def genendscreen ():
     '''
@@ -252,7 +271,7 @@ def genendscreen ():
     instructions = "Thank you for your time."
 
     instructions = visual.TextStim(window,
-                                    text=instructions,
+                                    text=instructions, pos = [0 + sone.offset, 0],
                                     color='black', height=20)
 
 
@@ -288,7 +307,6 @@ def updatestate ():
     '''
     sone.state = next(iterstates)
     stwo.state = 1 - sone.state
-    print(sone.state)
 
 def secondstoframes (seconds):
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
@@ -301,6 +319,9 @@ def getacknowledgements ():
         for r in response:
             if sone_ack != 'yes': sone_ack = sone.buttons.get(r)
             if stwo_ack != 'yes': stwo_ack = stwo.buttons.get(r)
+
+def getexperimenterack ():
+    event.waitKeys(keyList=["space"])
 
 def genactingstates ():
     return np.random.randint(0, 2, ntrials)
@@ -410,6 +431,18 @@ for trials in exphandler.loops:
         exphandler.nextEntry()
 
     # decide between continuing with next block, take a break
+    # for every nth trial, there will be a mandatory break which only the experimenter can end
+    if block % 3 == 0:
+        genmandatorybreakscreen()
+        window.flip()
+        getexperimenterack()
+        continue
+
+    # for every trial, wait for the subjects to start their next block
+    genbreakscreen()
+    window.flip()
+    getacknowledgements()
+
 genendscreen()
 
 
