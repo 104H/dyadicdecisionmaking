@@ -140,10 +140,12 @@ expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 
 blocks = range(2)
 ntrials = 12 # trials per block
 
+'''
 # make an array of 0 and 1, denoting observe and act, respectively and scale it up by half of the number of trials
 states = [0, 1] * int(ntrials/2)
 # shuffle the array using Fischer-Yates shuffling
 np.random.shuffle(states)
+'''
 
 # create beep for decision interval
 beep = Sound('A', secs=0.5)
@@ -286,6 +288,7 @@ def updatestate ():
     '''
     sone.state = next(iterstates)
     stwo.state = 1 - sone.state
+    print(sone.state)
 
 def secondstoframes (seconds):
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
@@ -299,6 +302,8 @@ def getacknowledgements ():
             if sone_ack != 'yes': sone_ack = sone.buttons.get(r)
             if stwo_ack != 'yes': stwo_ack = stwo.buttons.get(r)
 
+def genactingstates ():
+    return np.random.randint(0, 2, ntrials)
 
 # update speaker balance for the first time
 updatespeakerbalance()
@@ -343,6 +348,7 @@ for trials in exphandler.loops:
     trialInBlock=0
 
     # make an iterator object
+    states = genactingstates()
     iterstates = iter(states)
 
     # traverse through trials
