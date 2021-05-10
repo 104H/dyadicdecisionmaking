@@ -8,7 +8,8 @@
     To Do:
         - The data needs to be packaged properly using the experiment handler
         - There is a warning that a providing data file can prevent data loss in case of crash. Is it writing to the disk and should we have this?
-        - Instruction, thank you and break screens are missing
+        - integrate practice trials
+        - integrate titration
 '''
 
 from typing import Any, Callable
@@ -137,7 +138,7 @@ subjects = [sone, stwo]
 
 expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2' : stwo.id}
 
-blocks = range(10)
+blocks = range(2)
 ntrials = 2 # trials per block
 
 '''
@@ -152,25 +153,61 @@ beep = Sound('A', secs=0.5)
 
 
 def genstartscreen ():
+    instructions = "Welcome to our experiment! \n\n\
+    Your task is to indicate whether you see a vertical grating or not.\n\
+    If you have any questions after reading the instructions on the next screen, please feel free to ask the experimenter.\n\n\
+    Press yes to continue"
+
     visual.TextStim(window,
-                    text="Press yes to start.", pos=[0 + sone.xoffset,0],
+                    text=instructions, pos=[0 + sone.xoffset,0],
                     color='black', height=20).draw()
 
     visual.TextStim(window,
-                    text="Press yes to start.", pos=[0 + stwo.xoffset,0],
+                    text=instructions, pos=[0 + stwo.xoffset,0],
+                    color='black', height=20).draw()
+def geninstructionspractice ():
+    instructions = "Please read the instructions carefully.\n\
+    1. First, you will have a few practice trials to see how the experiment works.\n\
+    2. You will do the task together with your partner.\n\
+    3. At the start of each trial, a red dot is shown in the middle of the screen, surrounded by a circular pattern that looks similar to white noise.\n\
+    4. When you hear a beep, it’s your turn to indicate whether you saw a vertical grating on top of the noise.\n\
+    5. Press the left key for 'yes' and the right key for 'no'.\n\
+    6. It’s very important that you respond as fast as possible! You only have a limited amount of time for your response.\n\
+    7. If you don’t hear a beep, it’s the other person’s turn to respond. You will both see the grating (or not) and you will also see their response on your screen.\n\n\
+    Press yes to continue"
+
+    visual.TextStim(window,
+                    text=instructions, pos=[0 + sone.xoffset,0],
                     color='black', height=20).draw()
 
-def geninstructions ():
-    instructions = "Instructions:\n\
-    Your task is to indicate if you see a vertical grating or not.\n\
-    1. At the start of each trial, a red dot is shown in the middle of the screen.\n\
-    2. When you hear a beep, you may press one of the buttons to indicate if you saw a vertical grating or not.\n\
-    3. Press the left key for 'yes' and the right key for 'no'.\n\
-    4. After a short break, the procedure will be repeated from step 1.\n\
-    5. After 80 trials, you will have a break.\n\
-    6. After the break, press the spacebar when ready to continue.\n\
-    7. There will be a total of 6 blocks. \n\n\
-    Press yes when ready."
+    visual.TextStim(window,
+                    text=instructions, pos=[0 + stwo.xoffset,0],
+                    color='black', height=20).draw()
+
+def geninstructionstitration ():
+    instructions = "Please read the instructions carefully.\n\
+    1. Now we will determine your individual threshold for recognizing the vertical grating.\n\
+    2. The procedure is the same as before: when you hear a beep, press the left key if you saw a grating, and the right key if you didn’t.\n\
+    3. The visibility of the grating will be adjusted throughout the trials.\n\n\
+    Press yes to continue"
+
+    visual.TextStim(window,
+                    text=instructions, pos=[0 + sone.xoffset,0],
+                    color='black', height=20).draw()
+
+    visual.TextStim(window,
+                    text=instructions, pos=[0 + stwo.xoffset,0],
+                    color='black', height=20).draw()
+
+def geninstructionsexperiment ():
+    instructions = "Now you’re ready to start the experiment. Please remember:\n\
+    1. When you hear a beep it’s your turn. If you don’t hear a beep, you will see your partner’s response.\n\
+    2. Press the left key for 'yes' and the right key for 'no'.\n\
+    3. Please respond as fast as possible! \n\
+    4. Once you finished one block, you’ll be asked if you’re ready for the next block.\n\
+    5. After every second block, you will have a break.\n\
+    6. There will be a total of 12 blocks.\n\n\
+    Press yes when you’re ready to start the experiment"
 
     visual.TextStim(window,
                     text=instructions, pos=[0 + sone.xoffset,0],
@@ -182,13 +219,58 @@ def geninstructions ():
 
 def genendscreen ():
     visual.TextStim(window,
-                    text="Thank you for participating.", pos=[0 + sone.xoffset,0],
+                    text="Thank you for your time.", pos=[0 + sone.xoffset,0],
                     color='black', height=20).draw()
 
     visual.TextStim(window,
-                    text="Thank you for participating.", pos=[0 + stwo.xoffset,0],
+                    text="Thank you for your time.", pos=[0 + stwo.xoffset,0],
                     color='black', height=20).draw()
 
+''' this seems to be an old function? @Hunaid can this be removed?
+def genendscreen ():
+    
+        #Generate the end screen
+        #Args:
+            #nextcondition:
+                #'d' : Go to the dyadic condition
+                #'i' : Go to the individual condition
+                #'e' : End the experiment
+    
+    instructions = "Thank you for your time."
+
+    instructions = visual.TextStim(window,
+                                    text=instructions, pos = [0 + sone.offset, 0],
+                                    color='black', height=20)
+'''
+
+def genbreakscreen ():
+    '''
+        Generate the screen shown when the break is in progress
+    '''
+    instructions = "Are you ready for the next block?\n\n\
+    Press yes when you're ready to resume"
+
+    visual.TextStim(window,
+                    text=instructions, pos = [0 + sone.xoffset, 0],
+                    color='black', height=20).draw()
+
+    visual.TextStim(window,
+                    text=instructions, pos = [0 + stwo.xoffset, 0],
+                    color='black', height=20).draw()
+
+def genmandatorybreakscreen ():
+    '''
+        Generate the screen shown when the mandatory break is in progress
+    '''
+    instructions = "Enjoy your break. The experimenter will resume the experiment."
+
+    visual.TextStim(window,
+                    text=instructions, pos = [0 + sone.xoffset, 0],
+                    color='black', height=20).draw()
+
+    visual.TextStim(window,
+                    text=instructions, pos = [0 + stwo.xoffset, 0],
+                    color='black', height=20).draw()
 
 def genbaseline (subjects):
     for s in subjects:
@@ -229,51 +311,6 @@ def genintertrial (subjects):
     if sone.state == 1:
         stwo.indicatordict[sone.response].draw()
 
-def genbreakscreen ():
-    '''
-        Generate the screen shown when the break is in progress
-    '''
-    instructions = "Instructions:\n\
-    Enjoy your break. Press yes when you're ready to resume."
-
-    visual.TextStim(window,
-                    text=instructions, pos = [0 + sone.xoffset, 0],
-                    color='black', height=20).draw()
-
-    visual.TextStim(window,
-                    text=instructions, pos = [0 + stwo.xoffset, 0],
-                    color='black', height=20).draw()
-
-def genmandatorybreakscreen ():
-    '''
-        Generate the screen shown when the mandatory break is in progress
-    '''
-    instructions = "Instructions:\n\
-    Enjoy your break. The experimenter will resume the experiment."
-
-    visual.TextStim(window,
-                    text=instructions, pos = [0 + sone.xoffset, 0],
-                    color='black', height=20).draw()
-
-    visual.TextStim(window,
-                    text=instructions, pos = [0 + stwo.xoffset, 0],
-                    color='black', height=20).draw()
-
-def genendscreen ():
-    '''
-        Generate the end screen
-        Args:
-            nextcondition:
-                'd' : Go to the dyadic condition
-                'i' : Go to the individual condition
-                'e' : End the experiment
-    '''
-    instructions = "Thank you for your time."
-
-    instructions = visual.TextStim(window,
-                                    text=instructions, pos = [0 + sone.offset, 0],
-                                    color='black', height=20)
-
 
 def fetchbuttonpress (subjects, clock):
     '''
@@ -299,7 +336,8 @@ def updatespeakerbalance ():
     # but it is a more efficient solution if we don't have a condition where both are acting
     for s in subjects:
         if s.state == 1:
-            run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
+            #run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
+            pass
 
 def updatestate ():
     '''
@@ -350,19 +388,40 @@ for b in blocks:
     exphandler.addLoop(data.TrialHandler(trialList=triallist, nReps=1, method='random', originPath=-1, extraInfo=expinfo) )
 
 
-# diplay "press space bar to start"
+# diplay welcome screen
 genstartscreen()
 window.flip()
 getacknowledgements()
 
-# display instructions
-geninstructions()
+# display instructions for practice trials
+geninstructionspractice()
+window.flip()
+getacknowledgements()
+
+# do practice trials
+'''
+integrate practice trials
+'''
+
+# display instructions for titration
+geninstructionstitration()
+window.flip()
+getacknowledgements()
+
+# do titration
+'''
+integrate titration
+'''
+
+# display instructions for experiment
+geninstructionsexperiment()
 window.flip()
 getacknowledgements()
 
 # variables for data saving
 block=0
 
+# start experiment
 for trials in exphandler.loops:
     # variables for data saving
     block+=1
