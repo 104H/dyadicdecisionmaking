@@ -39,30 +39,31 @@ sound.setDevice('Logitech USB Headset: Audio (hw:2,0)')
 from psychopy.sound import Sound
 from numpy.random import random
 
-# subject ids global variables
+# pair id global variable
 if len(sys.argv) < 2:
     # for the testing phase we leave it like this
     pair_id = 1
-    # later for the experiment the system will stop if no subject ids are given
+    # later for the experiment the system will stop if no pair id is given
     #print("Experiment was stopped! Please enter the pair id as command line argument!")
     #sys.exit()
 else:
     pair_id = sys.argv[1]
 
 # Gabor patch global variables
-X = 512; # width of the gabor patch in pixels
-sf = .02; # spatial frequency, cycles per pixel
+X = 152; # size of the actual signal in pixels
+Y = 256; # size of texture in pixels, needs to be to the power of 2!
+sf = .0375; # spatial frequency for texture, cycles per pixel
 
 REFRESH_RATE = 60
 
 gabortexture = (
-    visual.filters.makeGrating(res=X, cycles=X * sf) *
-    visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
+    visual.filters.makeGrating(res=Y, cycles=Y * sf) *
+    visual.filters.makeMask(matrixSize=Y, shape="circle", range=[0, 1])
 )
 
 window = visual.Window(size=(2048, 768), units='pix', fullscr=False)
 
-noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
+noisetexture = random([Y,Y])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
 class subject:
     def __init__(self, sid, state, threshold, inputdevice, xoffset, position, keys):
@@ -94,7 +95,7 @@ class subject:
         # the annulus is created by passing a matrix of zeros to the texture argument
         self.annulus = visual.GratingStim(
             win = window, mask='circle', tex=np.zeros((64,64)), pos=[0 + xoffset,0],
-            size = 50, contrast = 1.0, opacity = 1.0,
+            size = 30, contrast = 1.0, opacity = 1.0,
         )
 
         # noise patch
