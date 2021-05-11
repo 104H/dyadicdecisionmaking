@@ -134,7 +134,7 @@ class subject:
 
 
 ### Starting threshold calculation routine 
-threshold = calculate_threshold()
+threshold = calculate_threshold(window)
 
 ### Global variables for rendering stimuli
 sone = subject(1, 1, 0.3, None, window.size[0]/-4, "right", ["9", "0"])
