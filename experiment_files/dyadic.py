@@ -6,23 +6,16 @@
         The variables for each are prepended with `sone_` or `stwo_`
 
     To Do:
-        - There is significant delay in stimulus display. Need to test if it still applies on the lab computer
         - The data needs to be packaged properly using the experiment handler
         - There is a warning that a providing data file can prevent data loss in case of crash. Is it writing to the disk and should we have this?
-        - Instruction, thank you and break screens are missing
-        - There is no mechanism to input subject ids
-        - How do we decide to alternate between act and obs conditions
-        - There is only a blue dot denote the observation condition, needs and update based on what Artur says
-        - Figure out the right way to traverse through the experiment handlers set of trials
-        - How do we switch from dyadic to individual condition when both are acting
-        - Figure out how to exactly fetch input form different button boxes. The rusocsci library seems promising
-        - Do we have manually send the two screens to the two monitors or can this be automated
-        - How do we send the same beep to two speakers which are far apart? Do we have a splitter at the lab computer? How do we feel about the lag introduced by the splitter?
-        - In the individual trials, how do we send the beep to different headphones the two subjects have? We will need USB headphone and write to their USB directly.
-        - Do we have speakers of headphones? Do we need headphones because the other subject might head the beep
+        - integrate practice trials
+        - integrate titration
 '''
 
+from typing import Any, Callable
+
 import os
+import sys
 from subprocess import run
 import numpy as np
 import psychtoolbox as ptb
@@ -33,19 +26,34 @@ from titration import calculate_threshold
 
 '''
 To obtain your sounddevices run
-import psychopy as p p.sound.backend_sounddevice.getDevices()
+from psychopy.sound.backend_sounddevice import getDevices
+getDevices()
 Copy the `name` attribute of your device to the audioDevice
 '''
 
-prefs.hardware['audioLib'] = ['sounddevice']
-prefs.hardware['audioDevice'] = ['Logitech USB Headset: Audio (hw:2,0)', 'default']
+prefs.hardware['audioLib'] = ['PTB']
+
+from psychopy import sound
+sound.setDevice('Logitech USB Headset: Audio (hw:2,0)')
 
 from psychopy.sound import Sound
 from numpy.random import random
 
+# subject ids global variables
+if len(sys.argv) < 2:
+    # for the testing phase we leave it like this
+    pair_id = 1
+    # later for the experiment the system will stop if no subject ids are given
+    #print("Experiment was stopped! Please enter the pair id as command line argument!")
+    #sys.exit()
+else:
+    pair_id = sys.argv[1]
+
 # Gabor patch global variables
 X = 512; # width of the gabor patch in pixels
 sf = .02; # spatial frequency, cycles per pixel
+
+REFRESH_RATE = 60
 
 gabortexture = (
     visual.filters.makeGrating(res=X, cycles=X * sf) *
@@ -59,7 +67,7 @@ noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 class subject:
     def __init__(self, sid, state, threshold, inputdevice, xoffset, position, keys):
         '''
-            state is either 'obs' or 'act' for observing or acting conditions, respectively
+            state is either 0 or 1 for observing or acting conditions, respectively
             xoffset is the constant added to all stimuli rendered for the subject
             signal is the signal according to the subjects threshold
             inputdevice is the pyusb connector to the subject's buttonbox
@@ -90,9 +98,10 @@ class subject:
         )
 
         # noise patch
-        self.noise = visual.RadialStim(
-            win = window, mask='none', tex = noisetexture, pos=[0 + xoffset,0],
+        self.noise = visual.NoiseStim(
+            win = window, mask='circle', pos=[0 + xoffset,0],
             size = X, contrast = 1.0, opacity = 1.0,
+            noiseType='normal'
         )
 
         # red fixation dot for decision phase
@@ -107,24 +116,16 @@ class subject:
             sf=0, color='green', mask='circle'
         )
 
-        '''
-        # a dot which indicates to the subject they are in the observation state
-        self.obsindicator = visual.GratingStim(
-            win = window, size=50, units='pix', pos=[250 + xoffset, 250],
-            sf=0, color='blue', mask='circle'
-        )
-        '''
-
         # a dot which indicates to the subject they are in the observation state
         self.indicatordict = {
                 "yes" : visual.TextStim(
-                            win = window, text="Yes", units='pix', pos=[0 + xoffset, 0]
+                            win = window, text="Yes", units='pix', pos=[0 - xoffset, 0]
                         ),
                 "no" : visual.TextStim(
-                            win = window, text="No", units='pix', pos=[0 + xoffset, 0]
+                            win = window, text="No", units='pix', pos=[0 - xoffset, 0]
                         ),
                 "noresponse" : visual.TextStim(
-                            win = window, text="No Response", units='pix', pos=[0 + xoffset, 0]
+                            win = window, text="No Response", units='pix', pos=[0 - xoffset, 0]
                         ),
                 }
 
@@ -136,39 +137,82 @@ class subject:
 threshold = calculate_threshold()
 
 ### Global variables for rendering stimuli
-sone = subject(1, "act", threshold, None, window.size[0]/-4, "right", ["9", "0"])
-stwo = subject(2, "obs", threshold, None, window.size[0]/4, "left", ["1", "2"])
+sone = subject(1, 1, 0.3, None, window.size[0]/-4, "right", ["9", "0"])
+stwo = subject(2, 0, 0.7, None, window.size[0]/4, "left", ["1", "2"])
 subjects = [sone, stwo]
 
-expinfo = {'participant1': sone.id, 'participant2' : stwo.id, 'pair': 1}
-#expinfo = {'participant1': sone.id}
+expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2' : stwo.id}
 
-blocks = range(4)
-ntrials = 2
+blocks = range(2)
+ntrials = 2 # trials per block
+
+'''
+# make an array of 0 and 1, denoting observe and act, respectively and scale it up by half of the number of trials
+states = [0, 1] * int(ntrials/2)
+# shuffle the array using Fischer-Yates shuffling
+np.random.shuffle(states)
+'''
 
 # create beep for decision interval
 beep = Sound('A', secs=0.5)
 
+
 def genstartscreen ():
+    instructions = "Welcome to our experiment! \n\n\
+    Your task is to indicate whether you see a vertical grating or not.\n\
+    If you have any questions after reading the instructions on the next screen, please feel free to ask the experimenter.\n\n\
+    Press yes to continue"
+
     visual.TextStim(window,
-                    text="Press spacebar to start.", pos=[0 + sone.xoffset,0],
+                    text=instructions, pos=[0 + sone.xoffset,0],
                     color='black', height=20).draw()
 
     visual.TextStim(window,
-                    text="Press spacebar to start.", pos=[0 + stwo.xoffset,0],
+                    text=instructions, pos=[0 + stwo.xoffset,0],
+                    color='black', height=20).draw()
+def geninstructionspractice ():
+    instructions = "Please read the instructions carefully.\n\
+    1. First, you will have a few practice trials to see how the experiment works.\n\
+    2. You will do the task together with your partner.\n\
+    3. At the start of each trial, a red dot is shown in the middle of the screen, surrounded by a circular pattern that looks similar to white noise.\n\
+    4. When you hear a beep, it’s your turn to indicate whether you saw a vertical grating on top of the noise.\n\
+    5. Press the left key for 'yes' and the right key for 'no'.\n\
+    6. It’s very important that you respond as fast as possible! You only have a limited amount of time for your response.\n\
+    7. If you don’t hear a beep, it’s the other person’s turn to respond. You will both see the grating (or not) and you will also see their response on your screen.\n\n\
+    Press yes to continue"
+
+    visual.TextStim(window,
+                    text=instructions, pos=[0 + sone.xoffset,0],
                     color='black', height=20).draw()
 
-def geninstructions ():
-    instructions = "Instructions:\n\
-    Your task is to indicate if you see a vertical grating or not.\n\
-    1. At the start of each trial, a red dot is shown in the middle of the screen.\n\
-    2. When you hear a beep, you may press one of the buttons to indicate if you saw a vertical grating or not.\n\
-    3. Press the left key for 'yes' and the right key for 'no'.\n\
-    4. After a short break, the procedure will be repeated from step 1.\n\
-    5. After 80 trials, you will have a break.\n\
-    6. After the break, press the spacebar when ready to continue.\n\
-    7. There will be a total of 6 blocks. \n\n\
-    Press spacebar when ready."
+    visual.TextStim(window,
+                    text=instructions, pos=[0 + stwo.xoffset,0],
+                    color='black', height=20).draw()
+
+def geninstructionstitration ():
+    instructions = "Please read the instructions carefully.\n\
+    1. Now we will determine your individual threshold for recognizing the vertical grating.\n\
+    2. The procedure is the same as before: when you hear a beep, press the left key if you saw a grating, and the right key if you didn’t.\n\
+    3. The visibility of the grating will be adjusted throughout the trials.\n\n\
+    Press yes to continue"
+
+    visual.TextStim(window,
+                    text=instructions, pos=[0 + sone.xoffset,0],
+                    color='black', height=20).draw()
+
+    visual.TextStim(window,
+                    text=instructions, pos=[0 + stwo.xoffset,0],
+                    color='black', height=20).draw()
+
+def geninstructionsexperiment ():
+    instructions = "Now you’re ready to start the experiment. Please remember:\n\
+    1. When you hear a beep it’s your turn. If you don’t hear a beep, you will see your partner’s response.\n\
+    2. Press the left key for 'yes' and the right key for 'no'.\n\
+    3. Please respond as fast as possible! \n\
+    4. Once you finished one block, you’ll be asked if you’re ready for the next block.\n\
+    5. After every second block, you will have a break.\n\
+    6. There will be a total of 12 blocks.\n\n\
+    Press yes when you’re ready to start the experiment"
 
     visual.TextStim(window,
                     text=instructions, pos=[0 + sone.xoffset,0],
@@ -180,24 +224,65 @@ def geninstructions ():
 
 def genendscreen ():
     visual.TextStim(window,
-                    text="Thank you for participating.", pos=[0 + stwo.xoffset,0],
+                    text="Thank you for your time.", pos=[0 + sone.xoffset,0],
                     color='black', height=20).draw()
 
     visual.TextStim(window,
-                    text="Thank you for participating.", pos=[0 + stwo.xoffset,0],
+                    text="Thank you for your time.", pos=[0 + stwo.xoffset,0],
                     color='black', height=20).draw()
 
+''' this seems to be an old function? @Hunaid can this be removed?
+def genendscreen ():
+    
+        #Generate the end screen
+        #Args:
+            #nextcondition:
+                #'d' : Go to the dyadic condition
+                #'i' : Go to the individual condition
+                #'e' : End the experiment
+    
+    instructions = "Thank you for your time."
+
+    instructions = visual.TextStim(window,
+                                    text=instructions, pos = [0 + sone.offset, 0],
+                                    color='black', height=20)
+'''
+
+def genbreakscreen ():
+    '''
+        Generate the screen shown when the break is in progress
+    '''
+    instructions = "Are you ready for the next block?\n\n\
+    Press yes when you're ready to resume"
+
+    visual.TextStim(window,
+                    text=instructions, pos = [0 + sone.xoffset, 0],
+                    color='black', height=20).draw()
+
+    visual.TextStim(window,
+                    text=instructions, pos = [0 + stwo.xoffset, 0],
+                    color='black', height=20).draw()
+
+def genmandatorybreakscreen ():
+    '''
+        Generate the screen shown when the mandatory break is in progress
+    '''
+    instructions = "Enjoy your break. The experimenter will resume the experiment."
+
+    visual.TextStim(window,
+                    text=instructions, pos = [0 + sone.xoffset, 0],
+                    color='black', height=20).draw()
+
+    visual.TextStim(window,
+                    text=instructions, pos = [0 + stwo.xoffset, 0],
+                    color='black', height=20).draw()
 
 def genbaseline (subjects):
     for s in subjects:
         s.noise.draw()
+        s.noise.updateNoise()
         s.annulus.draw()
         s.reddot.draw()
-
-        '''
-        if s.state == 'obs':
-            s.obsindicator.draw()
-        '''
 
 def gendecisionint (subjects, condition):
     '''
@@ -211,59 +296,25 @@ def gendecisionint (subjects, condition):
     elif condition == 'signal':
         for s in subjects:
             s.noise.draw()
+            s.noise.updateNoise()
             s.signal.draw()
             s.annulus.draw()
             s.reddot.draw()
-
-            '''
-            if s.state == 'obs':
-                s.obsindicator.draw()
-            '''
     else:
         raise NotImplementedError
 
 def genintertrial (subjects):
     for s in subjects:
         s.noise.draw()
+        s.noise.updateNoise()
         s.annulus.draw()
         s.greendot.draw()
 
-        '''
-        if s.state == 'obs':
-            s.obsindicator.draw()
-        '''
-
     # if subject one/two is in an acting state, add their response to the response box of subject two/one
-    if stwo.state == "act":
+    if stwo.state == 1:
         sone.indicatordict[stwo.response].draw()
-    if sone.state == "act":
+    if sone.state == 1:
         stwo.indicatordict[sone.response].draw()
-
-def genbreakscreen (window):
-    '''
-        Generate the screen shown when the break is in progress
-    '''
-    instructions = "Instructions:\n\
-    Enjoy your break. Press any key to resume."
-
-    instructions = visual.TextStim(window,
-                                    text=instructions,
-                                    color='black', height=20)
-
-def genendscreen (nextcondition):
-    '''
-        Generate the end screen
-        Args:
-            nextcondition:
-                'd' : Go to the dyadic condition
-                'i' : Go to the individual condition
-                'e' : End the experiment
-    '''
-    instructions = "Thank you for your time."
-
-    instructions = visual.TextStim(window,
-                                    text=instructions,
-                                    color='black', height=20)
 
 
 def fetchbuttonpress (subjects, clock):
@@ -274,108 +325,188 @@ def fetchbuttonpress (subjects, clock):
             clock: PsychoPy clock object
     '''
     for s in subjects:
-        if s.state == 'obs':
+        if s.state == 0:
             continue
         else:
             # How do I tell waitKeys to look for input from the specific subject input device and not the other?
-            response = event.waitKeys(maxWait=2.5, timeStamped=clock, clearEvents=True, keyList=s.buttons.keys())
+            response = event.getKeys(timeStamped=clock, keyList=s.buttons.keys())
 
-            keystroke = response[0][0] if response is not None else response
+            if len(response) == 0: response = [(None, 0)]
+            keystroke = response[0][0]
             s.response = s.buttons[keystroke]
-            # waitButtons is from the rucosci library
-            # https://github.com/wilberth/RuSocSci/blob/18569aa014ff7e4be5f4aa6ddd0aa4202f601393/rusocsci/buttonbox.py#L116
-            # need to add a mechanism where both subjects are acting, in such a condition response variable will be overwritten
-            # response = s.inputdevice.waitButtons(maxWait=2.5, timeStamped=clock, flush=True)
     return response
 
 def updatespeakerbalance ():
     # we can a terminal command to shift the balance. it does not work if both the subject are acting (in the individual condition)
     # but it is a more efficient solution if we don't have a condition where both are acting
     for s in subjects:
-        if s.state == "act":
-            run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
+        if s.state == 1:
+            #run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
+            pass
 
 def updatestate ():
     '''
         Which dyad makes the button box
     '''
-    for s in subjects:
-        if s.state == 'act':
-            s.state = 'obs'
-        else:
-            s.state = 'act'
+    sone.state = next(iterstates)
+    stwo.state = 1 - sone.state
 
-# generate file for storing data
+def secondstoframes (seconds):
+    return range( int( np.rint(seconds * REFRESH_RATE) ) )
 
-# create trial handler
-triallist = [
-        {"condition": "signal"},
-        {"condition": "noise"}
-        ]
+def getacknowledgements ():
+    sone_ack, stwo_ack = None, None
 
+    while (sone_ack != 'yes') or (stwo_ack != 'yes'):
+        response = event.getKeys()
+        for r in response:
+            if sone_ack != 'yes': sone_ack = sone.buttons.get(r)
+            if stwo_ack != 'yes': stwo_ack = stwo.buttons.get(r)
+
+def getexperimenterack ():
+    event.waitKeys(keyList=["space"])
+
+def genactingstates ():
+    return np.random.randint(0, 2, ntrials)
+
+# update speaker balance for the first time
+updatespeakerbalance()
 
 # preparing the clocks
 responsetime = core.Clock()
 
-exphandler = data.ExperimentHandler(extraInfo=expinfo)
+# specifications of output file
+_thisDir = os.path.dirname(os.path.abspath(__file__))
+expName = 'DDM'
+filename = _thisDir + os.sep + u'data/%s_pair%s_%s' % (expName, expinfo['pair'], data.getDateStr())
+
+
+# set up trial handler and experiment handler
+triallist=[]
+# make sure signal is present on 50% of trials
+for Idx in range(ntrials//2):
+    triallist.append({"condition": "signal"})
+    triallist.append({"condition": "noise"})
+
+exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideText=True, dataFileName=filename)
 for b in blocks:
-    exphandler.addLoop( data.TrialHandler(triallist, nReps=ntrials, method='random', originPath=-1, extraInfo=expinfo) )
+    exphandler.addLoop(data.TrialHandler(trialList=triallist, nReps=1, method='random', originPath=-1, extraInfo=expinfo) )
 
 
-# diplay "press space bar to start"
+# diplay welcome screen
 genstartscreen()
 window.flip()
-keys = event.waitKeys(keyList=['space'])
+getacknowledgements()
 
-# display instructions
-geninstructions()
+# display instructions for practice trials
+geninstructionspractice()
 window.flip()
-keys = event.waitKeys(keyList=['space'])
+getacknowledgements()
 
+# do practice trials
+'''
+integrate practice trials
+'''
+
+# display instructions for titration
+geninstructionstitration()
+window.flip()
+getacknowledgements()
+
+# do titration
+'''
+integrate titration
+'''
+
+# display instructions for experiment
+geninstructionsexperiment()
+window.flip()
+getacknowledgements()
+
+# variables for data saving
+block=0
+
+# start experiment
 for trials in exphandler.loops:
+    # variables for data saving
+    block+=1
+    trialInBlock=0
+
+    # make an iterator object
+    states = genactingstates()
+    iterstates = iter(states)
+
     # traverse through trials
     for trial in trials:
+
+        # save trial data to file
+        trialInBlock += 1
+        exphandler.addData('block', block)
+        exphandler.addData('trial', trialInBlock)
+        exphandler.addData('totalTrials', (block-1)*ntrials+trialInBlock)
+        exphandler.addData('condition', trials.thisTrial['condition'])
+        exphandler.addData('s1_state', sone.state)
+        exphandler.addData('s2_state', stwo.state)
+
+        # subject state update
+        updatestate()
+
         # display baseline
-        genbaseline(subjects)
-        window.flip()
         # wait for a random time between 2 to 4 seconds
-        core.wait( np.random.uniform(2,4) )
+        for frame in secondstoframes( np.random.uniform(2, 4) ):
+            genbaseline(subjects)
+            window.flip()
 
         # preparing time for next window flip, to precisely co-ordinate window flip and beep
         nextflip = window.getFutureFlipTime(clock='ptb')
         beep.play(when=nextflip)
         # display stimulus
-        gendecisionint(subjects, trials.thisTrial['condition'])
-        window.flip()
-        # we decided to reset the clock after flipping (redrawing) the window
         responsetime.reset()
 
-        # fetch button press
-        response = fetchbuttonpress(subjects, responsetime)
-        print(response)
+        for frame in secondstoframes(2.5):
+            gendecisionint(subjects, trials.thisTrial['condition'])
+            window.flip()
+            # we decided to reset the clock after flipping (redrawing) the window
+
+            # fetch button press
+            response = fetchbuttonpress(subjects, responsetime)
 
         # need to explicity call stop() to go back to the beginning of the track
         # we reset after collecting a response, otherwise the beep is stopped too early
         beep.stop()
 
-        # display inter trial interval
-        genintertrial(subjects)
-        window.flip()
-        # inter trial interval is 2s
-        core.wait(2)
-
-        # state switch
-        updatestate()
+        # display inter trial interval for 2s
+        for frame in secondstoframes(2):
+            genintertrial(subjects)
+            window.flip()
 
         # update the speaker balance to play the beep for the right subject
         updatespeakerbalance()
 
-        # save data
-        trials.addData('response', response)
-    exphandler.nextEntry()
+        # save response to file
+        if response is not None:
+            exphandler.addData('response', response[0][0])
+            exphandler.addData('rt', response[0][1])
+        else:
+            exphandler.addData('response', 'None')
+            exphandler.addData('rt', 'None') # why does this write 0 now instead of None? used to be None
+
+        # move to next row in output file
+        exphandler.nextEntry()
+
     # decide between continuing with next block, take a break
+    # for every nth trial, there will be a mandatory break which only the experimenter can end
+    if block % 3 == 0:
+        genmandatorybreakscreen()
+        window.flip()
+        getexperimenterack()
+        continue
+
+    # for every trial, wait for the subjects to start their next block
+    genbreakscreen()
+    window.flip()
+    getacknowledgements()
+
 genendscreen()
 
-# write to file
-trials.saveAsWideText("data", delim=",")
-exphandler.saveAsWideText("datae", delim=",")
+
