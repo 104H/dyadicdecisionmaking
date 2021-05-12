@@ -59,7 +59,7 @@ def calculate_threshold(SCREEN):
                                     startValSd=0.2,
                                     pThreshold=0.63,
                                     gamma=0.01,
-                                    nTrials=15,
+                                    nTrials=30,
                                     minVal=0,
                                     maxVal=1
                                     )   
@@ -83,6 +83,7 @@ def calculate_threshold(SCREEN):
             4. Pass on reponse evaluation to ladder (0 if subject responded correctly, 1 if subject did not)
             5. Do 1 to 4 for ntimes set in ladder constructor
         """
+        staircase_means = []
         for contrast in staircase:
             key = []
             stimulus.opacity = contrast #update the difficulty or contrast from the staircase
@@ -92,8 +93,10 @@ def calculate_threshold(SCREEN):
                 key = psychopy.event.getKeys(keyList=['left','right'])
             if 'left' in key:
                 response = 0
+                staircase_means.append(staircase.mean())
             else:
                 response = 1
+                staircase_means.append(staircase.mean())
             staircase.addResponse(response)
 
         """
@@ -117,5 +120,7 @@ def calculate_threshold(SCREEN):
         #SCREEN.close()
         
     print(thresholds)
+    print(staircase_means)
+
     # Returning threshold
     return thresholds
