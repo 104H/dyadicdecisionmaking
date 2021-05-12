@@ -139,7 +139,7 @@ subjects = [sone, stwo]
 
 expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2' : stwo.id}
 
-blocks = range(2)
+blocks = range(6)
 ntrials = 2 # trials per block
 
 '''
@@ -166,6 +166,7 @@ def genstartscreen ():
     visual.TextStim(window,
                     text=instructions, pos=[0 + stwo.xoffset,0],
                     color='black', height=20).draw()
+
 def geninstructionspractice ():
     instructions = "Please read the instructions carefully.\n\
     1. First, you will have a few practice trials to see how the experiment works.\n\
@@ -226,23 +227,6 @@ def genendscreen ():
     visual.TextStim(window,
                     text="Thank you for your time.", pos=[0 + stwo.xoffset,0],
                     color='black', height=20).draw()
-
-''' this seems to be an old function? @Hunaid can this be removed?
-def genendscreen ():
-    
-        #Generate the end screen
-        #Args:
-            #nextcondition:
-                #'d' : Go to the dyadic condition
-                #'i' : Go to the individual condition
-                #'e' : End the experiment
-    
-    instructions = "Thank you for your time."
-
-    instructions = visual.TextStim(window,
-                                    text=instructions, pos = [0 + sone.offset, 0],
-                                    color='black', height=20)
-'''
 
 def genbreakscreen ():
     '''
@@ -337,8 +321,8 @@ def updatespeakerbalance ():
     # but it is a more efficient solution if we don't have a condition where both are acting
     for s in subjects:
         if s.state == 1:
-            #run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
-            pass
+            run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
+            #pass
 
 def updatestate ():
     '''
@@ -424,6 +408,7 @@ block=0
 
 # start experiment
 for trials in exphandler.loops:
+
     # variables for data saving
     block+=1
     trialInBlock=0
@@ -491,18 +476,26 @@ for trials in exphandler.loops:
         exphandler.nextEntry()
 
     # decide between continuing with next block, take a break
-    # for every nth trial, there will be a mandatory break which only the experimenter can end
-    if block % 3 == 0:
+    # after every second block, there will be a mandatory break which only the experimenter can end
+    if block % 2 == 0:
         genmandatorybreakscreen()
         window.flip()
-        getexperimenterack()
+        keys = event.waitKeys(keyList=["space", "q"])
+        if keys == ["q"]: # exit experiment
+            win.close()
+            core.quit()
+        elif keys == "space":
+            #getexperimenterack()
+            continue
+    # otherwise, wait for the subjects to start their next block
+    elif block % 2 == 1:
+        # after every block, wait for the subjects to start their next block
+        genbreakscreen()
+        window.flip()
+        getacknowledgements()
         continue
 
-    # for every trial, wait for the subjects to start their next block
-    genbreakscreen()
-    window.flip()
-    getacknowledgements()
-
 genendscreen()
+window.flip()
 
 
