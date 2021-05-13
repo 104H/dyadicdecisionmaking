@@ -21,7 +21,7 @@ def calculate_threshold(SCREEN):
     
     thresholds = dict(chamber1=0,chamber2=0)
 
-    screens = [0,1]
+    screens = [0]#,1]
     for screen in screens:
         """
         Opening section:
@@ -59,7 +59,7 @@ def calculate_threshold(SCREEN):
                                     startValSd=0.2,
                                     pThreshold=0.63,
                                     gamma=0.01,
-                                    nTrials=30,
+                                    nTrials=150,
                                     minVal=0,
                                     maxVal=1
                                     )   
