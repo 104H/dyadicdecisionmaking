@@ -389,9 +389,52 @@ window.flip()
 getacknowledgements()
 
 # do practice trials
-'''
-integrate practice trials
-'''
+npracticetrials = 6
+cond=["signal", "noise"]
+practicetriallist=[]
+for Idx in range(npracticetrials):
+    practicetriallist.append(choice(cond))
+# make an iterator object
+practicestates = np.random.randint(0, 2, npracticetrials)
+iterstates = iter(practicestates)
+
+# traverse through trials
+for idx in range(npracticetrials):
+    # subject state update
+    updatestate()
+
+    # display baseline
+    # wait for a random time between 2 to 4 seconds
+    for frame in secondstoframes( np.random.uniform(2, 4) ):
+        genbaseline(subjects)
+        window.flip()
+
+    # preparing time for next window flip, to precisely co-ordinate window flip and beep
+    nextflip = window.getFutureFlipTime(clock='ptb')
+    beep.play(when=nextflip)
+    # display stimulus
+    responsetime.reset()
+
+    for frame in secondstoframes(2.5):
+        gendecisionint(subjects, practicetriallist[idx])
+        window.flip()
+        # we decided to reset the clock after flipping (redrawing) the window
+
+        # fetch button press
+        response = fetchbuttonpress(subjects, responsetime)
+
+    # need to explicity call stop() to go back to the beginning of the track
+    # we reset after collecting a response, otherwise the beep is stopped too early
+    beep.stop()
+
+    # display inter trial interval for 2s
+    for frame in secondstoframes(2):
+        genintertrial(subjects)
+        window.flip()
+
+    # update the speaker balance to play the beep for the right subject
+    updatespeakerbalance()
+
 
 # display instructions for titration
 geninstructionstitration()
