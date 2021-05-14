@@ -38,31 +38,36 @@ sound.setDevice('Logitech USB Headset: Audio (hw:2,0)')
 from psychopy.sound import Sound
 from numpy.random import random
 
-# pair id global variable
-if len(sys.argv) < 2:
-    # for the testing phase we leave it like this
-    pair_id = 1
-    # later for the experiment the system will stop if no pair id is given
-    #print("Experiment was stopped! Please enter the pair id as command line argument!")
-    #sys.exit()
-else:
-    pair_id = sys.argv[1]
 
-# Gabor patch global variables
-X = 152; # size of the actual signal in pixels
-Y = 256; # size of texture in pixels, needs to be to the power of 2!
-sf = .0375; # spatial frequency for texture, cycles per pixel
+# get pair id and yesfinger as global variables
+name = 'Experiment: Dyadic Decision Making'
+info = {'pair ID':''}
+while (info['pair ID']==''):
+    dlg = gui.DlgFromDict(dictionary=info, sortKeys=False, title=name)
+    if dlg.OK == False:
+        core.quit()
 
+pair_id = int(info['pair ID'])
+mapping = 'index' if (pair_id % 2) == 0 else 'middle'
+
+# monitor specs global variables
+M_WIDTH = 1920
+M_HEIGHT = 1200
 REFRESH_RATE = 60
 
+# Gabor patch global variables
+CYCLES = 10 # required cycles for the whole patch
+X = 256; # size of texture in pixels, needs to be to the power of 2!
+sf = CYCLES/X; # spatial frequency for texture, cycles per pixel
+
 gabortexture = (
-    visual.filters.makeGrating(res=Y, cycles=Y * sf) *
-    visual.filters.makeMask(matrixSize=Y, shape="circle", range=[0, 1])
+    visual.filters.makeGrating(res=X, cycles=X * sf) *
+    visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
 )
 
 window = visual.Window(size=(2048, 768), units='pix', fullscr=False)
 
-noisetexture = random([Y,Y])*2.-1. # a X-by-X array of random numbers in [-1,1]
+noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
 class subject:
     def __init__(self, sid, state, threshold, inputdevice, xoffset, position, keys):
@@ -94,7 +99,7 @@ class subject:
         # the annulus is created by passing a matrix of zeros to the texture argument
         self.annulus = visual.GratingStim(
             win = window, mask='circle', tex=np.zeros((64,64)), pos=[0 + xoffset,0],
-            size = 30, contrast = 1.0, opacity = 1.0,
+            size = 50, contrast = 1.0, opacity = 1.0,
         )
 
         # noise patch
@@ -137,7 +142,7 @@ sone = subject(1, 1, 0.3, None, window.size[0]/-4, "right", ["9", "0"])
 stwo = subject(2, 0, 0.7, None, window.size[0]/4, "left", ["1", "2"])
 subjects = [sone, stwo]
 
-expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2' : stwo.id}
+expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2': stwo.id, 'yesfinger': mapping}
 
 blocks = range(6)
 ntrials = 2 # trials per block
