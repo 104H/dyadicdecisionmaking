@@ -20,6 +20,7 @@ from subprocess import run
 import numpy as np
 import psychtoolbox as ptb
 from psychopy import visual, event, core, gui, data, prefs
+from stimuli import stimulus
 
 # setting PTB as our preferred sound library and then import sound
 
@@ -69,6 +70,7 @@ window = visual.Window(size=(2048, 768), units='pix', fullscr=False)
 
 noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
+
 class subject:
     def __init__(self, sid, state, threshold, inputdevice, xoffset, position, keys):
         '''
@@ -90,6 +92,8 @@ class subject:
         self.inputdevice = inputdevice
         self.actingheadphonebalance = "100%,0%" if position == "left" else "0%,100%"
 
+        stimuli = stimulus(X=256, window=window, xoffset=xoffset)
+
         self.buttons = {
                 keys[0] : "yes",
                 keys[1] : "no",
@@ -97,29 +101,16 @@ class subject:
                 }
 
         # the annulus is created by passing a matrix of zeros to the texture argument
-        self.annulus = visual.GratingStim(
-            win = window, mask='circle', tex=np.zeros((64,64)), pos=[0 + xoffset,0],
-            size = 50, contrast = 1.0, opacity = 1.0,
-        )
+        self.annulus = stimuli.annulus
 
         # noise patch
-        self.noise = visual.NoiseStim(
-            win = window, mask='circle', pos=[0 + xoffset,0],
-            size = X, contrast = 1.0, opacity = 1.0,
-            noiseType='normal'
-        )
+        self.noise = stimuli.noise
 
         # red fixation dot for decision phase
-        self.reddot = visual.GratingStim(
-            win = window, size=5, units='pix', pos=[0 + xoffset,0],
-            sf=0, color='red', mask='circle'
-        )
+        self.reddot = stimuli.reddot
 
         # green fixation dot for pre trial and inter trial condition
-        self.greendot = visual.GratingStim(
-            win = window, size=5, units='pix', pos=[0 + xoffset,0],
-            sf=0, color='green', mask='circle'
-        )
+        self.greendot = stimuli.greendot
 
         # a dot which indicates to the subject they are in the observation state
         self.indicatordict = {
