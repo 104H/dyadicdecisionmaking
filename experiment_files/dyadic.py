@@ -49,7 +49,14 @@ while (info['pair ID']==''):
         core.quit()
 
 pair_id = int(info['pair ID'])
-mapping = 'index' if (pair_id % 2) == 0 else 'middle'
+if (pair_id % 2) == 0:
+    mapping = 'index' # yes finger
+    instrmapping = ['upper', 'lower'] # variable for instructions
+else:
+    mapping = 'middle'
+    instrmapping = ['lower', 'upper']
+
+#mapping = 'index' if (pair_id % 2) == 0 else 'middle' # yesfinger
 
 # monitor specs global variables
 M_WIDTH = 1920
@@ -148,12 +155,11 @@ np.random.shuffle(states)
 # create beep for decision interval
 beep = Sound('A', secs=0.5)
 
-
 def genstartscreen ():
-    instructions = "Welcome to our experiment! \n\n\
+    instructions = f"Welcome to our experiment! \n\n\
     Your task is to indicate whether you see a vertical grating or not.\n\
     If you have any questions after reading the instructions on the next screen, please feel free to ask the experimenter.\n\n\
-    Press yes to continue"
+    Press the {instrmapping[0]} key to continue"
 
     visual.TextStim(window,
                     text=instructions, pos=[0 + sone.xoffset,0],
@@ -164,14 +170,15 @@ def genstartscreen ():
                     color='black', height=20).draw()
 
 def geninstructionspractice ():
-    instructions = "Please read the instructions carefully.\n\
-    1. First, you will have a few practice trials to see how the experiment works.\n\
-    2. You will do the task together with your partner.\n\
-    3. At the start of each trial, a red dot is shown in the middle of the screen, surrounded by a circular pattern that looks similar to white noise.\n\
-    4. When you hear a beep, it’s your turn to indicate whether you saw a vertical grating on top of the noise.\n\
-    5. Press the left key for 'yes' and the right key for 'no'.\n\
-    6. It’s very important that you respond as fast as possible! You only have a limited amount of time for your response.\n\
-    7. If you don’t hear a beep, it’s the other person’s turn to respond. You will both see the grating (or not) and you will also see their response on your screen.\n\n\
+    instructions = f"Please read the instructions carefully.\n\
+    1. Place your index finger on the upper key and your middle finger on the lower key.\n\
+    2. First, you will have a few practice trials to see how the experiment works.\n\
+    3. You will do the task together with your partner.\n\
+    4. At the start of each trial, a red dot is shown in the middle of the screen, surrounded by a circular pattern that looks similar to white noise.\n\
+    5. When you hear a beep, it’s your turn to indicate whether you saw a vertical grating on top of the noise.\n\
+    6. Press the {instrmapping[0]} key for 'yes' and the {instrmapping[1]} key for 'no'.\n\
+    7. It’s very important that you respond as fast and as accurate as possible! You only have a limited amount of time for your response.\n\
+    8. If you don’t hear a beep, it’s the other person’s turn to respond. You will both see the grating (or not) and you will also see their response on your screen.\n\n\
     Press yes to continue"
 
     visual.TextStim(window,
@@ -183,9 +190,9 @@ def geninstructionspractice ():
                     color='black', height=20).draw()
 
 def geninstructionstitration ():
-    instructions = "Please read the instructions carefully.\n\
+    instructions = f"Please read the instructions carefully.\n\
     1. Now we will determine your individual threshold for recognizing the vertical grating.\n\
-    2. The procedure is the same as before: when you hear a beep, press the left key if you saw a grating, and the right key if you didn’t.\n\
+    2. The procedure is the same as before: when you hear a beep, press the {instrmapping[0]} key if you saw a grating, and the {instrmapping[1]} key if you didn’t.\n\
     3. The visibility of the grating will be adjusted throughout the trials.\n\n\
     Press yes to continue"
 
@@ -198,13 +205,14 @@ def geninstructionstitration ():
                     color='black', height=20).draw()
 
 def geninstructionsexperiment ():
-    instructions = "Now you’re ready to start the experiment. Please remember:\n\
-    1. When you hear a beep it’s your turn. If you don’t hear a beep, you will see your partner’s response.\n\
-    2. Press the left key for 'yes' and the right key for 'no'.\n\
-    3. Please respond as fast as possible! \n\
-    4. Once you finished one block, you’ll be asked if you’re ready for the next block.\n\
-    5. After every second block, you will have a break.\n\
-    6. There will be a total of 12 blocks.\n\n\
+    instructions = f"Now you’re ready to start the experiment. Please remember:\n\
+    1. Place your index finger on the upper key and your no on the lower key.\n\
+    2. When you hear a beep it’s your turn. If you don’t hear a beep, you will see your partner’s response.\n\
+    3. Press the {instrmapping[0]} key for 'yes' and the {instrmapping[1]} key for 'no'.\n\
+    4. Please respond as fast as and as accurate possible! \n\
+    5. Once you finished one block, you’ll be asked if you’re ready for the next block.\n\
+    6. After every second block, you will have a break.\n\
+    7. There will be a total of 12 blocks.\n\n\
     Press yes when you’re ready to start the experiment"
 
     visual.TextStim(window,
@@ -317,8 +325,8 @@ def updatespeakerbalance ():
     # but it is a more efficient solution if we don't have a condition where both are acting
     for s in subjects:
         if s.state == 1:
-            run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
-            #pass
+            #run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
+            pass
 
 def updatestate ():
     '''
