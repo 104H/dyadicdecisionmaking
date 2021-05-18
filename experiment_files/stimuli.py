@@ -6,7 +6,13 @@ from psychopy import visual
 
 
 class stimulus:
-    def __init__(self, X, window, xoffset):
+    def __init__(self, X, window, xoffset, gabortexture, threshold):
+
+        self.signal = visual.GratingStim(
+            win=window, tex=gabortexture, mask='circle', pos=[0 + xoffset, 0],
+            size=X, contrast=1.0, opacity=threshold,
+        )
+
         # the annulus is created by passing a matrix of zeros to the texture argument
         self.annulus = visual.GratingStim(
             win=window, mask='circle', tex=np.zeros((64, 64)), pos=[0 + xoffset, 0],

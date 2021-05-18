@@ -55,7 +55,7 @@ try:
 except:
     print('Please enter a number as pair id as command-line argument!')
     sys.exit(0)
-    
+
 # set yesfinger as global variables
 if (pair_id % 2) == 0:
     mapping = 'index' # yes finger
@@ -98,20 +98,19 @@ class subject:
         self.state = state
         self.xoffset = xoffset
         self.response = None
-        self.signal = visual.GratingStim(
-            win = window, tex = gabortexture, mask = 'circle', pos=[0 + xoffset,0],
-            size = X, contrast = 1.0, opacity = threshold,
-        )
         self.inputdevice = inputdevice
         self.actingheadphonebalance = "100%,0%" if position == "left" else "0%,100%"
 
-        stimuli = stimulus(X=X, window=window, xoffset=xoffset)
+        stimuli = stimulus(X=X, window=window, xoffset=xoffset, gabortexture=gabortexture, threshold=threshold)
 
         self.buttons = {
                 keys[0] : "yes",
                 keys[1] : "no",
                 None : "noresponse"
                 }
+
+        # signal
+        self.signal = stimuli.signal
 
         # the annulus is created by passing a matrix of zeros to the texture argument
         self.annulus = stimuli.annulus
