@@ -15,9 +15,9 @@ class stimulus:
 
         # noise patch
         self.noise = visual.NoiseStim(
-            win=window, mask='circle', pos=[0 + xoffset, 0],
-            size=X, contrast=1.0, opacity=1.0,
-            noiseType='normal'
+            win=window, blendmode='add', mask='circle', pos=[0 + xoffset, 0],
+            size=X, noiseElementSize=1, contrast=1.0, opacity=1.0,
+            noiseType='Binary'
         )
 
         # red fixation dot for decision phase
@@ -31,4 +31,3 @@ class stimulus:
             win=window, size=5, units='pix', pos=[0 + xoffset, 0],
             sf=0, color='green', mask='circle'
         )
-
