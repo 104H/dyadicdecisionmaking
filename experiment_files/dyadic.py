@@ -105,7 +105,7 @@ class subject:
         self.inputdevice = inputdevice
         self.actingheadphonebalance = "100%,0%" if position == "left" else "0%,100%"
 
-        stimuli = stimulus(X=256, window=window, xoffset=xoffset)
+        stimuli = stimulus(X=X, window=window, xoffset=xoffset)
 
         self.buttons = {
                 keys[0] : "yes",
