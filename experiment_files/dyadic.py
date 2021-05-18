@@ -6,10 +6,7 @@
         The variables for each are prepended with `sone_` or `stwo_`
 
     To Do:
-        - The data needs to be packaged properly using the experiment handler
         - There is a warning that a providing data file can prevent data loss in case of crash. Is it writing to the disk and should we have this?
-        - integrate practice trials
-        - integrate titration
 '''
 
 from typing import Any, Callable
@@ -85,20 +82,18 @@ noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
 
 class subject:
-    def __init__(self, sid, state, threshold, inputdevice, xoffset, position, keys):
+    def __init__(self, sid, threshold, xoffset, position, keys):
         '''
             state is either 0 or 1 for observing or acting conditions, respectively
             xoffset is the constant added to all stimuli rendered for the subject
             signal is the signal according to the subjects threshold
-            inputdevice is the pyusb connector to the subject's buttonbox
             position is either left of right. it is used to determine the speaker of the subject
             keys is a list of keys expected from the user. it has to be in the order of yes and no
         '''
         self.id = sid
-        self.state = state
+        self.state = 0
         self.xoffset = xoffset
         self.response = None
-        self.inputdevice = inputdevice
         self.actingheadphonebalance = "100%,0%" if position == "left" else "0%,100%"
 
         stimuli = stimulus(X=X, window=window, xoffset=xoffset, gabortexture=gabortexture, threshold=threshold)
@@ -141,8 +136,10 @@ class subject:
         return str(self.id)
 
 ### Global variables for rendering stimuli
-sone = subject(1, 1, 0.3, None, window.size[0]/-4, "right", ["9", "0"])
-stwo = subject(2, 0, 0.7, None, window.size[0]/4, "left", ["1", "2"])
+ofs = window.size[0] / 4 # determine the offset once, assign it as neg or pos next
+
+sone = subject(1, 0.3, ofs, "right", ["9", "0"])
+stwo = subject(2, 0.7, -ofs, "left", ["1", "2"])
 subjects = [sone, stwo]
 
 expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2': stwo.id, 'yesfinger': mapping}
@@ -392,20 +389,12 @@ geninstructionspractice()
 window.flip()
 getacknowledgements()
 
-# do practice trials
-'''
-integrate practice trials
-'''
 
 # display instructions for titration
 geninstructionstitration()
 window.flip()
 getacknowledgements()
 
-# do titration
-'''
-integrate titration
-'''
 
 # display instructions for experiment
 geninstructionsexperiment()
