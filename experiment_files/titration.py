@@ -57,9 +57,9 @@ def calculate_threshold(SCREEN):
         staircase = QuestHandler(
                                     startVal=0.5,
                                     startValSd=0.2,
-                                    pThreshold=0.63,
+                                    pThreshold=0.75, #was 0.63 
                                     gamma=0.01,
-                                    nTrials=150,
+                                    nTrials=100,
                                     minVal=0,
                                     maxVal=1
                                     )   
