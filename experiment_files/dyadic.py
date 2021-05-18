@@ -40,23 +40,29 @@ from psychopy.sound import Sound
 from numpy.random import random
 
 
-# get pair id and yesfinger as global variables
-name = 'Experiment: Dyadic Decision Making'
-info = {'pair ID':''}
-while (info['pair ID']==''):
-    dlg = gui.DlgFromDict(dictionary=info, sortKeys=False, title=name)
-    if dlg.OK == False:
-        core.quit()
+# get pair id via GUI
+#name = 'Experiment: Dyadic Decision Making'
+#info = {'pair ID':''}
+#while (info['pair ID']==''):
+#    dlg = gui.DlgFromDict(dictionary=info, sortKeys=False, title=name)
+#    if dlg.OK == False:
+#        core.quit()
+#pair_id = int(info['pair ID'])
 
-pair_id = int(info['pair ID'])
+# get pair id via command-line argument
+try:
+    pair_id = int(sys.argv[1])
+except:
+    print('Please enter a number as pair id as command-line argument!')
+    sys.exit(0)
+    
+# set yesfinger as global variables
 if (pair_id % 2) == 0:
     mapping = 'index' # yes finger
     instrmapping = ['upper', 'lower'] # variable for instructions
 else:
     mapping = 'middle'
     instrmapping = ['lower', 'upper']
-
-#mapping = 'index' if (pair_id % 2) == 0 else 'middle' # yesfinger
 
 # monitor specs global variables
 M_WIDTH = 1920
@@ -325,8 +331,8 @@ def updatespeakerbalance ():
     # but it is a more efficient solution if we don't have a condition where both are acting
     for s in subjects:
         if s.state == 1:
-            #run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
-            pass
+            run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
+            #pass
 
 def updatestate ():
     '''
