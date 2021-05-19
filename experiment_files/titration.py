@@ -17,36 +17,48 @@ Set-up section:
     4. Create the ladder object for controlling stimulus and measuring threshold. The ladder has to be updated to match the experiment needs.
 """
 
-# get pair id via command-line argument
-try:
-    pair_id = int(sys.argv[1])
-except:
-    print('Please enter a number as pair id as command-line argument!')
-    sys.exit(0)
-
-#pair_id = 12
-
 
 # Directory Specs
 HOME = os.getcwd()
 DATA = '/data/'
-
-thresholds = dict(chamber1=0,chamber2=0)
-
-pairData = { 'subject1': {'chambername':1, 'threshold': 0, 'threshold_list': [] },
-                     'subject2': {'chambername':2, 'threshold': 0, 'threshold_list': [] }
-                    }
+# monitoring the while loop with..
+titration_over = False
+# monitoring how often the titration has been done
+titration_counter = 0
 
 
-screens = [0]#,1]
-for screen in screens:
+while titration_over == False:
+    titration_counter += 1
+    
+    # get pair id via command-line argument
+    try:
+        pair_id = int(sys.argv[1])
+    except:
+        print('Please enter a number as pair id as command-line argument!')
+        pair_id = input()
+        
+    # input the chamber number in which titration takes place
+    chamber = []
+    if chamber == []:
+        print("Enter chamber number (1 or 2):")
+        chamber = input()
+    elif chamber != 1 & chamber != 2:
+        print("Wrong! Enter chamber number (1 or 2):")
+        chamber = input()
+    else: 
+        print("You already entered a chamber number! You entered:" + chamber)
+        
+    # creating subject dictionary
+    subjectData = {'titration_counter': titration_counter, 'chamber':chamber, 'threshold': 0, 'threshold_list': [] }
+
+
     """
     Opening section:
         1. Show subject instructions and give option to not continue
     """
         
     # screen
-    SCREEN = psychopy.visual.Window(size=(1920, 1080), units='pix', screen=screen, fullscr = False, pos = None) 
+    SCREEN = psychopy.visual.Window(size=(1920, 1080), units='pix', screen=int(chamber), fullscr = False, pos = None) 
     m = psychopy.event.Mouse(win=SCREEN)
     m.setVisible(0)
 
@@ -100,7 +112,9 @@ for screen in screens:
         4. Pass on reponse evaluation to ladder (0 if subject responded correctly, 1 if subject did not)
         5. Do 1 to 4 for ntimes set in ladder constructor
     """
+    # list that is filled with the staircase values
     staircase_means = []
+    
     for contrast in staircase:
         key = []
         stimulus.opacity = contrast #update the difficulty or contrast from the staircase
@@ -122,32 +136,42 @@ for screen in screens:
         This part will be changed for the experiment. 
         We will store the threshold in a variable for the next core block to use. 
     """
-    if screen == 0:
-        pairData['subject1']['threshold'] = staircase.mean()
-        pairData['subject1']['threshold_list'] = staircase_means
+
+    # fill subject dictionary with threshold and staircase value list
+    subjectData['threshold'] = staircase.mean()
+    subjectData['threshold_list'] = staircase_means
+
+    # currently printing the threshold to the subject
+    #result = 'The threshold is %0.4f' %(staircase.mean())
+    #message2 = visual.TextStim(SCREEN, pos=(0,0), text=result)
+    #message2.draw()
+    
+    print('The subjects threshold is: ' + str(staircase.mean()))
+    print('The titration values are: ')
+    print(staircase_means)
+
+    #SCREEN.flip()
+    #core.wait(2)
+    SCREEN.close()
+
+    answer = []
+    print('Titration result sufficient? Enter y/n')
+    answer = input()
+    
+    # if the titration is sufficient the script stops, if not it repeats and increases the titration counter
+    if answer !='y' and answer !='n':
+        print("Enter yes(y) or no(n) !")
+        answer = input()
     else:
-        pairData['subject2']['threshold'] = staircase.mean()
-        pairData['subject2']['threshold_list'] = staircase_means
-        
-    
-    print(pairData)
+        if answer == 'y':
+            titration_over = True 
+            # Create directory and save as JSON
+            DATAPATH = HOME+DATA+pair_id
+            if not os.path.exists(DATAPATH):
+                os.makedirs(DATAPATH)
+            os.chdir(DATAPATH)
+            with open('data_chamber'+chamber+'.json', 'w') as fp:
+                json.dump(subjectData, fp)
+        elif answer == 'n':
+            Titration_over = False
 
-# Create directory and save as JSON
-DATAPATH = HOME+DATA+str(pair_id)
-if not os.path.exists(DATAPATH):
-    os.makedirs(DATAPATH)
-os.chdir(DATAPATH)
-with open('pairData.json', 'w') as fp:
-    json.dump(pairData, fp)
-
-
-
-result = 'The threshold is %0.4f' %(staircase.mean())
-message2 = visual.TextStim(SCREEN, pos=(0,0), text=result)
-message2.draw()
-SCREEN.flip()
-core.wait(2)
-#SCREEN.close()
-    
-#print(thresholds)
-print(staircase_means)
