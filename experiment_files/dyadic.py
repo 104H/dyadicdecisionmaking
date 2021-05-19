@@ -52,6 +52,7 @@ try:
 except:
     print('Please enter a number as pair id as command-line argument!')
     sys.exit(0)
+    #pair_id=2
 
 # set yesfinger as global variables
 if (pair_id % 2) == 0:
@@ -98,11 +99,18 @@ class subject:
 
         stimuli = stimulus(X=X, window=window, xoffset=xoffset, gabortexture=gabortexture, threshold=threshold)
 
-        self.buttons = {
-                keys[0] : "yes",
-                keys[1] : "no",
-                None : "noresponse"
-                }
+        if (pair_id % 2) == 0:
+            self.buttons = {
+                    keys[0] : "yes",
+                    keys[1] : "no",
+                    None : "noresponse"
+                    }
+        else:
+            self.buttons = {
+                keys[0]: "no",
+                keys[1]: "yes",
+                None: "noresponse"
+            }
 
         # signal
         self.signal = stimuli.signal
@@ -142,7 +150,8 @@ sone = subject(1, 0.3, ofs, "right", ["9", "0"])
 stwo = subject(2, 0.7, -ofs, "left", ["1", "2"])
 subjects = [sone, stwo]
 
-expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2': stwo.id, 'yesfinger': mapping}
+#expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2': stwo.id, 'yesfinger': mapping}
+expinfo = {'pair': pair_id}
 
 blocks = range(6)
 ntrials = 2 # trials per block
@@ -423,7 +432,7 @@ for trials in exphandler.loops:
         exphandler.addData('block', block)
         exphandler.addData('trial', trialInBlock)
         exphandler.addData('totalTrials', (block-1)*ntrials+trialInBlock)
-        exphandler.addData('condition', trials.thisTrial['condition'])
+        #exphandler.addData('condition', trials.thisTrial['condition'])
         exphandler.addData('s1_state', sone.state)
         exphandler.addData('s2_state', stwo.state)
 
@@ -442,13 +451,15 @@ for trials in exphandler.loops:
         # display stimulus
         responsetime.reset()
 
+        response = None
         for frame in secondstoframes(2.5):
             gendecisionint(subjects, trials.thisTrial['condition'])
             window.flip()
             # we decided to reset the clock after flipping (redrawing) the window
 
             # fetch button press
-            response = fetchbuttonpress(subjects, responsetime)
+            if response is None:
+                response = fetchbuttonpress(subjects, responsetime)
 
         # need to explicity call stop() to go back to the beginning of the track
         # we reset after collecting a response, otherwise the beep is stopped too early
