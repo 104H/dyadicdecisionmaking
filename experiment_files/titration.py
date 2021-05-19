@@ -21,22 +21,27 @@ Set-up section:
 # Directory Specs
 HOME = os.getcwd()
 DATA = '/data/'
+# Subject data dictionary
+subjectData = {'pair_id': [], 'titration_counter': [], 'chamber':[], 'threshold': [], 'threshold_list': [] }
 # monitoring the while loop with..
 titration_over = False
 # monitoring how often the titration has been done
 titration_counter = 0
 
 
+# get pair id via command-line argument
+try:
+    pair_id = int(sys.argv[1])
+except:
+    print('Please enter a number as pair id as command-line argument!')
+    pair_id = input()
+    
+subjectData['pair_id'] = pair_id
+
 while titration_over == False:
     titration_counter += 1
+    subjectData['titration_counter'] = titration_counter
     
-    # get pair id via command-line argument
-    try:
-        pair_id = int(sys.argv[1])
-    except:
-        print('Please enter a number as pair id as command-line argument!')
-        pair_id = input()
-        
     # input the chamber number in which titration takes place
     chamber = []
     if chamber == []:
@@ -48,9 +53,7 @@ while titration_over == False:
     else: 
         print("You already entered a chamber number! You entered:" + chamber)
         
-    # creating subject dictionary
-    subjectData = {'titration_counter': titration_counter, 'chamber':chamber, 'threshold': 0, 'threshold_list': [] }
-
+    subjectData['chamber'] = chamber
 
     """
     Opening section:
@@ -150,7 +153,7 @@ while titration_over == False:
     print('The titration values are: ')
     print(staircase_means)
 
-    #SCREEN.flip()
+    SCREEN.flip()
     #core.wait(2)
     SCREEN.close()
 
