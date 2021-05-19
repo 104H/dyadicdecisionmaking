@@ -47,6 +47,7 @@ from numpy.random import random
 #        core.quit()
 #pair_id = int(info['pair ID'])
 
+# copied to titration
 # get pair id via command-line argument
 try:
     pair_id = int(sys.argv[1])

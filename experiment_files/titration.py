@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 import time
 import numpy as np
 import psychopy
@@ -16,10 +17,26 @@ Set-up section:
     4. Create the ladder object for controlling stimulus and measuring threshold. The ladder has to be updated to match the experiment needs.
 """
 
+# get pair id via command-line argument
+try:
+    pair_id = int(sys.argv[1])
+except:
+    print('Please enter a number as pair id as command-line argument!')
+    sys.exit(0)
+
+#pair_id = 12
 
 
-    
+# Directory Specs
+HOME = os.getcwd()
+DATA = '/data/'
+
 thresholds = dict(chamber1=0,chamber2=0)
+
+pairData = { 'subject1': {'chambername':1, 'threshold': 0, 'threshold_list': [] },
+                     'subject2': {'chambername':2, 'threshold': 0, 'threshold_list': [] }
+                    }
+
 
 screens = [0]#,1]
 for screen in screens:
@@ -29,7 +46,7 @@ for screen in screens:
     """
         
     # screen
-    #SCREEN = psychopy.visual.Window(size=(1920, 1080), units='pix', screen=screen, fullscr = False, pos = None) 
+    SCREEN = psychopy.visual.Window(size=(1920, 1080), units='pix', screen=screen, fullscr = False, pos = None) 
     m = psychopy.event.Mouse(win=SCREEN)
     m.setVisible(0)
 
@@ -59,7 +76,7 @@ for screen in screens:
                                 startValSd=0.2,
                                 pThreshold=0.75, #was 0.63 
                                 gamma=0.01,
-                                nTrials=100,
+                                nTrials=10,
                                 minVal=0,
                                 maxVal=1
                                 )   
@@ -106,18 +123,31 @@ for screen in screens:
         We will store the threshold in a variable for the next core block to use. 
     """
     if screen == 0:
-        thresholds['chamber1'] = staircase.mean()
+        pairData['subject1']['threshold'] = staircase.mean()
+        pairData['subject1']['threshold_list'] = staircase_means
     else:
-        thresholds['chamber2'] = staircase.mean()
+        pairData['subject2']['threshold'] = staircase.mean()
+        pairData['subject2']['threshold_list'] = staircase_means
+        
     
-    thresholds[screen] = staircase.mean()
-    threshold = staircase.mean()
-    result = 'The threshold is %0.4f' %(staircase.mean())
-    message2 = visual.TextStim(SCREEN, pos=(0,0), text=result)
-    message2.draw()
-    SCREEN.flip()
-    core.wait(2)
-    #SCREEN.close()
+    print(pairData)
+
+# Create directory and save as JSON
+DATAPATH = HOME+DATA+str(pair_id)
+if not os.path.exists(DATAPATH):
+    os.makedirs(DATAPATH)
+os.chdir(DATAPATH)
+with open('pairData.json', 'w') as fp:
+    json.dump(pairData, fp)
+
+
+
+result = 'The threshold is %0.4f' %(staircase.mean())
+message2 = visual.TextStim(SCREEN, pos=(0,0), text=result)
+message2.draw()
+SCREEN.flip()
+core.wait(2)
+#SCREEN.close()
     
-print(thresholds)
+#print(thresholds)
 print(staircase_means)
