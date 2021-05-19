@@ -6,10 +6,7 @@
         The variables for each are prepended with `sone_` or `stwo_`
 
     To Do:
-        - The data needs to be packaged properly using the experiment handler
         - There is a warning that a providing data file can prevent data loss in case of crash. Is it writing to the disk and should we have this?
-        - integrate practice trials
-        - integrate titration
 '''
 
 from typing import Any, Callable
@@ -41,23 +38,29 @@ from psychopy.sound import Sound
 from numpy.random import random
 
 
-# get pair id and yesfinger as global variables
-name = 'Experiment: Dyadic Decision Making'
-info = {'pair ID':''}
-while (info['pair ID']==''):
-    dlg = gui.DlgFromDict(dictionary=info, sortKeys=False, title=name)
-    if dlg.OK == False:
-        core.quit()
+# get pair id via GUI
+#name = 'Experiment: Dyadic Decision Making'
+#info = {'pair ID':''}
+#while (info['pair ID']==''):
+#    dlg = gui.DlgFromDict(dictionary=info, sortKeys=False, title=name)
+#    if dlg.OK == False:
+#        core.quit()
+#pair_id = int(info['pair ID'])
 
-pair_id = int(info['pair ID'])
+# get pair id via command-line argument
+try:
+    pair_id = int(sys.argv[1])
+except:
+    print('Please enter a number as pair id as command-line argument!')
+    sys.exit(0)
+
+# set yesfinger as global variables
 if (pair_id % 2) == 0:
     mapping = 'index' # yes finger
     instrmapping = ['upper', 'lower'] # variable for instructions
 else:
     mapping = 'middle'
     instrmapping = ['lower', 'upper']
-
-#mapping = 'index' if (pair_id % 2) == 0 else 'middle' # yesfinger
 
 # monitor specs global variables
 M_WIDTH = 1920
@@ -80,33 +83,30 @@ noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
 
 class subject:
-    def __init__(self, sid, state, threshold, inputdevice, xoffset, position, keys):
+    def __init__(self, sid, threshold, xoffset, position, keys):
         '''
             state is either 0 or 1 for observing or acting conditions, respectively
             xoffset is the constant added to all stimuli rendered for the subject
             signal is the signal according to the subjects threshold
-            inputdevice is the pyusb connector to the subject's buttonbox
             position is either left of right. it is used to determine the speaker of the subject
             keys is a list of keys expected from the user. it has to be in the order of yes and no
         '''
         self.id = sid
-        self.state = state
+        self.state = 0
         self.xoffset = xoffset
         self.response = None
-        self.signal = visual.GratingStim(
-            win = window, tex = gabortexture, mask = 'circle', pos=[0 + xoffset,0],
-            size = X, contrast = 1.0, opacity = threshold,
-        )
-        self.inputdevice = inputdevice
         self.actingheadphonebalance = "100%,0%" if position == "left" else "0%,100%"
 
-        stimuli = stimulus(X=256, window=window, xoffset=xoffset)
+        stimuli = stimulus(X=X, window=window, xoffset=xoffset, gabortexture=gabortexture, threshold=threshold)
 
         self.buttons = {
                 keys[0] : "yes",
                 keys[1] : "no",
                 None : "noresponse"
                 }
+
+        # signal
+        self.signal = stimuli.signal
 
         # the annulus is created by passing a matrix of zeros to the texture argument
         self.annulus = stimuli.annulus
@@ -141,8 +141,10 @@ class subject:
 threshold = calculate_threshold(window)
 
 ### Global variables for rendering stimuli
-sone = subject(1, 1, 0.3, None, window.size[0]/-4, "right", ["9", "0"])
-stwo = subject(2, 0, 0.7, None, window.size[0]/4, "left", ["1", "2"])
+ofs = window.size[0] / 4 # determine the offset once, assign it as neg or pos next
+
+sone = subject(1, 0.3, ofs, "right", ["9", "0"])
+stwo = subject(2, 0.7, -ofs, "left", ["1", "2"])
 subjects = [sone, stwo]
 
 expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2': stwo.id, 'yesfinger': mapping}
@@ -330,8 +332,8 @@ def updatespeakerbalance ():
     # but it is a more efficient solution if we don't have a condition where both are acting
     for s in subjects:
         if s.state == 1:
-            #run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
-            pass
+            run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
+            #pass
 
 def updatestate ():
     '''
@@ -392,15 +394,6 @@ geninstructionspractice()
 window.flip()
 getacknowledgements()
 
-# do practice trials
-npracticetrials = 6
-cond=["signal", "noise"]
-practicetriallist=[]
-for Idx in range(npracticetrials):
-    practicetriallist.append(choice(cond))
-# make an iterator object
-practicestates = np.random.randint(0, 2, npracticetrials)
-iterstates = iter(practicestates)
 
 # traverse through trials
 for idx in range(npracticetrials):
@@ -445,10 +438,6 @@ geninstructionstitration()
 window.flip()
 getacknowledgements()
 
-# do titration
-'''
-integrate titration
-'''
 
 # display instructions for experiment
 geninstructionsexperiment()
