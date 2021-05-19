@@ -31,7 +31,7 @@ Copy the `name` attribute of your device to the audioDevice
 prefs.hardware['audioLib'] = ['PTB']
 
 from psychopy import sound
-sound.setDevice('Logitech USB Headset: Audio (hw:2,0)')
+sound.setDevice('USB Audio Device: - (hw:3,0)')
 
 from psychopy.sound import Sound
 from numpy.random import random
