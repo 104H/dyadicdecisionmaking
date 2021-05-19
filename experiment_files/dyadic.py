@@ -138,7 +138,7 @@ class subject:
 
 
 ### Starting threshold calculation routine 
-threshold = calculate_threshold(window)
+#threshold = calculate_threshold(window)
 
 ### Global variables for rendering stimuli
 ofs = window.size[0] / 4 # determine the offset once, assign it as neg or pos next
