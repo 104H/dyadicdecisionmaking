@@ -18,6 +18,7 @@ import numpy as np
 import psychtoolbox as ptb
 from psychopy import visual, event, core, gui, data, prefs
 from stimuli import stimulus
+from titration import calculate_threshold
 
 # setting PTB as our preferred sound library and then import sound
 
@@ -46,6 +47,7 @@ from numpy.random import random
 #        core.quit()
 #pair_id = int(info['pair ID'])
 
+# copied to titration
 # get pair id via command-line argument
 try:
     pair_id = int(sys.argv[1])
@@ -142,6 +144,10 @@ class subject:
 
     def __repr__ (self):
         return str(self.id)
+
+
+### Starting threshold calculation routine 
+#threshold = calculate_threshold(window)
 
 ### Global variables for rendering stimuli
 ofs = window.size[0] / 4 # determine the offset once, assign it as neg or pos next
@@ -397,6 +403,44 @@ getacknowledgements()
 geninstructionspractice()
 window.flip()
 getacknowledgements()
+
+
+# traverse through trials
+for idx in range(npracticetrials):
+    # subject state update
+    updatestate()
+
+    # display baseline
+    # wait for a random time between 2 to 4 seconds
+    for frame in secondstoframes( np.random.uniform(2, 4) ):
+        genbaseline(subjects)
+        window.flip()
+
+    # preparing time for next window flip, to precisely co-ordinate window flip and beep
+    nextflip = window.getFutureFlipTime(clock='ptb')
+    beep.play(when=nextflip)
+    # display stimulus
+    responsetime.reset()
+
+    for frame in secondstoframes(2.5):
+        gendecisionint(subjects, practicetriallist[idx])
+        window.flip()
+        # we decided to reset the clock after flipping (redrawing) the window
+
+        # fetch button press
+        response = fetchbuttonpress(subjects, responsetime)
+
+    # need to explicity call stop() to go back to the beginning of the track
+    # we reset after collecting a response, otherwise the beep is stopped too early
+    beep.stop()
+
+    # display inter trial interval for 2s
+    for frame in secondstoframes(2):
+        genintertrial(subjects)
+        window.flip()
+
+    # update the speaker balance to play the beep for the right subject
+    updatespeakerbalance()
 
 
 # display instructions for titration
