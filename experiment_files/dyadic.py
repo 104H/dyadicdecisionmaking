@@ -471,12 +471,6 @@ getacknowledgements()
 # variables for data saving
 block=0
 
-def get_key(val, dict):
-    for key, value in dict.items():
-         if val == value:
-             return key
-    return "key doesn't exist"
-
 # start experiment
 for trials in exphandler.loops:
 
