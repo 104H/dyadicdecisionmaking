@@ -18,7 +18,8 @@ import numpy as np
 import psychtoolbox as ptb
 from psychopy import visual, event, core, gui, data, prefs
 from stimuli import stimulus
-from titration import calculate_threshold
+from random import choice
+#from titration import calculate_threshold
 
 # setting PTB as our preferred sound library and then import sound
 
@@ -109,8 +110,8 @@ class subject:
                     }
         else:
             self.buttons = {
-                keys[0]: "no",
                 keys[1]: "yes",
+                keys[0]: "no",
                 None: "noresponse"
             }
 
@@ -146,8 +147,7 @@ class subject:
         return str(self.id)
 
 
-### Starting threshold calculation routine 
-#threshold = calculate_threshold(window)
+
 
 ### Global variables for rendering stimuli
 ofs = window.size[0] / 4 # determine the offset once, assign it as neg or pos next
@@ -405,7 +405,17 @@ window.flip()
 getacknowledgements()
 
 
-# traverse through trials
+# set up practice trials
+npracticetrials = 2
+cond=["signal", "noise"]
+practicetriallist=[]
+for Idx in range(npracticetrials):
+    practicetriallist.append(choice(cond))
+# make an iterator object
+practicestates = np.random.randint(0, 2, npracticetrials)
+iterstates = iter(practicestates)
+
+# traverse through practice trials
 for idx in range(npracticetrials):
     # subject state update
     updatestate()
@@ -422,13 +432,15 @@ for idx in range(npracticetrials):
     # display stimulus
     responsetime.reset()
 
+    response = None
     for frame in secondstoframes(2.5):
         gendecisionint(subjects, practicetriallist[idx])
         window.flip()
         # we decided to reset the clock after flipping (redrawing) the window
 
         # fetch button press
-        response = fetchbuttonpress(subjects, responsetime)
+        if response is None:
+            response = fetchbuttonpress(subjects, responsetime)
 
     # need to explicity call stop() to go back to the beginning of the track
     # we reset after collecting a response, otherwise the beep is stopped too early
@@ -448,6 +460,8 @@ geninstructionstitration()
 window.flip()
 getacknowledgements()
 
+### Starting threshold calculation routine
+#threshold = calculate_threshold(window)
 
 # display instructions for experiment
 geninstructionsexperiment()
@@ -456,6 +470,12 @@ getacknowledgements()
 
 # variables for data saving
 block=0
+
+def get_key(val, dict):
+    for key, value in dict.items():
+         if val == value:
+             return key
+    return "key doesn't exist"
 
 # start experiment
 for trials in exphandler.loops:
@@ -518,7 +538,12 @@ for trials in exphandler.loops:
         updatespeakerbalance()
 
         # save response to file
-        if response is not None:
+        if response[0][0] is not None:
+            print(response[0][0])
+            if response[0][0] == next(iter(sone.buttons)) or response[0][0] == next(iter(stwo.buttons)):
+                response[0][0] = 1
+            else:
+                response[0][0] = 0
             exphandler.addData('response', response[0][0])
             exphandler.addData('rt', response[0][1])
         else:
