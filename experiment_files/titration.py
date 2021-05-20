@@ -7,6 +7,7 @@ import psychopy
 from psychopy import visual
 from psychopy.data import QuestHandler
 from psychopy import core
+from stimuli import stimulus as stim
 
 
 """
@@ -27,6 +28,17 @@ subjectData = {'pair_id': [], 'titration_counter': [], 'chamber':[], 'threshold'
 titration_over = False
 # monitoring how often the titration has been done
 titration_counter = 0
+# initial threshold
+threshold = 1
+
+# Gabor patch global variables
+CYCLES = 10 # required cycles for the whole patch
+X = 256; # size of texture in pixels, needs to be to the power of 2!
+sf = CYCLES/X; # spatial frequency for texture, cycles per pixel
+gabortexture = (
+    visual.filters.makeGrating(res=X, cycles=X * sf) *
+    visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
+)
 
 
 # get pair id via command-line argument
@@ -61,30 +73,35 @@ while titration_over == False:
     """
         
     # screen
-    SCREEN = psychopy.visual.Window(size=(1920, 1080), units='pix', screen=int(chamber), fullscr = False, pos = None) 
-    m = psychopy.event.Mouse(win=SCREEN)
+    window = psychopy.visual.Window(size=(1920, 1080), units='pix', screen=int(chamber), fullscr = False, pos = None) 
+    m = psychopy.event.Mouse(win=window)
     m.setVisible(0)
 
     # message for initial screen
-    message1 = visual.TextStim(SCREEN, pos=(0,0),
+    message1 = visual.TextStim(window, pos=(0,0),
                                 text="Instruction:\n"
                                     "Press Right when you see vertical lines, Left when you don't\n \n"
                                     "Hit a key when ready.\n\n"
                                     "Press ESC to escape" ) 
 
-    # the stimulus
-    stimulus = visual.GratingStim(
-                                SCREEN,
-                                opacity=1,
-                                contrast=1
-                                ,mask='circle',
-                                tex="sin",
-                                units='pix',
-                                color=[1,1,1],
-                                size=800,
-                                sf=0.02, 
-                                ori=0
-                                )   
+    # the old test stimulus
+#    stimulus = visual.GratingStim(
+#                                SCREEN,
+#                                opacity=1,
+#                                contrast=1
+#                                ,mask='circle',
+#                                tex="sin",
+#                                units='pix',
+#                                color=[1,1,1],
+#                                size=800,
+#                                sf=0.02, 
+#                                ori=0
+#                                )   
+
+# the actual stimulus
+    stimuli = stim(X=X, window=window, xoffset=0, gabortexture=gabortexture, threshold=threshold)
+    stimulus = stimuli.signal
+                                
     #the ladder
     staircase = QuestHandler(
                                 startVal=0.5,
@@ -98,11 +115,11 @@ while titration_over == False:
      
     while True:
         message1.draw()
-        SCREEN.flip()
+        window.flip()
         key = psychopy.event.getKeys()
         if len(key) > 0:
             if 'escape' in key:
-                SCREEN.close()
+                window.close()
                 core.quit()
             else:
                 break
@@ -123,7 +140,7 @@ while titration_over == False:
         stimulus.opacity = contrast #update the difficulty or contrast from the staircase
         while not key:
             stimulus.draw() #draw the stimulus
-            SCREEN.flip()
+            window.flip()
             key = psychopy.event.getKeys(keyList=['left','right'])
         if 'left' in key:
             response = 0
@@ -153,9 +170,9 @@ while titration_over == False:
     print('The titration values are: ')
     print(staircase_means)
 
-    SCREEN.flip()
+    window.flip()
     #core.wait(2)
-    SCREEN.close()
+    window.close()
 
     answer = []
     print('Titration result sufficient? Enter y/n')
