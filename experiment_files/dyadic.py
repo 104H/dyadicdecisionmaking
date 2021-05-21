@@ -19,7 +19,6 @@ import psychtoolbox as ptb
 from psychopy import visual, event, core, gui, data, prefs
 from stimuli import stimulus
 from random import choice
-#from titration import calculate_threshold
 
 # setting PTB as our preferred sound library and then import sound
 
@@ -160,7 +159,7 @@ subjects = [sone, stwo]
 expinfo = {'pair': pair_id}
 
 blocks = range(6)
-ntrials = 2 # trials per block
+ntrials = 6 # trials per block
 
 '''
 # make an array of 0 and 1, denoting observe and act, respectively and scale it up by half of the number of trials
@@ -366,7 +365,11 @@ def getacknowledgements ():
             if stwo_ack != 'yes': stwo_ack = stwo.buttons.get(r)
 
 def getexperimenterack ():
-    event.waitKeys(keyList=["space"])
+    keys = event.waitKeys(keyList=["q", "space"])
+    if "q" in keys: # exit experiment
+        window.close()
+        core.quit()
+
 
 def genactingstates ():
     return np.random.randint(0, 2, ntrials)
@@ -405,7 +408,7 @@ geninstructionspractice()
 window.flip()
 getacknowledgements()
 
-
+'''
 # set up practice trials
 npracticetrials = 2
 cond=["signal", "noise"]
@@ -433,7 +436,8 @@ for idx in range(npracticetrials):
     # display stimulus
     responsetime.reset()
 
-    response = None
+    response = None # we do not have a response because a new trial has started
+    event.clearEvents() # clear the buffer from any left over input from the previous trial
     for frame in secondstoframes(2.5):
         gendecisionint(subjects, practicetriallist[idx])
         window.flip()
@@ -454,16 +458,7 @@ for idx in range(npracticetrials):
 
     # update the speaker balance to play the beep for the right subject
     updatespeakerbalance()
-
 '''
-# display instructions for titration
-geninstructionstitration()
-window.flip()
-getacknowledgements()
-'''
-
-### Starting threshold calculation routine
-#threshold = calculate_threshold(window)
 
 # display instructions for experiment
 geninstructionsexperiment()
@@ -505,20 +500,21 @@ for trials in exphandler.loops:
             genbaseline(subjects)
             window.flip()
 
+        event.clearEvents()
         # preparing time for next window flip, to precisely co-ordinate window flip and beep
         nextflip = window.getFutureFlipTime(clock='ptb')
         beep.play(when=nextflip)
         # display stimulus
         responsetime.reset()
 
-        response = None
+        response = [(None, 0)]
         for frame in secondstoframes(2.5):
             gendecisionint(subjects, trials.thisTrial['condition'])
             window.flip()
             # we decided to reset the clock after flipping (redrawing) the window
 
             # fetch button press
-            if response is None:
+            if response[0][0] is None:
                 response = fetchbuttonpress(subjects, responsetime)
 
         # need to explicity call stop() to go back to the beginning of the track
@@ -534,17 +530,9 @@ for trials in exphandler.loops:
         updatespeakerbalance()
 
         # save response to file
-        if response[0][0] is not None:
-            print(response[0][0])
-            if response[0][0] == next(iter(sone.buttons)) or response[0][0] == next(iter(stwo.buttons)):
-                response[0][0] = 1
-            else:
-                response[0][0] = 0
-            exphandler.addData('response', response[0][0])
-            exphandler.addData('rt', response[0][1])
-        else:
-            exphandler.addData('response', 'None')
-            exphandler.addData('rt', 'None') # why does this write 0 now instead of None? used to be None
+        actingsubject = sone if sone.state == 1 else stwo
+        exphandler.addData('response', actingsubject.buttons[ response[0][0] ])
+        exphandler.addData('rt', response[0][1])
 
         # move to next row in output file
         exphandler.nextEntry()
@@ -554,16 +542,9 @@ for trials in exphandler.loops:
     if block % 2 == 0:
         genmandatorybreakscreen()
         window.flip()
-        keys = event.waitKeys(keyList=["space", "q"])
-        if keys == ["q"]: # exit experiment
-            win.close()
-            core.quit()
-        elif keys == "space":
-            #getexperimenterack()
-            continue
+        getexperimenterack()
     # otherwise, wait for the subjects to start their next block
     elif block % 2 == 1:
-        # after every block, wait for the subjects to start their next block
         genbreakscreen()
         window.flip()
         getacknowledgements()
