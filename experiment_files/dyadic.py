@@ -530,6 +530,8 @@ for trials in exphandler.loops:
             # fetch button press if there is no response yet
             if response[0][0] is None:
                 response = fetchbuttonpress(subjects, responsetime)
+            else:
+                break
 
         # need to explicity call stop() to go back to the beginning of the track
         # we reset after collecting a response, otherwise the beep is stopped too early
