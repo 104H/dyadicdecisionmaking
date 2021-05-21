@@ -49,7 +49,7 @@ except:
     pair_id = input()
 
 # variable for instructions
-if (int(pair_id) % 2) == 0:
+if (pair_id % 2) == 0:
     # index finger is yes finger
     instrmapping = ['upper', 'lower']
 else:
@@ -208,8 +208,7 @@ while titration_over == False:
     
     print('The subjects threshold is: ' + str(staircase.mean()))
     print('The titration values are: ')
-    for member in staircase_means:
-        print("%.4f" % member)
+    print("{:.4f}".format(staircase_means))
 
     window.flip()
     #core.wait(2)
