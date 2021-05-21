@@ -24,9 +24,8 @@ import json
 # setting PTB as our preferred sound library and then import sound
 
 '''
-To obtain your sounddevices run
-from psychopy.sound.backend_sounddevice import getDevices
-getDevices()
+To obtain your sounddevices run the following line on the terminal
+python3 -c "from psychopy.sound.backend_sounddevice import getDevices;print(getDevices())"
 Copy the `name` attribute of your device to the audioDevice
 '''
 
