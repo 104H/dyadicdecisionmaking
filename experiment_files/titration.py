@@ -8,6 +8,7 @@ from psychopy import visual
 from psychopy.data import QuestHandler
 from psychopy import core
 from stimuli import stimulus as stim
+from dyadic import secondstoframes
 
 
 """
@@ -104,6 +105,8 @@ while titration_over == False:
     # the stimulus
     stimuli = stim(X=X, window=window, xoffset=0, gabortexture=gabortexture, threshold=threshold)
     stimulus = stimuli.signal
+    reddot = stimuli.reddot
+    annulus = stimuli.annulus
 
     '''
     1. Familiarization
