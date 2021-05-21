@@ -189,13 +189,13 @@ def genstartscreen ():
 def geninstructionspractice ():
     instructions = f"Please read the instructions carefully.\n\
     1. Place your index finger on the upper key and your middle finger on the lower key.\n\
-    2. First, you will have a few practice trials to see how the experiment works.\n\
+    2. Now, you will have a few practice trials to see how the experiment works.\n\
     3. You will do the task together with your partner.\n\
-    4. At the start of each trial, a red dot is shown in the middle of the screen, surrounded by a circular pattern that looks similar to white noise.\n\
-    5. When you hear a beep, it’s your turn to indicate whether you saw a vertical grating on top of the noise.\n\
+    4. The stimulus will be the same as you saw before: a circle of noise.\n\
+    5. What's new: Only when you hear a beep, it’s your turn to indicate whether you saw a vertical grating on top of the noise.\n\
     6. Press the {instrmapping[0]} key for 'yes' and the {instrmapping[1]} key for 'no'.\n\
     7. It’s very important that you respond as fast and as accurate as possible! You only have a limited amount of time for your response.\n\
-    8. If you don’t hear a beep, it’s the other person’s turn to respond. You will both see the grating (or not) and you will also see their response on your screen.\n\n\
+    8. If you don’t hear a beep, it’s the other person’s turn to respond. You will both see the the same stimulus and you will also see their response on your screen.\n\n\
     Press yes to continue"
 
     visual.TextStim(window,
@@ -205,7 +205,7 @@ def geninstructionspractice ():
     visual.TextStim(window,
                     text=instructions, pos=[0 + stwo.xoffset,0],
                     color='black', height=20).draw()
-
+'''
 def geninstructionstitration ():
     instructions = f"Please read the instructions carefully.\n\
     1. Now we will determine your individual threshold for recognizing the vertical grating.\n\
@@ -220,6 +220,7 @@ def geninstructionstitration ():
     visual.TextStim(window,
                     text=instructions, pos=[0 + stwo.xoffset,0],
                     color='black', height=20).draw()
+'''
 
 def geninstructionsexperiment ():
     instructions = f"Now you’re ready to start the experiment. Please remember:\n\
@@ -454,11 +455,12 @@ for idx in range(npracticetrials):
     # update the speaker balance to play the beep for the right subject
     updatespeakerbalance()
 
-
+'''
 # display instructions for titration
 geninstructionstitration()
 window.flip()
 getacknowledgements()
+'''
 
 ### Starting threshold calculation routine
 #threshold = calculate_threshold(window)

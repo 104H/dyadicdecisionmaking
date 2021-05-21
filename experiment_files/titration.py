@@ -47,13 +47,45 @@ try:
 except:
     print('Please enter a number as pair id as command-line argument!')
     pair_id = input()
-    
+
+# variable for instructions
+if (pair_id % 2) == 0:
+    # index finger is yes finger
+    instrmapping = ['upper', 'lower']
+else:
+    instrmapping = ['lower', 'upper']
+
 subjectData['pair_id'] = pair_id
+
+
+def geninstrtitration():
+    instructions = f"Please read the instructions carefully.\n\
+    1. Now we will determine your individual threshold for recognizing the vertical grating.\n\
+    2. The procedure is the same as before: when you hear a beep, press the {instrmapping[0]} key if you saw a grating, and the {instrmapping[1]} key if you didn’t.\n\
+    3. The visibility of the grating will be adjusted throughout the trials.\n\n\
+    Press yes to continue"
+
+    visual.TextStim(window,
+                    text=instructions, pos=(0, 0),
+                    color='black', height=20).draw()
+
+def geninstrfamiliarization():
+    instructions = f"Please read the instructions carefully.\n\
+    1. Place your index finger on the upper key and your middle finger on the lower key.\n\
+    2. First, you will become familiar with the stimulus and the handling of the button box.\n\
+    3. For the stimulus, a red dot is shown in the middle of the screen, surrounded by a circular pattern that looks similar to white noise.\n\
+    4. You need to indicate whether you saw a vertical grating on top of the noise.\n\
+    5. Press the {instrmapping[0]} key for 'yes' and the {instrmapping[1]} key for 'no'.\n\
+    Press yes to continue"
+
+    visual.TextStim(window,
+                    text=instructions, pos=(0, 0),
+                    color='black', height=20).draw()
 
 while titration_over == False:
     titration_counter += 1
     subjectData['titration_counter'] = titration_counter
-    
+
     # input the chamber number in which titration takes place
     chamber = []
     if chamber == []:
@@ -64,43 +96,51 @@ while titration_over == False:
         chamber = input()
     else: 
         print("You already entered a chamber number! You entered:" + chamber)
-        
+
     subjectData['chamber'] = chamber
 
-    """
-    Opening section:
-        1. Show subject instructions and give option to not continue
-    """
-        
-    # screen
-    window = psychopy.visual.Window(size=(1920, 1080), units='pix', screen=int(chamber), fullscr = False, pos = None) 
+    # the screen
+    window = psychopy.visual.Window(size=(1920, 1080), units='pix', screen=int(chamber), fullscr=False, pos=None)
     m = psychopy.event.Mouse(win=window)
     m.setVisible(0)
 
-    # message for initial screen
-    message1 = visual.TextStim(window, pos=(0,0),
+    # the stimulus
+    stimuli = stim(X=X, window=window, xoffset=0, gabortexture=gabortexture, threshold=threshold)
+    stimulus = stimuli.signal
+
+    '''
+    1. Familiarization
+    '''
+    while True:
+        geninstrfamiliarization() # display instructions
+        window.flip()
+        key = psychopy.event.getKeys()
+        if len(key) > 0:
+            break   # THIS NEEDS TO BE ADJUSTED once hunaid changed the input to button boxes: only continue if yes is pressed
+
+    nfamtrials = 3
+    famcontrast = [0.15,0.01,0.08]
+
+    for contrast in famcontrast:
+        key = []
+        stimulus.opacity = contrast
+        while not key:
+            stimulus.draw() #draw the stimulus
+            window.flip()
+            key = psychopy.event.getKeys(keyList=['left','right'])
+
+    '''
+    2. Titration
+    '''
+
+    '''
+    # old message for initial screen
+        message1 = visual.TextStim(window, pos=(0,0),
                                 text="Instruction:\n"
                                     "Press Right when you see vertical lines, Left when you don't\n \n"
                                     "Hit a key when ready.\n\n"
-                                    "Press ESC to escape" ) 
-
-    # the old test stimulus
-#    stimulus = visual.GratingStim(
-#                                SCREEN,
-#                                opacity=1,
-#                                contrast=1
-#                                ,mask='circle',
-#                                tex="sin",
-#                                units='pix',
-#                                color=[1,1,1],
-#                                size=800,
-#                                sf=0.02, 
-#                                ori=0
-#                                )   
-
-# the actual stimulus
-    stimuli = stim(X=X, window=window, xoffset=0, gabortexture=gabortexture, threshold=threshold)
-    stimulus = stimuli.signal
+                                    "Press ESC to escape" )
+    '''
                                 
     #the ladder
     staircase = QuestHandler(
@@ -114,7 +154,7 @@ while titration_over == False:
                                 )   
      
     while True:
-        message1.draw()
+        geninstrtitration() # display instructions
         window.flip()
         key = psychopy.event.getKeys()
         if len(key) > 0:
@@ -168,7 +208,7 @@ while titration_over == False:
     
     print('The subjects threshold is: ' + str(staircase.mean()))
     print('The titration values are: ')
-    print(staircase_means)
+    print("{:.4f}".format(staircase_means))
 
     window.flip()
     #core.wait(2)
