@@ -7,7 +7,7 @@ import psychopy
 from psychopy import visual
 from psychopy.data import QuestHandler
 from psychopy import core
-from stimuli import stimulus as stim
+from stimuli import stimulus
 
 
 """
@@ -17,6 +17,9 @@ Set-up section:
     3. Create the stimulus. This needs to be replcaed with the stimulus being used in the experiment
     4. Create the ladder object for controlling stimulus and measuring threshold. The ladder has to be updated to match the experiment needs.
 """
+ 
+# set the number of trials (for testing)!
+numberOfTrials = 30 # should be 100
 
 
 # Directory Specs
@@ -30,6 +33,9 @@ titration_over = False
 titration_counter = 0
 # initial threshold
 threshold = 1
+# monitor specs global variables
+M_WIDTH = 1920
+M_HEIGHT = 1200
 
 # Gabor patch global variables
 CYCLES = 10 # required cycles for the whole patch
@@ -39,6 +45,15 @@ gabortexture = (
     visual.filters.makeGrating(res=X, cycles=X * sf) *
     visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
 )
+
+# stimulus draw function
+def draw_stim(noise, signal, reddot, annulus):
+    noise.draw()
+    noise.updateNoise()
+    signal.draw()
+    annulus.draw()
+    reddot.draw()
+
 
 # get pair id via command-line argument
 try:
@@ -97,13 +112,16 @@ while titration_over == False:
     subjectData['chamber'] = chamber
 
     # the screen
-    window = psychopy.visual.Window(size=(1920, 1080), units='pix', screen=int(chamber), fullscr=False, pos=None)
+    window = psychopy.visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', screen=int(chamber), fullscr=False, pos=None)
     m = psychopy.event.Mouse(win=window)
     m.setVisible(0)
 
     # the stimulus
-    stimuli = stim(X=X, window=window, xoffset=0, gabortexture=gabortexture, threshold=threshold)
+    stimuli = stimulus(X=X, window=window, xoffset=0, gabortexture=gabortexture, threshold=threshold)
     stimulus = stimuli.signal
+    noise = stimuli.noise
+    reddot = stimuli.reddot
+    annulus = stimuli.annulus
 
     '''
     1. Familiarization
@@ -124,7 +142,7 @@ while titration_over == False:
         key = []
         stimulus.opacity = contr
         while not key:
-            stimulus.draw() #draw the stimulus
+            draw_stim(noise, stimulus, reddot, annulus) # draw the stimulus 
             window.flip()
             key = psychopy.event.getKeys(keyList=keys)
 
@@ -136,9 +154,9 @@ while titration_over == False:
     staircase = QuestHandler(
                                 startVal=0.5,
                                 startValSd=0.2,
-                                pThreshold=0.75, #was 0.63 
+                                pThreshold=0.63,  #because it is a one up one down staircase 
                                 gamma=0.01,
-                                nTrials=10,
+                                nTrials=numberOfTrials, 
                                 minVal=0,
                                 maxVal=1
                                 )   
@@ -169,7 +187,7 @@ while titration_over == False:
         key = []
         stimulus.opacity = contrast #update the difficulty or contrast from the staircase
         while not key:
-            stimulus.draw() #draw the stimulus
+            draw_stim(noise, stimulus, reddot, annulus) # draw the stimulus
             window.flip()
             key = psychopy.event.getKeys(keyList=keys)
         print(key)
