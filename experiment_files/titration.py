@@ -154,7 +154,7 @@ while titration_over == False:
     staircase = QuestHandler(
                                 startVal=0.5,
                                 startValSd=0.2,
-                                pThreshold=0.63  #because it is a one up one down staircase 
+                                pThreshold=0.63,  #because it is a one up one down staircase 
                                 gamma=0.01,
                                 nTrials=numberOfTrials, 
                                 minVal=0,
