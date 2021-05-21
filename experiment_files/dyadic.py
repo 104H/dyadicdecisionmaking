@@ -19,6 +19,7 @@ import psychtoolbox as ptb
 from psychopy import visual, event, core, gui, data, prefs
 from stimuli import stimulus
 from random import choice
+import json
 
 # setting PTB as our preferred sound library and then import sound
 
@@ -85,7 +86,7 @@ noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
 
 class subject:
-    def __init__(self, sid, threshold, xoffset, position, keys):
+    def __init__(self, sid, xoffset, position, keys):
         '''
             state is either 0 or 1 for observing or acting conditions, respectively
             xoffset is the constant added to all stimuli rendered for the subject
@@ -93,13 +94,24 @@ class subject:
             position is either left of right. it is used to determine the speaker of the subject
             keys is a list of keys expected from the user. it has to be in the order of yes and no
         '''
+        # fetching subject titration thresholds
+        try:
+            n = "1" if position == "left" else "2"
+            f = open("data/" + str(pair_id) + "/data_chamber" + n + ".json", "r")
+            data = json.load(f)
+        except FileNotFoundError:
+            print("Titration file not found for subject in chamber " + n)
+            exit(-1)
+        else:
+            self.threshold = data["threshold"]
+
         self.id = sid
         self.state = 0
         self.xoffset = xoffset
         self.response = None
         self.actingheadphonebalance = "100%,0%" if position == "left" else "0%,100%"
 
-        stimuli = stimulus(X=X, window=window, xoffset=xoffset, gabortexture=gabortexture, threshold=threshold)
+        stimuli = stimulus(X=X, window=window, xoffset=xoffset, gabortexture=gabortexture, threshold=self.threshold)
 
         if (pair_id % 2) == 0:
             self.buttons = {
@@ -149,10 +161,11 @@ class subject:
 
 
 ### Global variables for rendering stimuli
+
 ofs = window.size[0] / 4 # determine the offset once, assign it as neg or pos next
 
-sone = subject(1, 0.3, ofs, "right", ["9", "0"])
-stwo = subject(2, 0.7, -ofs, "left", ["1", "2"])
+sone = subject(1, ofs, "right", ["9", "0"])
+stwo = subject(2, -ofs, "left", ["1", "2"])
 subjects = [sone, stwo]
 
 #expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2': stwo.id, 'yesfinger': mapping}
@@ -500,20 +513,21 @@ for trials in exphandler.loops:
             genbaseline(subjects)
             window.flip()
 
-        event.clearEvents()
+        event.clearEvents() # get rid of all event in the buffer
+
         # preparing time for next window flip, to precisely co-ordinate window flip and beep
         nextflip = window.getFutureFlipTime(clock='ptb')
         beep.play(when=nextflip)
         # display stimulus
         responsetime.reset()
 
-        response = [(None, 0)]
+        response = [(None, 0)] # we have no response yet
         for frame in secondstoframes(2.5):
             gendecisionint(subjects, trials.thisTrial['condition'])
             window.flip()
             # we decided to reset the clock after flipping (redrawing) the window
 
-            # fetch button press
+            # fetch button press if there is no response yet
             if response[0][0] is None:
                 response = fetchbuttonpress(subjects, responsetime)
 
@@ -530,6 +544,7 @@ for trials in exphandler.loops:
         updatespeakerbalance()
 
         # save response to file
+        # figure out which subject is acting, and map using their dictionary
         actingsubject = sone if sone.state == 1 else stwo
         exphandler.addData('response', actingsubject.buttons[ response[0][0] ])
         exphandler.addData('rt', response[0][1])
