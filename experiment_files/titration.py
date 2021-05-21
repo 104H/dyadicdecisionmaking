@@ -40,7 +40,6 @@ gabortexture = (
     visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
 )
 
-
 # get pair id via command-line argument
 try:
     pair_id = int(sys.argv[1])
@@ -48,15 +47,11 @@ except:
     print('Please enter a number as pair id as command-line argument!')
     pair_id = input()
 
+
 # variable for instructions
-if (pair_id % 2) == 0:
-    # index finger is yes finger
-    instrmapping = ['upper', 'lower']
-else:
-    instrmapping = ['lower', 'upper']
+instrmapping = ['upper', 'lower'] if (int(pair_id) % 2) == 0 else ['lower', 'upper']
 
 subjectData['pair_id'] = pair_id
-
 
 def geninstrtitration():
     instructions = f"Please read the instructions carefully.\n\
@@ -97,6 +92,8 @@ while titration_over == False:
     else: 
         print("You already entered a chamber number! You entered:" + chamber)
 
+    keys = ["9", "0"] if chamber == 1 else ["1", "2"]
+
     subjectData['chamber'] = chamber
 
     # the screen
@@ -116,30 +113,23 @@ while titration_over == False:
         window.flip()
         key = psychopy.event.getKeys()
         if len(key) > 0:
-            break   # THIS NEEDS TO BE ADJUSTED once hunaid changed the input to button boxes: only continue if yes is pressed
+            print(key)
+            if keys[0] in key:
+                break
 
     nfamtrials = 3
-    famcontrast = [0.15,0.01,0.08]
+    famcontrast = [0.15,0.005,0.08]
 
-    for contrast in famcontrast:
+    for contr in famcontrast:
         key = []
-        stimulus.opacity = contrast
+        stimulus.opacity = contr
         while not key:
             stimulus.draw() #draw the stimulus
             window.flip()
-            key = psychopy.event.getKeys(keyList=['left','right'])
+            key = psychopy.event.getKeys(keyList=keys)
 
     '''
     2. Titration
-    '''
-
-    '''
-    # old message for initial screen
-        message1 = visual.TextStim(window, pos=(0,0),
-                                text="Instruction:\n"
-                                    "Press Right when you see vertical lines, Left when you don't\n \n"
-                                    "Hit a key when ready.\n\n"
-                                    "Press ESC to escape" )
     '''
                                 
     #the ladder
@@ -158,11 +148,9 @@ while titration_over == False:
         window.flip()
         key = psychopy.event.getKeys()
         if len(key) > 0:
-            if 'escape' in key:
-                window.close()
-                core.quit()
-            else:
+            if keys[0] in key:
                 break
+
 
     """
     Main section:
@@ -174,21 +162,27 @@ while titration_over == False:
     """
     # list that is filled with the staircase values
     staircase_means = []
-    
+
+    print(keys[0])
+    print(keys[1])
     for contrast in staircase:
         key = []
         stimulus.opacity = contrast #update the difficulty or contrast from the staircase
         while not key:
             stimulus.draw() #draw the stimulus
             window.flip()
-            key = psychopy.event.getKeys(keyList=['left','right'])
-        if 'left' in key:
+            key = psychopy.event.getKeys(keyList=keys)
+        print(key)
+        if keys[1] in key: # if they didn't see it
+            print("no")
             response = 0
             staircase_means.append(staircase.mean())
         else:
             response = 1
+            print("yes")
             staircase_means.append(staircase.mean())
         staircase.addResponse(response)
+
 
     """
     End section:
@@ -208,7 +202,8 @@ while titration_over == False:
     
     print('The subjects threshold is: ' + str(staircase.mean()))
     print('The titration values are: ')
-    print("{:.4f}".format(staircase_means))
+    for member in staircase_means:
+        print("%.4f" % member)
 
     window.flip()
     #core.wait(2)

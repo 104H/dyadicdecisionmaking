@@ -59,10 +59,10 @@ except:
 
 # set yesfinger as global variables
 if (pair_id % 2) == 0:
-    mapping = 'index' # yes finger
+    #mapping = 'index' # yes finger
     instrmapping = ['upper', 'lower'] # variable for instructions
 else:
-    mapping = 'middle'
+    #mapping = 'middle'
     instrmapping = ['lower', 'upper']
 
 # monitor specs global variables
