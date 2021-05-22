@@ -70,7 +70,7 @@ REFRESH_RATE = 60
 # Gabor patch global variables
 CYCLES = 10 # required cycles for the whole patch
 X = 256; # size of texture in pixels, needs to be to the power of 2!
-sf = CYCLES/X; # spatial frequency for texture, cycles per pixel
+sf = CYCLES/X; # spatial frequency for texture, cycles per pixelinstructions upd
 
 gabortexture = (
     visual.filters.makeGrating(res=X, cycles=X * sf) *
@@ -111,7 +111,7 @@ class subject:
         stimuli = stimulus(X=X, window=window, xoffset=xoffset, gabortexture=gabortexture, threshold=self.threshold)
 
         if (pair_id % 2) == 0:
-            self.buttons = {
+            self.buttons = {instructions upd
                     keys[0] : "yes",
                     keys[1] : "no",
                     None : "noresponse"
@@ -148,8 +148,7 @@ class subject:
                         ),
                 "noresponse" : visual.TextStim(
                             win = window, text="No Response", units='pix', pos=[0 - xoffset, 0]
-                        ), chamber 1: button box with currently 4 buttons - we use the ones on the right side
-
+                        )
                 }
 
     def __repr__ (self):
