@@ -239,7 +239,7 @@ while titration_over == False:
         if answer == 'y':
             titration_over = True 
             # Create directory and save as JSON
-            DATAPATH = HOME+DATA+pair_id
+            DATAPATH = HOME+DATA+str(pair_id)
             if not os.path.exists(DATAPATH):
                 os.makedirs(DATAPATH)
             os.chdir(DATAPATH)
