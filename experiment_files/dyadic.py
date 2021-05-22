@@ -58,10 +58,8 @@ except:
 
 # set yesfinger as global variables
 if (pair_id % 2) == 0:
-    #mapping = 'index' # yes finger
     instrmapping = ['upper', 'lower'] # variable for instructions
 else:
-    #mapping = 'middle'
     instrmapping = ['lower', 'upper']
 
 # monitor specs global variables
@@ -150,7 +148,8 @@ class subject:
                         ),
                 "noresponse" : visual.TextStim(
                             win = window, text="No Response", units='pix', pos=[0 - xoffset, 0]
-                        ),
+                        ), chamber 1: button box with currently 4 buttons - we use the ones on the right side
+
                 }
 
     def __repr__ (self):
@@ -163,8 +162,9 @@ class subject:
 
 ofs = window.size[0] / 4 # determine the offset once, assign it as neg or pos next
 
-sone = subject(1, ofs, "right", ["9", "0"])
-stwo = subject(2, -ofs, "left", ["1", "2"])
+# chamber 1: button box with currently 4 buttons - we use the ones on the right side
+sone = subject(1, ofs, "right", ["8", "7"]) # chamber 1
+stwo = subject(2, -ofs, "left", ["1", "2"]) # chamber 2 (on the left)
 subjects = [sone, stwo]
 
 #expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2': stwo.id, 'yesfinger': mapping}
