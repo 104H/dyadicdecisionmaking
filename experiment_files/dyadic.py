@@ -63,7 +63,7 @@ else:
     instrmapping = ['lower', 'upper']
 
 # monitor specs global variables
-M_WIDTH = 1920
+M_WIDTH = 1920*2
 M_HEIGHT = 1200
 REFRESH_RATE = 60
 
@@ -77,7 +77,7 @@ gabortexture = (
     visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
 )
 
-window = visual.Window(size=(2048, 768), units='pix', fullscr=False)
+window = visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', fullscr=False)
 
 noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
@@ -112,14 +112,14 @@ class subject:
 
         if (pair_id % 2) == 0:
             self.buttons = {
-                    keys[0] : "yes",
-                    keys[1] : "no",
+                    keys[1] : "yes",
+                    keys[0] : "no",
                     None : "noresponse"
                     }
         else:
             self.buttons = {
-                keys[1]: "yes",
-                keys[0]: "no",
+                keys[0]: "yes",
+                keys[1]: "no",
                 None: "noresponse"
             }
 
@@ -141,13 +141,13 @@ class subject:
         # a dot which indicates to the subject they are in the observation state
         self.indicatordict = {
                 "yes" : visual.TextStim(
-                            win = window, text="Yes", units='pix', pos=[0 - xoffset, 0]
+                            win = window, text="Yes", units='pix', pos=[0 + xoffset, 0]
                         ),
                 "no" : visual.TextStim(
-                            win = window, text="No", units='pix', pos=[0 - xoffset, 0]
+                            win = window, text="No", units='pix', pos=[0 + xoffset, 0]
                         ),
                 "noresponse" : visual.TextStim(
-                            win = window, text="No Response", units='pix', pos=[0 - xoffset, 0]
+                            win = window, text="No Response", units='pix', pos=[0 + xoffset, 0]
                         )
                 }
 
@@ -161,9 +161,8 @@ class subject:
 
 ofs = window.size[0] / 4 # determine the offset once, assign it as neg or pos next
 
-# chamber 1: button box with currently 4 buttons - we use the ones on the right side
-sone = subject(1, ofs, "right", ["8", "7"]) # chamber 1
-stwo = subject(2, -ofs, "left", ["1", "2"]) # chamber 2 (on the left)
+sone = subject(1, ofs, "right", ["1", "2"]) # chamber 1 uses button box with yellow and white buttons
+stwo = subject(2, -ofs, "left", ["8", "7"]) # chamber 2 (on the left)
 subjects = [sone, stwo]
 
 #expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2': stwo.id, 'yesfinger': mapping}
@@ -180,7 +179,7 @@ np.random.shuffle(states)
 '''
 
 # create beep for decision interval
-beep = Sound('A', secs=0.5, volume=0.05)
+beep = Sound('A', secs=0.5, volume=0.1)
 
 def genstartscreen ():
     instructions = f"Welcome to our experiment! \n\n\
@@ -434,6 +433,8 @@ iterstates = iter(practicestates)
 for idx in range(npracticetrials):
     # subject state update
     updatestate()
+    # update the speaker balance to play the beep for the right subject
+    updatespeakerbalance()
 
     # display baseline
     # wait for a random time between 2 to 4 seconds
@@ -452,7 +453,6 @@ for idx in range(npracticetrials):
     for frame in secondstoframes(2.5):
         gendecisionint(subjects, practicetriallist[idx])
         window.flip()
-        # we decided to reset the clock after flipping (redrawing) the window
 
         # fetch button press
         if response is None:
@@ -467,8 +467,6 @@ for idx in range(npracticetrials):
         genintertrial(subjects)
         window.flip()
 
-    # update the speaker balance to play the beep for the right subject
-    updatespeakerbalance()
 '''
 
 # display instructions for experiment
@@ -493,17 +491,18 @@ for trials in exphandler.loops:
     # traverse through trials
     for trial in trials:
 
+        # subject state update
+        updatestate()
+        # update the speaker balance to play the beep for the right subject
+        updatespeakerbalance()
+
         # save trial data to file
         trialInBlock += 1
         exphandler.addData('block', block)
         exphandler.addData('trial', trialInBlock)
         exphandler.addData('totalTrials', (block-1)*ntrials+trialInBlock)
-        #exphandler.addData('condition', trials.thisTrial['condition'])
         exphandler.addData('s1_state', sone.state)
         exphandler.addData('s2_state', stwo.state)
-
-        # subject state update
-        updatestate()
 
         # display baseline
         # wait for a random time between 2 to 4 seconds
@@ -523,7 +522,6 @@ for trials in exphandler.loops:
         for frame in secondstoframes(2.5):
             gendecisionint(subjects, trials.thisTrial['condition'])
             window.flip()
-            # we decided to reset the clock after flipping (redrawing) the window
 
             # fetch button press if there is no response yet
             if response[0][0] is None:
@@ -539,9 +537,6 @@ for trials in exphandler.loops:
         for frame in secondstoframes(2):
             genintertrial(subjects)
             window.flip()
-
-        # update the speaker balance to play the beep for the right subject
-        updatespeakerbalance()
 
         # save response to file
         # figure out which subject is acting, and map using their dictionary
