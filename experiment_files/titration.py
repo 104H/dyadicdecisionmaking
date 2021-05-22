@@ -66,7 +66,7 @@ except:
 # variable for instructions
 instrmapping = ['upper', 'lower'] if (int(pair_id) % 2) == 0 else ['lower', 'upper']
 
-subjectData['pair_id'] = pair_idinstructions upd
+subjectData['pair_id'] = pair_id
 
 def geninstrtitration():
     instructions = f"Please read the instructions carefully.\n\
