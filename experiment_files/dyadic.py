@@ -199,7 +199,7 @@ def genstartscreen ():
 
 def geninstructionspractice ():
     instructions = f"Please read the instructions carefully.\n\
-    1. Place your index finger on the upper key and your middle finger on the lower key.\n\
+    1. Place your middle finger on the upper key and your index finger on the lower key.\n\
     2. Now, you will have a few practice trials to see how the experiment works.\n\
     3. You will do the task together with your partner.\n\
     4. The stimulus will be the same as you saw before: a circle of noise.\n\
@@ -235,7 +235,7 @@ def geninstructionstitration ():
 
 def geninstructionsexperiment ():
     instructions = f"Now you’re ready to start the experiment. Please remember:\n\
-    1. Place your index finger on the upper key and your no on the lower key.\n\
+    1. Place your middle finger on the upper key and your index finger on the lower key.\n\
     2. When you hear a beep it’s your turn. If you don’t hear a beep, you will see your partner’s response.\n\
     3. Press the {instrmapping[0]} key for 'yes' and the {instrmapping[1]} key for 'no'.\n\
     4. Please respond as fast as and as accurate possible! \n\
