@@ -66,7 +66,7 @@ except:
 # variable for instructions
 instrmapping = ['upper', 'lower'] if (int(pair_id) % 2) == 0 else ['lower', 'upper']
 
-subjectData['pair_id'] = pair_id
+subjectData['pair_id'] = pair_idinstructions upd
 
 def geninstrtitration():
     instructions = f"Please read the instructions carefully.\n\
@@ -81,7 +81,7 @@ def geninstrtitration():
 
 def geninstrfamiliarization():
     instructions = f"Please read the instructions carefully.\n\
-    1. Place your index finger on the upper key and your middle finger on the lower key.\n\
+    1. Place your middle finger on the upper key and your index finger on the lower key.\n\
     2. First, you will become familiar with the stimulus and the handling of the button box.\n\
     3. For the stimulus, a red dot is shown in the middle of the screen, surrounded by a circular pattern that looks similar to white noise.\n\
     4. You need to indicate whether you saw a vertical grating on top of the noise.\n\
@@ -107,7 +107,7 @@ while titration_over == False:
     else: 
         print("You already entered a chamber number! You entered:" + chamber)
 
-    keys = ["9", "0"] if chamber == 1 else ["1", "2"]
+    keys = ["8", "7"] if chamber == 1 else ["1", "2"]
 
     subjectData['chamber'] = chamber
 
