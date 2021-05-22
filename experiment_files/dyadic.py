@@ -108,7 +108,7 @@ class subject:
         self.state = 0
         self.xoffset = xoffset
         self.response = None
-        self.actingheadphonebalance = "100%,0%" if position == "left" else "0%,100%"
+        self.actingheadphonebalance = "30%,0%" if position == "left" else "0%,30%"
 
         stimuli = stimulus(X=X, window=window, xoffset=xoffset, gabortexture=gabortexture, threshold=self.threshold)
 
@@ -181,7 +181,7 @@ np.random.shuffle(states)
 '''
 
 # create beep for decision interval
-beep = Sound('A', secs=0.5)
+beep = Sound('A', secs=0.5, volume=0.05)
 
 def genstartscreen ():
     instructions = f"Welcome to our experiment! \n\n\
