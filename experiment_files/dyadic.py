@@ -70,7 +70,7 @@ REFRESH_RATE = 60
 # Gabor patch global variables
 CYCLES = 10 # required cycles for the whole patch
 X = 256; # size of texture in pixels, needs to be to the power of 2!
-sf = CYCLES/X; # spatial frequency for texture, cycles per pixelinstructions upd
+sf = CYCLES/X; # spatial frequency for texture, cycles per pixel
 
 gabortexture = (
     visual.filters.makeGrating(res=X, cycles=X * sf) *
@@ -111,7 +111,7 @@ class subject:
         stimuli = stimulus(X=X, window=window, xoffset=xoffset, gabortexture=gabortexture, threshold=self.threshold)
 
         if (pair_id % 2) == 0:
-            self.buttons = {instructions upd
+            self.buttons = {
                     keys[0] : "yes",
                     keys[1] : "no",
                     None : "noresponse"
