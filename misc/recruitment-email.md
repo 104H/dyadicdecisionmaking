@@ -8,6 +8,8 @@ If you are interested in participating, please check if you fulfill the followin
 
 - Normal (or corrected to normal) vision
 - Normal (or corrected to normal) hearing
+- No central nervous system disorders
+- No motor disorders
 
 
 The experimental study will be taking place in the NeuroBioPsychology lab at Wachsbleiche 27. There is a hygiene procedure in place to minimize the risk of spreading the COVID-19 virus.
