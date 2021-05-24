@@ -56,14 +56,12 @@ def draw_stim(noise, signal, reddot, annulus):
 
 
 # get pair id via command-line argument
-'''
+
 try:
     pair_id = int(sys.argv[1])
 except:
     print('Please enter a number as pair id as command-line argument!')
     pair_id = input()
-'''
-pair_id=2
 
 # variable for instructions
 instrmapping = ['upper', 'lower'] if (int(pair_id) % 2) == 0 else ['lower', 'upper']
@@ -107,7 +105,7 @@ while titration_over == False:
     subjectData['titration_counter'] = titration_counter
 
     # input the chamber number in which titration takes place
-    '''
+
     chamber = []
     if chamber == []:
         print("Enter chamber number (1 or 2):")
@@ -117,8 +115,7 @@ while titration_over == False:
         chamber = input()
     else: 
         print("You already entered a chamber number! You entered:" + chamber)
-    '''
-    chamber=1
+
     keys = ["1", "2"] if chamber == 1 else ["8", "7"]
 
     subjectData['chamber'] = chamber
