@@ -418,7 +418,7 @@ geninstructionspractice()
 window.flip()
 getacknowledgements()
 
-'''
+
 # set up practice trials
 npracticetrials = 2
 cond=["signal", "noise"]
@@ -442,21 +442,24 @@ for idx in range(npracticetrials):
         genbaseline(subjects)
         window.flip()
 
+    event.clearEvents() # get rid of all event in the buffer
+
     # preparing time for next window flip, to precisely co-ordinate window flip and beep
     nextflip = window.getFutureFlipTime(clock='ptb')
     beep.play(when=nextflip)
     # display stimulus
     responsetime.reset()
 
-    response = None # we do not have a response because a new trial has started
-    event.clearEvents() # clear the buffer from any left over input from the previous trial
+    response = [(None, 0)]  # we have no response yet
     for frame in secondstoframes(2.5):
         gendecisionint(subjects, practicetriallist[idx])
         window.flip()
 
         # fetch button press
-        if response is None:
+        if response[0][0] is None:
             response = fetchbuttonpress(subjects, responsetime)
+        else:
+            break
 
     # need to explicity call stop() to go back to the beginning of the track
     # we reset after collecting a response, otherwise the beep is stopped too early
@@ -467,7 +470,7 @@ for idx in range(npracticetrials):
         genintertrial(subjects)
         window.flip()
 
-'''
+
 
 # display instructions for experiment
 geninstructionsexperiment()
