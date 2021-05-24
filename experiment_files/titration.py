@@ -105,7 +105,6 @@ while titration_over == False:
     subjectData['titration_counter'] = titration_counter
 
     # input the chamber number in which titration takes place
-
     chamber = []
     if chamber == []:
         print("Enter chamber number (1 or 2):")
@@ -116,7 +115,22 @@ while titration_over == False:
     else: 
         print("You already entered a chamber number! You entered:" + chamber)
 
-    keys = ["1", "2"] if chamber == 1 else ["8", "7"]
+    #instrmapping = ['upper', 'lower'] if (int(pair_id) % 2) == 0 else ['lower', 'upper']
+    #keys = ["1", "2"] if chamber == 1 else ["8", "7"]
+
+    if (int(pair_id) % 2) == 0:
+        instrmapping = ['upper', 'lower']
+        if chamber == 1:
+            keys = ["2", "1"]
+        else:
+            keys = ["7", "8"]
+    else:
+        instrmapping = ['lower', 'upper']
+        if chamber == 1:
+            keys = ["1", "2"]
+        else:
+            keys = ["8", "7"]
+
 
     subjectData['chamber'] = chamber
 
