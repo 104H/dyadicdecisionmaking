@@ -18,7 +18,7 @@ import numpy as np
 import psychtoolbox as ptb
 from psychopy import visual, event, core, gui, data, prefs
 from stimuli import stimulus
-from random import choice
+from random import choice, shuffle
 import json
 
 # setting PTB as our preferred sound library and then import sound
@@ -49,6 +49,7 @@ from numpy.random import random
 
 # copied to titration
 # get pair id via command-line argument
+
 try:
     pair_id = int(sys.argv[1])
 except:
@@ -60,10 +61,10 @@ except:
 if (pair_id % 2) == 0:
     instrmapping = ['right', 'left'] # variable for instructions
 else:
-    instrmapping = ['right', 'left']
+    instrmapping = ['left', 'right']
 
 # monitor specs global variables
-M_WIDTH = 1920*2
+M_WIDTH = 1920#*2
 M_HEIGHT = 1200
 REFRESH_RATE = 60
 
@@ -91,6 +92,7 @@ class subject:
             position is either left of right. it is used to determine the speaker of the subject
             keys is a list of keys expected from the user. it has to be in the order of yes and no
         '''
+
         # fetching subject titration thresholds
         try:
             n = "1" if position == "left" else "2"
@@ -101,7 +103,7 @@ class subject:
             exit(-1)
         else:
             self.threshold = data["threshold"]
-
+        
         self.id = sid
         self.state = 0
         self.xoffset = xoffset
@@ -237,12 +239,15 @@ def geninstructionsexperiment ():
                     color='black', height=20).draw()
 
 def genendscreen ():
+    instructions = "Thank you for your time.\n\n\
+    Please let the experimenter know you're finished."
+
     visual.TextStim(window,
-                    text="Thank you for your time.", pos=[0 + sone.xoffset,0],
+                    text=instructions, pos=[0 + sone.xoffset,0],
                     color='black', height=20).draw()
 
     visual.TextStim(window,
-                    text="Thank you for your time.", pos=[0 + stwo.xoffset,0],
+                    text=instructions, pos=[0 + stwo.xoffset,0],
                     color='black', height=20).draw()
 
 def genbreakscreen ():
@@ -264,8 +269,8 @@ def genmandatorybreakscreen ():
     '''
         Generate the screen shown when the mandatory break is in progress
     '''
-    instructions = "Enjoy your break. Please open the door to the main room.\n\n\
-                   The experimenter will resume the experiment after a short break."
+    instructions = "Enjoy your break. Please let the experimenter know you've reached the break.\n\n\
+    The experimenter will resume the experiment after a short break."
 
     visual.TextStim(window,
                     text=instructions, pos = [0 + sone.xoffset, 0],
@@ -411,13 +416,21 @@ getacknowledgements()
 
 
 # set up practice trials
-npracticetrials = 8
-cond=["signal", "noise"]
+npracticetrials = 8 # needs to be an even number
+practicestates=[]
 practicetriallist=[]
-for Idx in range(npracticetrials):
-    practicetriallist.append(choice(cond))
+# make sure signal/noise and acting/observing are equally distributed for practice trials
+for _ in range (npracticetrials//2):
+    practicestates.append(0)
+    practicestates.append(1)
+    practicetriallist.append("signal")
+    practicetriallist.append("noise")
+
+# shuffle the lists
+shuffle(practicestates)
+shuffle(practicetriallist)
+
 # make an iterator object
-practicestates = np.random.randint(0, 2, npracticetrials)
 iterstates = iter(practicestates)
 
 # traverse through practice trials
@@ -556,5 +569,6 @@ for trials in exphandler.loops:
 
 genendscreen()
 window.flip()
+core.wait(10)
 
 
