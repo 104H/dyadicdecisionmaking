@@ -310,10 +310,10 @@ def genintertrial (subjects):
 
     # if subject one/two is in an acting state, add their response to the response box of subject two/one
     if stwo.state == 1:
-        if stwo.response is not "noresponse":
+        if stwo.response != "noresponse":
             sone.indicatordict[stwo.response].draw()
     if sone.state == 1:
-        if sone.response is not "noresponse":
+        if sone.response != "noresponse":
             stwo.indicatordict[sone.response].draw()
 
 
