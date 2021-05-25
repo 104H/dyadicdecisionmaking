@@ -355,6 +355,7 @@ def secondstoframes (seconds):
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
 
 def getacknowledgements ():
+    event.clearEvents() # clearing buffers before waiting for acknowledgments
     sone_ack, stwo_ack = None, None
 
     while (sone_ack != 'yes') or (stwo_ack != 'yes'):
@@ -364,6 +365,7 @@ def getacknowledgements ():
             if stwo_ack != 'yes': stwo_ack = stwo.buttons.get(r)
 
 def getexperimenterack ():
+    event.clearEvents() # clear buffer before waiting for acknowledgments
     keys = event.waitKeys(keyList=["q", "space"])
     if "q" in keys: # exit experiment
         window.close()
@@ -409,7 +411,7 @@ getacknowledgements()
 
 
 # set up practice trials
-npracticetrials = 2
+npracticetrials = 8
 cond=["signal", "noise"]
 practicetriallist=[]
 for Idx in range(npracticetrials):
