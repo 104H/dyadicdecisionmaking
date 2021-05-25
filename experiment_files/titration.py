@@ -63,9 +63,6 @@ except:
     print('Please enter a number as pair id as command-line argument!')
     pair_id = input()
 
-# variable for instructions
-instrmapping = ['upper', 'lower'] if (int(pair_id) % 2) == 0 else ['lower', 'upper']
-
 subjectData['pair_id'] = pair_id
 
 def genendscreen():
@@ -80,6 +77,7 @@ def geninstrtitration():
     instructions = f"Please read the instructions carefully.\n\
     1. Now we will determine your individual threshold for recognizing the vertical grating.\n\
     2. The procedure is the same as before: when you hear a beep, press the {instrmapping[0]} key if you saw a grating, and the {instrmapping[1]} key if you didn’t.\n\
+    3. Fixate on the dot in the center of the circle.\n\
     3. The visibility of the grating will be adjusted throughout the trials.\n\n\
     Press yes to continue"
 
@@ -89,11 +87,12 @@ def geninstrtitration():
 
 def geninstrfamiliarization():
     instructions = f"Please read the instructions carefully.\n\
-    1. Place your middle finger on the upper key and your index finger on the lower key.\n\
+    1. Place your index finger on the left key and your middle finger on the right key.\n\
     2. First, you will become familiar with the stimulus and the handling of the button box.\n\
     3. For the stimulus, a red dot is shown in the middle of the screen, surrounded by a circular pattern that looks similar to white noise.\n\
     4. You need to indicate whether you saw a vertical grating on top of the noise.\n\
-    5. Press the {instrmapping[0]} key for 'yes' and the {instrmapping[1]} key for 'no'.\n\
+    5. Fixate on the dot in the center of the circular pattern.\n\
+    6. Press the {instrmapping[0]} key for 'yes' and the {instrmapping[1]} key for 'no'.\n\n\
     Press yes to continue"
 
     visual.TextStim(window,
@@ -115,24 +114,21 @@ while titration_over == False:
     else: 
         print("You already entered a chamber number! You entered:" + chamber)
 
-    #instrmapping = ['upper', 'lower'] if (int(pair_id) % 2) == 0 else ['lower', 'upper']
-    #keys = ["1", "2"] if chamber == 1 else ["8", "7"]
+    subjectData['chamber'] = chamber
 
+    # variables for instructions and key input
     if (int(pair_id) % 2) == 0:
-        instrmapping = ['upper', 'lower']
+        instrmapping = ['right', 'left']
         if chamber == 1:
             keys = ["2", "1"]
         else:
             keys = ["7", "8"]
     else:
-        instrmapping = ['lower', 'upper']
+        instrmapping = ['left', 'right']
         if chamber == 1:
             keys = ["1", "2"]
         else:
             keys = ["8", "7"]
-
-
-    subjectData['chamber'] = chamber
 
     # the screen
     window = psychopy.visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', screen=int(chamber), fullscr=False, pos=None)
@@ -154,12 +150,11 @@ while titration_over == False:
         window.flip()
         key = psychopy.event.getKeys()
         if len(key) > 0:
-            print(key)
             if keys[0] in key:
                 break
 
     nfamtrials = 3
-    famcontrast = [0.15,0.005,0.08]
+    famcontrast = [0.15,0.002,0.08]
 
     for contr in famcontrast:
         key = []
@@ -204,8 +199,6 @@ while titration_over == False:
     # list that is filled with the staircase values
     staircase_means = []
 
-    print(keys[0])
-    print(keys[1])
     for contrast in staircase:
         key = []
         stimulus.opacity = contrast #update the difficulty or contrast from the staircase
@@ -213,7 +206,6 @@ while titration_over == False:
             draw_stim(noise, stimulus, reddot, annulus) # draw the stimulus
             window.flip()
             key = psychopy.event.getKeys(keyList=keys)
-        print(key)
         if keys[1] in key: # if they didn't see it
             print("no")
             response = 0

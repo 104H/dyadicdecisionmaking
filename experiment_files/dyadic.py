@@ -58,9 +58,9 @@ except:
 
 # set yesfinger as global variables
 if (pair_id % 2) == 0:
-    instrmapping = ['upper', 'lower'] # variable for instructions
+    instrmapping = ['right', 'left'] # variable for instructions
 else:
-    instrmapping = ['lower', 'upper']
+    instrmapping = ['right', 'left']
 
 # monitor specs global variables
 M_WIDTH = 1920*2
@@ -197,14 +197,15 @@ def genstartscreen ():
 
 def geninstructionspractice ():
     instructions = f"Please read the instructions carefully.\n\
-    1. Place your middle finger on the upper key and your index finger on the lower key.\n\
+    1. Place your index finger on the left key and your middle finger on the right key.\n\
     2. Now, you will have a few practice trials to see how the experiment works.\n\
     3. You will do the task together with your partner.\n\
     4. The stimulus will be the same as you saw before: a circle of noise.\n\
-    5. What's new: Only when you hear a beep, it’s your turn to indicate whether you saw a vertical grating on top of the noise.\n\
-    6. Press the {instrmapping[0]} key for 'yes' and the {instrmapping[1]} key for 'no'.\n\
-    7. It’s very important that you respond as fast and as accurate as possible! You only have a limited amount of time for your response.\n\
-    8. If you don’t hear a beep, it’s the other person’s turn to respond. You will both see the the same stimulus and you will also see their response on your screen.\n\n\
+    5. Fixate on the dot in the center of the circle.\n\
+    6. What's new: Only when you hear a beep, it’s your turn to indicate whether you saw a vertical grating on top of the noise.\n\
+    7. Press the {instrmapping[0]} key for 'yes' and the {instrmapping[1]} key for 'no'.\n\
+    8. It’s very important that you respond as fast and as accurate as possible! You only have a limited amount of time for your response.\n\
+    9. If you don’t hear a beep, it’s the other person’s turn to respond. You will both see the the same stimulus and you will also see their response on your screen.\n\n\
     Press yes to continue"
 
     visual.TextStim(window,
@@ -214,32 +215,17 @@ def geninstructionspractice ():
     visual.TextStim(window,
                     text=instructions, pos=[0 + stwo.xoffset,0],
                     color='black', height=20).draw()
-'''
-def geninstructionstitration ():
-    instructions = f"Please read the instructions carefully.\n\
-    1. Now we will determine your individual threshold for recognizing the vertical grating.\n\
-    2. The procedure is the same as before: when you hear a beep, press the {instrmapping[0]} key if you saw a grating, and the {instrmapping[1]} key if you didn’t.\n\
-    3. The visibility of the grating will be adjusted throughout the trials.\n\n\
-    Press yes to continue"
-
-    visual.TextStim(window,
-                    text=instructions, pos=[0 + sone.xoffset,0],
-                    color='black', height=20).draw()
-
-    visual.TextStim(window,
-                    text=instructions, pos=[0 + stwo.xoffset,0],
-                    color='black', height=20).draw()
-'''
 
 def geninstructionsexperiment ():
     instructions = f"Now you’re ready to start the experiment. Please remember:\n\
-    1. Place your middle finger on the upper key and your index finger on the lower key.\n\
-    2. When you hear a beep it’s your turn. If you don’t hear a beep, you will see your partner’s response.\n\
-    3. Press the {instrmapping[0]} key for 'yes' and the {instrmapping[1]} key for 'no'.\n\
-    4. Please respond as fast as and as accurate possible! \n\
-    5. Once you finished one block, you’ll be asked if you’re ready for the next block.\n\
-    6. After every second block, you will have a break.\n\
-    7. There will be a total of 12 blocks.\n\n\
+    1. Place your index finger on the left key and your middle finger on the right key.\n\
+    2. Fixate on the dot in the center of the circle.\n\
+    3. When you hear a beep it’s your turn. If you don’t hear a beep, you will see your partner’s response.\n\
+    4. Press the {instrmapping[0]} key for 'yes' and the {instrmapping[1]} key for 'no'.\n\
+    5. Please respond as fast as and as accurate possible! \n\
+    6. Once you finished one block, you’ll be asked if you’re ready for the next block.\n\
+    7. After every second block, you will have a break.\n\
+    8. There will be a total of 12 blocks.\n\n\
     Press yes when you’re ready to start the experiment"
 
     visual.TextStim(window,
@@ -278,7 +264,8 @@ def genmandatorybreakscreen ():
     '''
         Generate the screen shown when the mandatory break is in progress
     '''
-    instructions = "Enjoy your break. The experimenter will resume the experiment."
+    instructions = "Enjoy your break. Please open the door to the main room.\n\n\
+                   The experimenter will resume the experiment after a short break."
 
     visual.TextStim(window,
                     text=instructions, pos = [0 + sone.xoffset, 0],
@@ -323,9 +310,11 @@ def genintertrial (subjects):
 
     # if subject one/two is in an acting state, add their response to the response box of subject two/one
     if stwo.state == 1:
-        sone.indicatordict[stwo.response].draw()
+        if stwo.response is not "noresponse":
+            sone.indicatordict[stwo.response].draw()
     if sone.state == 1:
-        stwo.indicatordict[sone.response].draw()
+        if sone.response is not "noresponse":
+            stwo.indicatordict[sone.response].draw()
 
 
 def fetchbuttonpress (subjects, clock):
