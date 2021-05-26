@@ -64,7 +64,7 @@ else:
     instrmapping = ['left', 'right']
 
 # monitor specs global variables
-M_WIDTH = 1920#*2
+M_WIDTH = 1920*2
 M_HEIGHT = 1200
 REFRESH_RATE = 60
 
