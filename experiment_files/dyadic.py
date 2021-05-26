@@ -78,7 +78,7 @@ gabortexture = (
     visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
 )
 
-window = visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', fullscr=False)
+window = visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', blendMode='add',fullscr=False,useFBO= True)
 
 noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
@@ -103,7 +103,7 @@ class subject:
             exit(-1)
         else:
             self.threshold = data["threshold"]
-        
+
         self.id = sid
         self.state = 0
         self.xoffset = xoffset
@@ -570,5 +570,3 @@ for trials in exphandler.loops:
 genendscreen()
 window.flip()
 core.wait(10)
-
-
