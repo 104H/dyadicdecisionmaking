@@ -184,10 +184,10 @@ np.random.shuffle(states)
 beep = Sound('A', secs=0.5, volume=0.1)
 
 def genstartscreen ():
-    instructions = f"Welcome to our experiment! \n\n\
+    instructions = "Welcome to our experiment! \n\n\
     Your task is to indicate whether you see a vertical grating or not.\n\
     If you have any questions after reading the instructions on the next screen, please feel free to ask the experimenter.\n\n\
-    Press the {instrmapping[0]} key to continue"
+    Press the {} key to continue".format(instrmapping[0])
 
     visual.TextStim(window,
                     text=instructions, pos=[0 + sone.xoffset,0],
@@ -198,17 +198,17 @@ def genstartscreen ():
                     color='black', height=20).draw()
 
 def geninstructionspractice ():
-    instructions = f"Please read the instructions carefully.\n\
+    instructions = "Please read the instructions carefully.\n\
     1. Place your index finger on the left key and your middle finger on the right key.\n\
     2. Now, you will have a few practice trials to see how the experiment works.\n\
     3. You will do the task together with your partner.\n\
     4. The stimulus will be the same as you saw before: a circle of noise.\n\
     5. Fixate on the dot in the center of the circle.\n\
     6. What's new: Only when you hear a beep, it’s your turn to indicate whether you saw a vertical grating on top of the noise.\n\
-    7. Press the {instrmapping[0]} key for 'yes' and the {instrmapping[1]} key for 'no'.\n\
+    7. Press the {} key for 'yes' and the {} key for 'no'.\n\
     8. It’s very important that you respond as fast and as accurate as possible! You only have a limited amount of time for your response.\n\
     9. If you don’t hear a beep, it’s the other person’s turn to respond. You will both see the the same stimulus and you will also see their response on your screen.\n\n\
-    Press yes to continue"
+    Press yes to continue".format(instrmapping[0], instrmapping[1])
 
     visual.TextStim(window,
                     text=instructions, pos=[0 + sone.xoffset,0],
@@ -219,16 +219,16 @@ def geninstructionspractice ():
                     color='black', height=20).draw()
 
 def geninstructionsexperiment ():
-    instructions = f"Now you’re ready to start the experiment. Please remember:\n\
+    instructions = "Now you’re ready to start the experiment. Please remember:\n\
     1. Place your index finger on the left key and your middle finger on the right key.\n\
     2. Fixate on the dot in the center of the circle.\n\
     3. When you hear a beep it’s your turn. If you don’t hear a beep, you will see your partner’s response.\n\
-    4. Press the {instrmapping[0]} key for 'yes' and the {instrmapping[1]} key for 'no'.\n\
+    4. Press the {} key for 'yes' and the {} key for 'no'.\n\
     5. Please respond as fast as and as accurate possible! \n\
     6. Once you finished one block, you’ll be asked if you’re ready for the next block.\n\
     7. After every second block, you will have a break.\n\
     8. There will be a total of 12 blocks.\n\n\
-    Press yes when you’re ready to start the experiment"
+    Press yes when you’re ready to start the experiment".format(instrmapping[0], instrmapping[1])
 
     visual.TextStim(window,
                     text=instructions, pos=[0 + sone.xoffset,0],

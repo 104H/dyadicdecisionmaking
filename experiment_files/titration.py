@@ -74,26 +74,26 @@ def genendscreen():
                     color='black', height=20).draw()
 
 def geninstrtitration():
-    instructions = f"Please read the instructions carefully.\n\
+    instructions = "Please read the instructions carefully.\n\
     1. Now we will determine your individual threshold for recognizing the vertical grating.\n\
-    2. The procedure is the same as before: when you hear a beep, press the {instrmapping[0]} key if you saw a grating, and the {instrmapping[1]} key if you didn’t.\n\
+    2. The procedure is the same as before: when you hear a beep, press the {} key if you saw a grating, and the {} key if you didn’t.\n\
     3. Fixate on the dot in the center of the circle.\n\
     3. The visibility of the grating will be adjusted throughout the trials.\n\n\
-    Press yes to continue"
+    Press yes to continue".format(instrmapping[0], instrmapping[1])
 
     visual.TextStim(window,
                     text=instructions, pos=(0, 0),
                     color='black', height=20).draw()
 
 def geninstrfamiliarization():
-    instructions = f"Please read the instructions carefully.\n\
+    instructions = "Please read the instructions carefully.\n\
     1. Place your index finger on the left key and your middle finger on the right key.\n\
     2. First, you will become familiar with the stimulus and the handling of the button box.\n\
     3. For the stimulus, a red dot is shown in the middle of the screen, surrounded by a circular pattern that looks similar to white noise.\n\
     4. You need to indicate whether you saw a vertical grating on top of the noise.\n\
     5. Fixate on the dot in the center of the circular pattern.\n\
-    6. Press the {instrmapping[0]} key for 'yes' and the {instrmapping[1]} key for 'no'.\n\n\
-    Press yes to continue"
+    6. Press the {} key for 'yes' and the {} key for 'no'.\n\n\
+    Press yes to continue".format(instrmapping[0], instrmapping[1])
 
     visual.TextStim(window,
                     text=instructions, pos=(0, 0),
