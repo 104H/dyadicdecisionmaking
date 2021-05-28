@@ -117,7 +117,7 @@ while titration_over == False:
     subjectData['chamber'] = chamber
 
     # variables for instructions and key input
-    if (int(pair_id) % 2) == 0:
+    if (int(pair_id) < 13) == 0:
         instrmapping = ['right', 'left']
         if chamber == 1:
             keys = ["2", "1"]

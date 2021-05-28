@@ -58,7 +58,7 @@ except:
     #pair_id=2
 
 # set yesfinger as global variables
-if (pair_id % 2) == 0:
+if (pair_id < 13):
     instrmapping = ['right', 'left'] # variable for instructions
 else:
     instrmapping = ['left', 'right']
@@ -112,7 +112,7 @@ class subject:
 
         stimuli = stimulus(X=X, window=window, xoffset=xoffset, gabortexture=gabortexture, threshold=self.threshold)
 
-        if (pair_id % 2) == 0:
+        if (pair_id < 13) == 0:
             self.buttons = {
                     keys[1] : "yes",
                     keys[0] : "no",
