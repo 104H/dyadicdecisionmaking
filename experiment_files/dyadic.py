@@ -17,6 +17,7 @@ from subprocess import run
 import numpy as np
 import psychtoolbox as ptb
 from psychopy import visual, event, core, gui, data, prefs
+from psychopy.hardware import keyboard
 from stimuli import stimulus
 from random import choice, shuffle
 import json
@@ -58,8 +59,8 @@ except:
     #pair_id=2
 
 # set yesfinger as global variables
-if (pair_id < 13):
-    instrmapping = ['right', 'left'] # variable for instructions
+if pair_id < 13:
+    instrmapping = ['right', 'left'] # variable for instructions - first element is 'yes'
 else:
     instrmapping = ['left', 'right']
 
@@ -112,7 +113,7 @@ class subject:
 
         stimuli = stimulus(X=X, window=window, xoffset=xoffset, gabortexture=gabortexture, threshold=self.threshold)
 
-        if (pair_id < 13) == 0:
+        if pair_id < 13:
             self.buttons = {
                     keys[1] : "yes",
                     keys[0] : "no",
@@ -158,7 +159,6 @@ class subject:
 
 
 
-
 ### Global variables for rendering stimuli
 
 ofs = window.size[0] / 4 # determine the offset once, assign it as neg or pos next
@@ -167,11 +167,13 @@ sone = subject(1, ofs, "right", ["1", "2"]) # chamber 1 uses button box with yel
 stwo = subject(2, -ofs, "left", ["8", "7"]) # chamber 2 (on the left)
 subjects = [sone, stwo]
 
-#expinfo = {'date': data.getDateStr(), 'pair': pair_id, 'participant1': sone.id, 'participant2': stwo.id, 'yesfinger': mapping}
 expinfo = {'pair': pair_id}
 
 blocks = range(6)
-ntrials = 6 # trials per block
+ntrials = 4 # trials per block
+
+kb = keyboard.Keyboard()
+rt = None
 
 '''
 # make an array of 0 and 1, denoting observe and act, respectively and scale it up by half of the number of trials
@@ -334,12 +336,20 @@ def fetchbuttonpress (subjects, clock):
             continue
         else:
             # How do I tell waitKeys to look for input from the specific subject input device and not the other?
-            response = event.getKeys(timeStamped=clock, keyList=s.buttons.keys())
+            #response = event.getKeys(timeStamped=clock, keyList=s.buttons.keys())
+            temp = kb.getKeys(keyList=s.buttons.keys(), clear=False)
 
-            if len(response) == 0: response = [(None, 0)]
-            keystroke = response[0][0]
-            s.response = s.buttons[keystroke]
-    return response
+            if len(temp) == 0:
+                resp = []
+                s.response = s.buttons[None]
+            else:
+                response = temp[0]
+                keystroke = response.name
+                s.response = s.buttons[keystroke]
+                resp = s.buttons[keystroke]
+                global rt
+                rt = temp[0].rt
+    return resp
 
 def updatespeakerbalance ():
     # we can a terminal command to shift the balance. it does not work if both the subject are acting (in the individual condition)
@@ -360,18 +370,19 @@ def secondstoframes (seconds):
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
 
 def getacknowledgements ():
-    event.clearEvents() # clearing buffers before waiting for acknowledgments
+    kb.clearEvents(eventType='keyboard') # clearing buffers before waiting for acknowledgments
     sone_ack, stwo_ack = None, None
 
     while (sone_ack != 'yes') or (stwo_ack != 'yes'):
-        response = event.getKeys()
-        for r in response:
-            if sone_ack != 'yes': sone_ack = sone.buttons.get(r)
-            if stwo_ack != 'yes': stwo_ack = stwo.buttons.get(r)
+        response = kb.getKeys(clear=False)
+        if response is not None:
+            for r in response:
+                if sone_ack != 'yes': sone_ack = sone.buttons.get(r.name)
+                if stwo_ack != 'yes': stwo_ack = stwo.buttons.get(r.name)
 
 def getexperimenterack ():
-    event.clearEvents() # clear buffer before waiting for acknowledgments
-    keys = event.waitKeys(keyList=["q", "space"])
+    kb.clearEvents(eventType='keyboard') # clearing buffers before waiting for acknowledgments
+    keys = kb.waitKeys(keyList=["q", "space"], clear=False)
     if "q" in keys: # exit experiment
         window.close()
         core.quit()
@@ -383,8 +394,6 @@ def genactingstates ():
 # update speaker balance for the first time
 updatespeakerbalance()
 
-# preparing the clocks
-responsetime = core.Clock()
 
 # specifications of output file
 _thisDir = os.path.dirname(os.path.abspath(__file__))
@@ -416,7 +425,7 @@ getacknowledgements()
 
 
 # set up practice trials
-npracticetrials = 8 # needs to be an even number
+npracticetrials = 4 # needs to be an even number
 practicestates=[]
 practicetriallist=[]
 # make sure signal/noise and acting/observing are equally distributed for practice trials
@@ -435,6 +444,7 @@ iterstates = iter(practicestates)
 
 # traverse through practice trials
 for idx in range(npracticetrials):
+    rt = None
     # subject state update
     updatestate()
     # update the speaker balance to play the beep for the right subject
@@ -446,22 +456,22 @@ for idx in range(npracticetrials):
         genbaseline(subjects)
         window.flip()
 
-    event.clearEvents() # get rid of all event in the buffer
+    kb.clearEvents(eventType='keyboard')
 
     # preparing time for next window flip, to precisely co-ordinate window flip and beep
     nextflip = window.getFutureFlipTime(clock='ptb')
     beep.play(when=nextflip)
     # display stimulus
-    responsetime.reset()
+    kb.clock.reset()
 
-    response = [(None, 0)]  # we have no response yet
+    response = [] # we have no response yet
     for frame in secondstoframes(2.5):
         gendecisionint(subjects, practicetriallist[idx])
         window.flip()
 
         # fetch button press
-        if response[0][0] is None:
-            response = fetchbuttonpress(subjects, responsetime)
+        if not response:
+            response = fetchbuttonpress(subjects, kb.clock)
         else:
             break
 
@@ -473,7 +483,6 @@ for idx in range(npracticetrials):
     for frame in secondstoframes(2):
         genintertrial(subjects)
         window.flip()
-
 
 
 # display instructions for experiment
@@ -497,6 +506,7 @@ for trials in exphandler.loops:
 
     # traverse through trials
     for trial in trials:
+        rt = None
 
         # subject state update
         updatestate()
@@ -517,22 +527,22 @@ for trials in exphandler.loops:
             genbaseline(subjects)
             window.flip()
 
-        event.clearEvents() # get rid of all event in the buffer
+        kb.clearEvents(eventType='keyboard')
 
         # preparing time for next window flip, to precisely co-ordinate window flip and beep
         nextflip = window.getFutureFlipTime(clock='ptb')
         beep.play(when=nextflip)
         # display stimulus
-        responsetime.reset()
+        kb.clock.reset()
 
-        response = [(None, 0)] # we have no response yet
+        response = []  # we have no response yet
         for frame in secondstoframes(2.5):
             gendecisionint(subjects, trials.thisTrial['condition'])
             window.flip()
 
-            # fetch button press if there is no response yet
-            if response[0][0] is None:
-                response = fetchbuttonpress(subjects, responsetime)
+            # fetch button press
+            if not response:
+                response = fetchbuttonpress(subjects, kb.clock)
             else:
                 break
 
@@ -546,10 +556,11 @@ for trials in exphandler.loops:
             window.flip()
 
         # save response to file
-        # figure out which subject is acting, and map using their dictionary
-        actingsubject = sone if sone.state == 1 else stwo
-        exphandler.addData('response', actingsubject.buttons[ response[0][0] ])
-        exphandler.addData('rt', response[0][1])
+        if not response:
+            exphandler.addData('response', "None")
+        else:
+            exphandler.addData('response', response)
+        exphandler.addData('rt', rt)
 
         # move to next row in output file
         exphandler.nextEntry()

@@ -6,6 +6,7 @@ import numpy as np
 import psychopy
 from psychopy import visual
 from psychopy.data import QuestHandler
+from psychopy.hardware import keyboard
 from psychopy import core
 from stimuli import stimulus
 
@@ -21,6 +22,7 @@ Set-up section:
 # set the number of trials (for testing)!
 numberOfTrials = 30 # should be 100
 
+kb = keyboard.Keyboard()
 
 # Directory Specs
 HOME = os.getcwd()
@@ -117,7 +119,7 @@ while titration_over == False:
     subjectData['chamber'] = chamber
 
     # variables for instructions and key input
-    if (int(pair_id) < 13) == 0:
+    if (int(pair_id) < 13):
         instrmapping = ['right', 'left']
         if chamber == 1:
             keys = ["2", "1"]
