@@ -48,17 +48,7 @@ gabortexture = (
     visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
 )
 
-# stimulus draw function
-def draw_stim(noise, signal, reddot, annulus):
-    noise.draw()
-    noise.updateNoise()
-    signal.draw()
-    annulus.draw()
-    reddot.draw()
-
-
 # get pair id via command-line argument
-
 try:
     pair_id = int(sys.argv[1])
 except:
@@ -66,6 +56,14 @@ except:
     pair_id = input()
 
 subjectData['pair_id'] = pair_id
+
+# stimulus draw function
+def draw_stim(noise, signal, reddot, annulus):
+    noise.draw()
+    noise.updateNoise()
+    signal.draw()
+    annulus.draw()
+    reddot.draw()
 
 def genendscreen():
     instructions = "You have finished the titration.\n\n\
@@ -119,7 +117,7 @@ while titration_over == False:
     subjectData['chamber'] = chamber
 
     # variables for instructions and key input
-    if (int(pair_id) < 13):
+    if int(pair_id) < 13:
         instrmapping = ['right', 'left']
         if chamber == 1:
             keys = ["2", "1"]
@@ -150,7 +148,7 @@ while titration_over == False:
     while True:
         geninstrfamiliarization() # display instructions
         window.flip()
-        key = psychopy.event.getKeys()
+        key = kb.getKeys()
         if len(key) > 0:
             if keys[0] in key:
                 break
@@ -164,7 +162,7 @@ while titration_over == False:
         while not key:
             draw_stim(noise, stimulus, reddot, annulus) # draw the stimulus 
             window.flip()
-            key = psychopy.event.getKeys(keyList=keys)
+            key = kb.getKeys(keyList=keys)
 
     '''
     2. Titration
@@ -184,7 +182,7 @@ while titration_over == False:
     while True:
         geninstrtitration() # display instructions
         window.flip()
-        key = psychopy.event.getKeys()
+        key = kb.getKeys()
         if len(key) > 0:
             if keys[0] in key:
                 break
@@ -207,7 +205,7 @@ while titration_over == False:
         while not key:
             draw_stim(noise, stimulus, reddot, annulus) # draw the stimulus
             window.flip()
-            key = psychopy.event.getKeys(keyList=keys)
+            key = kb.getKeys(keyList=keys)
         if keys[1] in key: # if they didn't see it
             print("no")
             response = 0
