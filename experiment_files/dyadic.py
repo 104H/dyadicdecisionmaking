@@ -557,7 +557,7 @@ for trials in exphandler.loops:
 
         # save response to file
         if not response:
-            exphandler.addData('response', "None")
+            exphandler.addData('response', "noresponse")
         else:
             exphandler.addData('response', response)
         exphandler.addData('rt', rt)
