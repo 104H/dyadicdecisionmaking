@@ -140,3 +140,6 @@ dmypy.json
 
 # profiling data
 .prof
+
+# auto generated experiment data
+data/*
