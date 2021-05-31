@@ -18,7 +18,7 @@ Set-up section:
     3. Create the stimulus. This needs to be replcaed with the stimulus being used in the experiment
     4. Create the ladder object for controlling stimulus and measuring threshold. The ladder has to be updated to match the experiment needs.
 """
- 
+
 # set the number of trials (for testing)!
 numberOfTrials = 30 # should be 100
 
@@ -100,32 +100,31 @@ def geninstrfamiliarization():
                     color='black', height=20).draw()
 
 while titration_over == False:
-    titration_counter += 1
-    subjectData['titration_counter'] = titration_counter
-
     # input the chamber number in which titration takes place
     chamber = []
     if chamber == []:
         print("Enter chamber number (1 or 2):")
         chamber = input()
-    elif chamber != 1 & chamber != 2:
-        print("Wrong! Enter chamber number (1 or 2):")
-        chamber = input()
-    else: 
+    elif chamber != "1" & chamber != "2":
+        print("Wrong. Enter chamber number (1 or 2):")
+        continue
+    else:
         print("You already entered a chamber number! You entered:" + chamber)
 
+    titration_counter += 1
+    subjectData['titration_counter'] = titration_counter
     subjectData['chamber'] = chamber
 
     # variables for instructions and key input
     if int(pair_id) < 13:
         instrmapping = ['right', 'left']
-        if chamber == 1:
+        if chamber == "1":
             keys = ["2", "1"]
         else:
             keys = ["7", "8"]
     else:
         instrmapping = ['left', 'right']
-        if chamber == 1:
+        if chamber == "1":
             keys = ["1", "2"]
         else:
             keys = ["8", "7"]
@@ -160,25 +159,25 @@ while titration_over == False:
         key = []
         stimulus.opacity = contr
         while not key:
-            draw_stim(noise, stimulus, reddot, annulus) # draw the stimulus 
+            draw_stim(noise, stimulus, reddot, annulus) # draw the stimulus
             window.flip()
             key = kb.getKeys(keyList=keys)
 
     '''
     2. Titration
     '''
-                                
+
     #the ladder
     staircase = QuestHandler(
                                 startVal=0.5,
                                 startValSd=0.2,
-                                pThreshold=0.63,  #because it is a one up one down staircase 
+                                pThreshold=0.63,  #because it is a one up one down staircase
                                 gamma=0.01,
-                                nTrials=numberOfTrials, 
+                                nTrials=numberOfTrials,
                                 minVal=0,
                                 maxVal=1
-                                )   
-     
+                                )
+
     while True:
         geninstrtitration() # display instructions
         window.flip()
@@ -219,9 +218,9 @@ while titration_over == False:
 
     """
     End section:
-        1. Show the threshold to subject. 
-        This part will be changed for the experiment. 
-        We will store the threshold in a variable for the next core block to use. 
+        1. Show the threshold to subject.
+        This part will be changed for the experiment.
+        We will store the threshold in a variable for the next core block to use.
     """
 
     # fill subject dictionary with threshold and staircase value list
@@ -232,7 +231,7 @@ while titration_over == False:
     #result = 'The threshold is %0.4f' %(staircase.mean())
     #message2 = visual.TextStim(SCREEN, pos=(0,0), text=result)
     #message2.draw()
-    
+
     print('The subjects threshold is: ' + str(staircase.mean()))
     print('The titration values are: ')
     for member in staircase_means:
@@ -247,14 +246,14 @@ while titration_over == False:
     answer = []
     print('Titration result sufficient? Enter y/n')
     answer = input()
-    
+
     # if the titration is sufficient the script stops, if not it repeats and increases the titration counter
     if answer !='y' and answer !='n':
         print("Enter yes(y) or no(n) !")
         answer = input()
     else:
         if answer == 'y':
-            titration_over = True 
+            titration_over = True
             # Create directory and save as JSON
             DATAPATH = HOME+DATA+str(pair_id)
             if not os.path.exists(DATAPATH):
