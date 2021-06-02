@@ -9,6 +9,10 @@
         - There is a warning that a providing data file can prevent data loss in case of crash. Is it writing to the disk and should we have this?
 '''
 
+import ctypes
+xlib = ctypes.cdll.LoadLibrary("libX11.so")
+xlib.XInitThreads()
+
 from typing import Any, Callable
 
 import os
@@ -171,6 +175,7 @@ expinfo = {'pair': pair_id}
 
 blocks = range(6)
 ntrials = 4 # trials per block
+
 
 kb = keyboard.Keyboard()
 rt = None
