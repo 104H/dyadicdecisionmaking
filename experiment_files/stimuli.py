@@ -22,7 +22,7 @@ class stimulus:
         # noise patch
         self.noise = visual.NoiseStim(
             win=window, blendmode='add', mask='circle', pos=[0 + xoffset, 0],
-            size=X, noiseElementSize=1, contrast=0.1, opacity=1.0,
+            size=X, noiseElementSize=1, contrast=0.05, opacity=1.0,
             noiseType='Binary'
         )
 
