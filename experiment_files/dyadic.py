@@ -97,7 +97,6 @@ class subject:
             position is either left of right. it is used to determine the speaker of the subject
             keys is a list of keys expected from the user. it has to be in the order of yes and no
         '''
-
         # fetching subject titration thresholds
         try:
             n = "1" if position == "left" else "2"
@@ -174,11 +173,10 @@ subjects = [sone, stwo]
 expinfo = {'pair': pair_id}
 
 blocks = range(6)
-ntrials = 4 # trials per block
+ntrials = 2 # trials per block
 
 
 kb = keyboard.Keyboard()
-rt = None
 
 '''
 # make an array of 0 and 1, denoting observe and act, respectively and scale it up by half of the number of trials
@@ -276,7 +274,7 @@ def genmandatorybreakscreen ():
     '''
         Generate the screen shown when the mandatory break is in progress
     '''
-    instructions = "Enjoy your break. Please let the experimenter know you've reached the break.\n\n\
+    instructions = "Enjoy your break. Please inform the experimenter.\n\n\
     The experimenter will resume the experiment after a short break."
 
     visual.TextStim(window,
@@ -348,12 +346,10 @@ def fetchbuttonpress (subjects, clock):
                 resp = []
                 s.response = s.buttons[None]
             else:
-                response = temp[0]
-                keystroke = response.name
+                keystroke = temp[0].name
                 s.response = s.buttons[keystroke]
-                resp = s.buttons[keystroke]
-                global rt
-                rt = temp[0].rt
+                resp = [s.buttons[keystroke], temp[0].rt]
+
     return resp
 
 def updatespeakerbalance ():
@@ -430,7 +426,7 @@ getacknowledgements()
 
 
 # set up practice trials
-npracticetrials = 4 # needs to be an even number
+npracticetrials = 2 # needs to be an even number
 practicestates=[]
 practicetriallist=[]
 # make sure signal/noise and acting/observing are equally distributed for practice trials
@@ -449,7 +445,6 @@ iterstates = iter(practicestates)
 
 # traverse through practice trials
 for idx in range(npracticetrials):
-    rt = None
     # subject state update
     updatestate()
     # update the speaker balance to play the beep for the right subject
@@ -511,7 +506,6 @@ for trials in exphandler.loops:
 
     # traverse through trials
     for trial in trials:
-        rt = None
 
         # subject state update
         updatestate()
@@ -563,16 +557,17 @@ for trials in exphandler.loops:
         # save response to file
         if not response:
             exphandler.addData('response', "noresponse")
+            exphandler.addData('rt', "None")
         else:
-            exphandler.addData('response', response)
-        exphandler.addData('rt', rt)
+            exphandler.addData('response', response[0])
+            exphandler.addData('rt', response[1])
 
         # move to next row in output file
         exphandler.nextEntry()
 
     # decide between continuing with next block, take a break
     # after every second block, there will be a mandatory break which only the experimenter can end
-    if block % 2 == 0:
+    if block % 2 == 0 and block != blocks[-1]:
         genmandatorybreakscreen()
         window.flip()
         getexperimenterack()
