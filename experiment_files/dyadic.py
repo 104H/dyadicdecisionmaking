@@ -20,7 +20,7 @@ import sys
 from subprocess import run
 import numpy as np
 import psychtoolbox as ptb
-from psychopy import visual, event, core, gui, data, prefs
+from psychopy import visual, event, core, gui, data, prefs, monitors
 from psychopy.hardware import keyboard
 from stimuli import stimulus
 from random import choice, shuffle
@@ -73,6 +73,9 @@ M_WIDTH = 1920*2
 M_HEIGHT = 1200
 REFRESH_RATE = 60
 
+myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=80)
+myMon.save()
+
 # Gabor patch global variables
 CYCLES = 10 # required cycles for the whole patch
 X = 256; # size of texture in pixels, needs to be to the power of 2!
@@ -83,7 +86,7 @@ gabortexture = (
     visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
 )
 
-window = visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', blendMode='add',fullscr=False,useFBO= True)
+window = visual.Window(size=(M_WIDTH, M_HEIGHT), monitor=myMon, units='pix', blendMode='add',fullscr=False,useFBO= True)
 
 noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
