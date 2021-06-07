@@ -52,9 +52,7 @@ from numpy.random import random
 #        core.quit()
 #pair_id = int(info['pair ID'])
 
-# copied to titration
 # get pair id via command-line argument
-
 try:
     pair_id = int(sys.argv[1])
 except:
@@ -62,7 +60,7 @@ except:
     sys.exit(0)
     #pair_id=2
 
-# set yesfinger as global variables
+# button <> finger mapping
 if pair_id < 13:
     instrmapping = ['right', 'left'] # variable for instructions - first element is 'yes'
 else:
@@ -92,14 +90,15 @@ noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
 
 class subject:
-    def __init__(self, sid, xoffset, position, keys):
+    def __init__(self, sid, xoffset, position, keys, kb):
         '''
             state is either 0 or 1 for observing or acting conditions, respectively
             xoffset is the constant added to all stimuli rendered for the subject
-            signal is the signal according to the subjects threshold
+            signal is the signal according to the subject's threshold
             position is either left of right. it is used to determine the speaker of the subject
             keys is a list of keys expected from the user. it has to be in the order of yes and no
         '''
+
         # fetching subject titration thresholds
         try:
             n = "1" if position == "left" else "2"
@@ -112,6 +111,7 @@ class subject:
             self.threshold = data["threshold"]
 
         self.id = sid
+        self.kb = kb
         self.state = 0
         self.xoffset = xoffset
         self.response = None
@@ -164,32 +164,34 @@ class subject:
         return str(self.id)
 
 
-
 ### Global variables for rendering stimuli
 
 ofs = window.size[0] / 4 # determine the offset once, assign it as neg or pos next
 
-sone = subject(1, ofs, "right", ["1", "2"]) # chamber 1 uses button box with yellow and white buttons
-stwo = subject(2, -ofs, "left", ["8", "7"]) # chamber 2 (on the left)
+sone = subject(1, ofs, "right", ["1", "2"], keyboard.Keyboard(11))
+stwo = subject(2, -ofs, "left", ["8", "7"], keyboard.Keyboard(12))
 subjects = [sone, stwo]
+
+expkb = keyboard.Keyboard() # @Hunaid: change this to the experimenter keyboard
+
+kb = keyboard.Keyboard() # variable including all keyboards for clearing buffers and resetting clocks
 
 expinfo = {'pair': pair_id}
 
 blocks = range(6)
 ntrials = 2 # trials per block
 
-
-kb = keyboard.Keyboard()
-
-'''
-# make an array of 0 and 1, denoting observe and act, respectively and scale it up by half of the number of trials
-states = [0, 1] * int(ntrials/2)
-# shuffle the array using Fischer-Yates shuffling
-np.random.shuffle(states)
-'''
-
 # create beep for decision interval
 beep = Sound('A', secs=0.5, volume=0.1)
+
+def gentext (instr):
+    visual.TextStim(window,
+                    text=instr, pos=[0 + sone.xoffset, 0],
+                    color='black', height=20).draw()
+
+    visual.TextStim(window,
+                    text=instr, pos=[0 + stwo.xoffset, 0],
+                    color='black', height=20).draw()
 
 def genstartscreen ():
     instructions = "Welcome to our experiment! \n\n\
@@ -197,13 +199,7 @@ def genstartscreen ():
     If you have any questions after reading the instructions on the next screen, please feel free to ask the experimenter.\n\n\
     Press the {} key to continue".format(instrmapping[0])
 
-    visual.TextStim(window,
-                    text=instructions, pos=[0 + sone.xoffset,0],
-                    color='black', height=20).draw()
-
-    visual.TextStim(window,
-                    text=instructions, pos=[0 + stwo.xoffset,0],
-                    color='black', height=20).draw()
+    gentext(instructions)
 
 def geninstructionspractice ():
     instructions = "Please read the instructions carefully.\n\
@@ -218,13 +214,7 @@ def geninstructionspractice ():
     9. If you don’t hear a beep, it’s the other person’s turn to respond. You will both see the the same stimulus and you will also see their response on your screen.\n\n\
     Press yes to continue".format(instrmapping[0], instrmapping[1])
 
-    visual.TextStim(window,
-                    text=instructions, pos=[0 + sone.xoffset,0],
-                    color='black', height=20).draw()
-
-    visual.TextStim(window,
-                    text=instructions, pos=[0 + stwo.xoffset,0],
-                    color='black', height=20).draw()
+    gentext(instructions)
 
 def geninstructionsexperiment ():
     instructions = "Now you’re ready to start the experiment. Please remember:\n\
@@ -238,25 +228,13 @@ def geninstructionsexperiment ():
     8. There will be a total of 12 blocks.\n\n\
     Press yes when you’re ready to start the experiment".format(instrmapping[0], instrmapping[1])
 
-    visual.TextStim(window,
-                    text=instructions, pos=[0 + sone.xoffset,0],
-                    color='black', height=20).draw()
-
-    visual.TextStim(window,
-                    text=instructions, pos=[0 + stwo.xoffset,0],
-                    color='black', height=20).draw()
+    gentext(instructions)
 
 def genendscreen ():
     instructions = "Thank you for your time.\n\n\
     Please let the experimenter know you're finished."
 
-    visual.TextStim(window,
-                    text=instructions, pos=[0 + sone.xoffset,0],
-                    color='black', height=20).draw()
-
-    visual.TextStim(window,
-                    text=instructions, pos=[0 + stwo.xoffset,0],
-                    color='black', height=20).draw()
+    gentext(instructions)
 
 def genbreakscreen ():
     '''
@@ -265,13 +243,7 @@ def genbreakscreen ():
     instructions = "Are you ready for the next block?\n\n\
     Press yes when you're ready to resume"
 
-    visual.TextStim(window,
-                    text=instructions, pos = [0 + sone.xoffset, 0],
-                    color='black', height=20).draw()
-
-    visual.TextStim(window,
-                    text=instructions, pos = [0 + stwo.xoffset, 0],
-                    color='black', height=20).draw()
+    gentext(instructions)
 
 def genmandatorybreakscreen ():
     '''
@@ -280,13 +252,7 @@ def genmandatorybreakscreen ():
     instructions = "Enjoy your break. Please inform the experimenter.\n\n\
     The experimenter will resume the experiment after a short break."
 
-    visual.TextStim(window,
-                    text=instructions, pos = [0 + sone.xoffset, 0],
-                    color='black', height=20).draw()
-
-    visual.TextStim(window,
-                    text=instructions, pos = [0 + stwo.xoffset, 0],
-                    color='black', height=20).draw()
+    gentext(instructions)
 
 def genbaseline (subjects):
     for s in subjects:
@@ -330,7 +296,7 @@ def genintertrial (subjects):
             stwo.indicatordict[sone.response].draw()
 
 
-def fetchbuttonpress (subjects, clock):
+def fetchbuttonpress (subjects):
     '''
         Looks for input from a pyserial connector
         Args:
@@ -341,9 +307,7 @@ def fetchbuttonpress (subjects, clock):
         if s.state == 0:
             continue
         else:
-            # How do I tell waitKeys to look for input from the specific subject input device and not the other?
-            #response = event.getKeys(timeStamped=clock, keyList=s.buttons.keys())
-            temp = kb.getKeys(keyList=s.buttons.keys(), clear=False)
+            temp = s.kb.getKeys(keyList=s.buttons.keys(), clear=True)
 
             if len(temp) == 0:
                 resp = []
@@ -374,19 +338,23 @@ def secondstoframes (seconds):
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
 
 def getacknowledgements ():
-    kb.clearEvents(eventType='keyboard') # clearing buffers before waiting for acknowledgments
     sone_ack, stwo_ack = None, None
 
     while (sone_ack != 'yes') or (stwo_ack != 'yes'):
-        response = kb.getKeys(clear=False)
-        if response is not None:
-            for r in response:
+        resp1 = sone.kb.getKeys(clear=False)
+        resp2 = stwo.kb.getKeys(clear=False)
+
+        if resp1:
+            for r in resp1:
                 if sone_ack != 'yes': sone_ack = sone.buttons.get(r.name)
+        if resp2:
+            for r in resp2:
                 if stwo_ack != 'yes': stwo_ack = stwo.buttons.get(r.name)
 
+    kb.clearEvents(eventType='keyboard') # clearing buffers
+
 def getexperimenterack ():
-    kb.clearEvents(eventType='keyboard') # clearing buffers before waiting for acknowledgments
-    keys = kb.waitKeys(keyList=["q", "space"], clear=False)
+    keys = expkb.waitKeys(keyList=["q", "space"], clear=True)
     if "q" in keys: # exit experiment
         window.close()
         core.quit()
@@ -397,7 +365,6 @@ def genactingstates ():
 
 # update speaker balance for the first time
 updatespeakerbalance()
-
 
 # specifications of output file
 _thisDir = os.path.dirname(os.path.abspath(__file__))
@@ -417,6 +384,8 @@ for b in blocks:
     exphandler.addLoop(data.TrialHandler(trialList=triallist, nReps=1, method='random', originPath=-1, extraInfo=expinfo) )
 
 
+##### PRACTICE TRIALS #####
+
 # diplay welcome screen
 genstartscreen()
 window.flip()
@@ -426,7 +395,6 @@ getacknowledgements()
 geninstructionspractice()
 window.flip()
 getacknowledgements()
-
 
 # set up practice trials
 npracticetrials = 2 # needs to be an even number
@@ -459,13 +427,13 @@ for idx in range(npracticetrials):
         genbaseline(subjects)
         window.flip()
 
-    kb.clearEvents(eventType='keyboard')
 
     # preparing time for next window flip, to precisely co-ordinate window flip and beep
+    # display stimulus
     nextflip = window.getFutureFlipTime(clock='ptb')
     beep.play(when=nextflip)
-    # display stimulus
-    kb.clock.reset()
+
+    kb.clearEvents(eventType='keyboard')
 
     response = [] # we have no response yet
     for frame in secondstoframes(2.5):
@@ -474,7 +442,7 @@ for idx in range(npracticetrials):
 
         # fetch button press
         if not response:
-            response = fetchbuttonpress(subjects, kb.clock)
+            response = fetchbuttonpress(subjects)
         else:
             break
 
@@ -488,6 +456,8 @@ for idx in range(npracticetrials):
         window.flip()
 
 
+##### MAIN EXPERIMENT #####
+
 # display instructions for experiment
 geninstructionsexperiment()
 window.flip()
@@ -496,7 +466,7 @@ getacknowledgements()
 # variables for data saving
 block=0
 
-# start experiment
+# start MAIN EXPERIMENT
 for trials in exphandler.loops:
 
     # variables for data saving
@@ -523,8 +493,7 @@ for trials in exphandler.loops:
         exphandler.addData('s1_state', sone.state)
         exphandler.addData('s2_state', stwo.state)
 
-        # display baseline
-        # wait for a random time between 2 to 4 seconds
+        # display baseline for a random time between 2 to 4 seconds
         for frame in secondstoframes( np.random.uniform(2, 4) ):
             genbaseline(subjects)
             window.flip()
@@ -532,10 +501,13 @@ for trials in exphandler.loops:
         kb.clearEvents(eventType='keyboard')
 
         # preparing time for next window flip, to precisely co-ordinate window flip and beep
+        # display stimulus
         nextflip = window.getFutureFlipTime(clock='ptb')
         beep.play(when=nextflip)
-        # display stimulus
-        kb.clock.reset()
+
+        kb.clock.reset() # resets clocks for all keyboards
+        #sone.kb.clock.reset()
+        #stwo.kb.clock.reset()
 
         response = []  # we have no response yet
         for frame in secondstoframes(2.5):
@@ -544,7 +516,7 @@ for trials in exphandler.loops:
 
             # fetch button press
             if not response:
-                response = fetchbuttonpress(subjects, kb.clock)
+                response = fetchbuttonpress(subjects)
             else:
                 break
 
@@ -568,8 +540,7 @@ for trials in exphandler.loops:
         # move to next row in output file
         exphandler.nextEntry()
 
-    # decide between continuing with next block, take a break
-    # after every second block, there will be a mandatory break which only the experimenter can end
+    # after every second block (unless after the last block), there will be a mandatory break which only the experimenter can end
     if block % 2 == 0 and block != blocks[-1]:
         genmandatorybreakscreen()
         window.flip()
