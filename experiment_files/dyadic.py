@@ -84,7 +84,7 @@ gabortexture = (
     visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
 )
 
-window = visual.Window(size=(M_WIDTH, M_HEIGHT), monitor=myMon, units='pix', blendMode='add',fullscr=False,useFBO= True)
+window = visual.Window(size=(M_WIDTH, M_HEIGHT), monitor=myMon, units='pix', blendMode='add',fullscr=False,useFBO= True, allowGUI=False)
 
 noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
@@ -168,7 +168,11 @@ class subject:
 
 ofs = window.size[0] / 4 # determine the offset once, assign it as neg or pos next
 
-sone = subject(1, ofs, "right", ["1", "2"], keyboard.Keyboard(11))
+'''
+to obtain button box numbers
+
+'''
+sone = subject(1, ofs, "right", ["1", "2"], keyboard.Keyboard(9))
 stwo = subject(2, -ofs, "left", ["8", "7"], keyboard.Keyboard(12))
 subjects = [sone, stwo]
 
@@ -178,8 +182,8 @@ kb = keyboard.Keyboard() # variable including all keyboards for clearing buffers
 
 expinfo = {'pair': pair_id}
 
-blocks = range(6)
-ntrials = 2 # trials per block
+blocks = range(2)
+ntrials = 20 # trials per block
 
 # create beep for decision interval
 beep = Sound('A', secs=0.5, volume=0.1)
@@ -346,10 +350,10 @@ def getacknowledgements ():
 
         if resp1:
             for r in resp1:
-                if sone_ack != 'yes': sone_ack = sone.buttons.get(r.name)
+                if sone_ack != 'yes': sone_ack = sone.buttons[r.name]
         if resp2:
             for r in resp2:
-                if stwo_ack != 'yes': stwo_ack = stwo.buttons.get(r.name)
+                if stwo_ack != 'yes': stwo_ack = stwo.buttons[r.name]
 
     kb.clearEvents(eventType='keyboard') # clearing buffers
 
@@ -505,9 +509,9 @@ for trials in exphandler.loops:
         nextflip = window.getFutureFlipTime(clock='ptb')
         beep.play(when=nextflip)
 
-        kb.clock.reset() # resets clocks for all keyboards
-        #sone.kb.clock.reset()
-        #stwo.kb.clock.reset()
+        #kb.clock.reset()  resets clocks for all keyboards
+        sone.kb.clock.reset()
+        stwo.kb.clock.reset()
 
         response = []  # we have no response yet
         for frame in secondstoframes(2.5):
