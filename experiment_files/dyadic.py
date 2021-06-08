@@ -85,6 +85,7 @@ gabortexture = (
 )
 
 window = visual.Window(size=(M_WIDTH, M_HEIGHT), monitor=myMon, units='pix', blendMode='add',fullscr=False,useFBO= True)
+window.mouseVisible = False # hide cursor
 
 noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
