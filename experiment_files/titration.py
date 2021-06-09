@@ -131,8 +131,7 @@ while titration_over == False:
 
     # the screen
     window = psychopy.visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', screen=int(chamber), fullscr=False, pos=None)
-    m = psychopy.event.Mouse(win=window)
-    m.setVisible(0)
+    window.mouseVisible = False # hide cursor
 
     # the stimulus
     stimuli = stimulus(X=X, window=window, xoffset=0, gabortexture=gabortexture, threshold=threshold)
