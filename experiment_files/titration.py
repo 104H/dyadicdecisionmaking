@@ -130,7 +130,7 @@ while titration_over == False:
             keys = ["8", "7"]
 
     # the screen
-    window = psychopy.visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', screen=int(chamber), fullscr=False, pos=None)
+    window = psychopy.visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', screen=int(chamber), fullscr=False, pos=None, blendMode='add', useFBO=True)
     window.mouseVisible = False # hide cursor
 
     # the stimulus
@@ -262,4 +262,3 @@ while titration_over == False:
                 json.dump(subjectData, fp)
         elif answer == 'n':
             Titration_over = False
-
