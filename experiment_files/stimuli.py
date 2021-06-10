@@ -9,19 +9,19 @@ class stimulus:
     def __init__(self, X, window, xoffset, gabortexture, threshold):
 
         self.signal = visual.GratingStim(
-            win=window, blendmode='add', tex=gabortexture, mask='circle', pos=[0 + xoffset, 0],
+            win=window, blendmode='add', tex=gabortexture, mask='gauss', pos=[0 + xoffset, 0],
             size=X, contrast=1.0, opacity=threshold,
         )
 
         # the annulus is created by passing a matrix of zeros to the texture argument
         self.annulus = visual.GratingStim(
-            win=window, mask='circle', tex=np.zeros((64, 64)), pos=[0 + xoffset, 0],
+            win=window, mask='gauss', tex=np.zeros((64, 64)), pos=[0 + xoffset, 0],
             size=50, contrast=1.0, opacity=1.0,
         )
 
         # noise patch
         self.noise = visual.NoiseStim(
-            win=window, blendmode='add', mask='circle', pos=[0 + xoffset, 0],
+            win=window, blendmode='add', mask='gauss', pos=[0 + xoffset, 0],
             size=X, noiseElementSize=1, contrast=0.05, opacity=1.0,
             noiseType='Binary'
         )
