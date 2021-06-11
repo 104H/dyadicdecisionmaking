@@ -84,7 +84,7 @@ gabortexture = (
     visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
 )
 
-window = visual.Window(size=(M_WIDTH, M_HEIGHT), monitor=myMon, units='pix', blendMode='add', fullscr=False, useFBO=True, allowGUI=False)
+window = visual.Window(size=(M_WIDTH, M_HEIGHT), monitor=myMon, units='pix', blendMode='add', fullscr=False, useFBO=True, allowGUI=False, pos=(0,0))
 window.mouseVisible = False # hide cursor
 
 noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
