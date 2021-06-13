@@ -135,7 +135,7 @@ while titration_over == False:
 
     # the stimulus
     stimuli = stimulus(X=X, window=window, xoffset=0, gabortexture=gabortexture, threshold=threshold)
-    stimulus = stimuli.signal
+    signal = stimuli.signal
     noise = stimuli.noise
     reddot = stimuli.reddot
     annulus = stimuli.annulus
@@ -156,9 +156,9 @@ while titration_over == False:
 
     for contr in famcontrast:
         key = []
-        stimulus.opacity = contr
+        signal.opacity = contr
         while not key:
-            draw_stim(noise, stimulus, reddot, annulus) # draw the stimulus
+            draw_stim(noise, signal, reddot, annulus) # draw the stimulus
             window.flip()
             key = kb.getKeys(keyList=keys)
 
@@ -199,9 +199,9 @@ while titration_over == False:
 
     for contrast in staircase:
         key = []
-        stimulus.opacity = contrast #update the difficulty or contrast from the staircase
+        signal.opacity = contrast #update the difficulty or contrast from the staircase
         while not key:
-            draw_stim(noise, stimulus, reddot, annulus) # draw the stimulus
+            draw_stim(noise, signal, reddot, annulus) # draw the stimulus
             window.flip()
             key = kb.getKeys(keyList=keys)
         if keys[1] in key: # if they didn't see it
