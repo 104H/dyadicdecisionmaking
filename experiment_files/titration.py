@@ -20,7 +20,7 @@ Set-up section:
 """
 
 # set the number of trials (for testing)!
-numberOfTrials = 100 # should be 100
+numberOfTrials = 30 # should be 100
 
 kb = keyboard.Keyboard()
 
@@ -53,8 +53,7 @@ try:
     pair_id = int(sys.argv[1])
 except:
     print('Please enter a number as pair id as command-line argument!')
-    #pair_id = input()
-    pair_id=2
+    pair_id = input()
 
 subjectData['pair_id'] = pair_id
 
@@ -102,7 +101,6 @@ def geninstrfamiliarization():
 
 while titration_over == False:
     # input the chamber number in which titration takes place
-    '''
     chamber = []
     if chamber == []:
         print("Enter chamber number (1 or 2):")
@@ -112,8 +110,7 @@ while titration_over == False:
         continue
     else:
         print("You already entered a chamber number! You entered:" + chamber)
-    '''
-    chamber=1
+
     titration_counter += 1
     subjectData['titration_counter'] = titration_counter
     subjectData['chamber'] = chamber
@@ -159,7 +156,7 @@ while titration_over == False:
 
     for contr in famcontrast:
         key = []
-        signal.contrast = contr
+        signal.opacity = contr
         while not key:
             draw_stim(noise, signal, reddot, annulus) # draw the stimulus
             window.flip()
@@ -202,7 +199,7 @@ while titration_over == False:
 
     for contrast in staircase:
         key = []
-        signal.contrast = contrast #update the difficulty or contrast from the staircase
+        signal.opacity = contrast #update the difficulty or contrast from the staircase
         while not key:
             draw_stim(noise, signal, reddot, annulus) # draw the stimulus
             window.flip()
