@@ -20,7 +20,7 @@ Set-up section:
 """
 
 # set the number of trials (for testing)!
-numberOfTrials = 30 # should be 100
+numberOfTrials = 100 # should be 100
 
 kb = keyboard.Keyboard()
 
@@ -156,7 +156,7 @@ while titration_over == False:
 
     for contr in famcontrast:
         key = []
-        signal.opacity = contr
+        signal.contrast = contr
         while not key:
             draw_stim(noise, signal, reddot, annulus) # draw the stimulus
             window.flip()
@@ -199,7 +199,7 @@ while titration_over == False:
 
     for contrast in staircase:
         key = []
-        signal.opacity = contrast #update the difficulty or contrast from the staircase
+        signal.contrast = contrast #update the difficulty or contrast from the staircase
         while not key:
             draw_stim(noise, signal, reddot, annulus) # draw the stimulus
             window.flip()

@@ -10,7 +10,7 @@ class stimulus:
 
         self.signal = visual.GratingStim(
             win=window, blendmode='add', tex=gabortexture, mask='gauss', pos=[0 + xoffset, 0],
-            size=X, contrast=1.0, opacity=threshold,
+            size=X, contrast=threshold, opacity=1.0,
         )
 
         # the annulus is created by passing a matrix of zeros to the texture argument
