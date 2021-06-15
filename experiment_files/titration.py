@@ -34,7 +34,7 @@ titration_over = False
 # monitoring how often the titration has been done
 titration_counter = 0
 # initial threshold
-threshold = 1
+threshold = 0.5
 # monitor specs global variables
 M_WIDTH = 1920
 M_HEIGHT = 1200
@@ -168,8 +168,8 @@ while titration_over == False:
 
     #the ladder
     staircase = QuestHandler(
-                                startVal=0.5,
-                                startValSd=0.2,
+                                startVal=0.1,
+                                startValSd=0.095,
                                 pThreshold=0.63,  #because it is a one up one down staircase
                                 gamma=0.01,
                                 nTrials=numberOfTrials,
