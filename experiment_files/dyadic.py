@@ -227,7 +227,7 @@ def geninstructionsexperiment ():
     2. Fixate on the dot in the center of the circle.\n\
     3. When you hear a beep it’s your turn. If you don’t hear a beep, you will see your partner’s response.\n\
     4. Press the {} key for 'yes' and the {} key for 'no'.\n\
-    5. Please respond as quickly and as accurately possible! \n\
+    5. Please respond as quickly and as accurately as possible! \n\
     6. Once you finished one block, you’ll be asked if you’re ready for the next block.\n\
     7. After every second block, you will have a break.\n\
     8. There will be a total of 12 blocks.\n\n\
