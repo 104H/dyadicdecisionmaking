@@ -170,9 +170,31 @@ class subject:
 ofs = window.size[0] / 4 # determine the offset once, assign it as neg or pos next
 
 '''
-to obtain button box numbers
+def getKeyboards():
+    keybs = keyboard.getKeyboards()
+    k = {"chone" : None, "chtwo" : None}
 
+    for keyb in keybs:
+        if keyb['product'] == "Black Box Button Box":
+            if k['chone'] != None:
+                k['chtwo'] = keyb['index']
+                return k
+
+            if k['chtwo'] != None:
+                k['chone'] = keyb['index']
+                return k
+
+            ktemp = keyboard.Keyboard(keyb['index'])
+            keypress = ktemp.waitKeys(keyList=["1", "2", "7", "8"])
+
+            if keypress in ["1", "2"]:
+                k['chone'] = keyb['index']
+            else:
+                k['chtwo'] = keyb['index']
+
+keybs = getKeyboards()
 '''
+
 sone = subject(1, ofs, "right", ["1", "2"], keyboard.Keyboard(9))
 stwo = subject(2, -ofs, "left", ["8", "7"], keyboard.Keyboard(12))
 subjects = [sone, stwo]
