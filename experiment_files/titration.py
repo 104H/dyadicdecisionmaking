@@ -22,8 +22,6 @@ Set-up section:
 # set the number of trials (for testing)!
 numberOfTrials = 30 # should be 100
 
-kb = keyboard.Keyboard()
-
 # Directory Specs
 HOME = os.getcwd()
 DATA = '/data/'
@@ -41,8 +39,8 @@ M_HEIGHT = 1200
 
 # Gabor patch global variables
 CYCLES = 10 # required cycles for the whole patch
-X = 256; # size of texture in pixels, needs to be to the power of 2!
-sf = CYCLES/X; # spatial frequency for texture, cycles per pixel
+X = 256 # size of texture in pixels, needs to be to the power of 2!
+sf = CYCLES/X # spatial frequency for texture, cycles per pixel
 gabortexture = (
     visual.filters.makeGrating(res=X, cycles=X * sf) *
     visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
@@ -146,7 +144,7 @@ while titration_over == False:
     while True:
         geninstrfamiliarization() # display instructions
         window.flip()
-        key = kb.getKeys()
+        key = psychopy.event.getKeys()
         if len(key) > 0:
             if keys[0] in key:
                 break
@@ -160,7 +158,7 @@ while titration_over == False:
         while not key:
             draw_stim(noise, signal, reddot, annulus) # draw the stimulus
             window.flip()
-            key = kb.getKeys(keyList=keys)
+            key = psychopy.event.getKeys(keyList=keys)
 
     '''
     2. Titration
@@ -180,7 +178,7 @@ while titration_over == False:
     while True:
         geninstrtitration() # display instructions
         window.flip()
-        key = kb.getKeys()
+        key = psychopy.event.getKeys()
         if len(key) > 0:
             if keys[0] in key:
                 break
@@ -203,7 +201,7 @@ while titration_over == False:
         while not key:
             draw_stim(noise, signal, reddot, annulus) # draw the stimulus
             window.flip()
-            key = kb.getKeys(keyList=keys)
+            key = psychopy.event.getKeys(keyList=keys)
         if keys[1] in key: # if they didn't see it
             print("no")
             response = 0
