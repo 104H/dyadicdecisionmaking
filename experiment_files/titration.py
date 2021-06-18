@@ -11,6 +11,8 @@ from psychopy import core
 from stimuli import stimulus
 
 
+#import pdb; pdb.set_trace()
+
 """
 Set-up section:
     1. Create the screen
@@ -20,7 +22,7 @@ Set-up section:
 """
 
 # set the number of trials (for testing)!
-numberOfTrials = 30 # should be 100
+numberOfTrials = 100 # should be 100
 
 kb = keyboard.Keyboard()
 
@@ -41,20 +43,13 @@ M_HEIGHT = 1200
 
 # Gabor patch global variables
 CYCLES = 10 # required cycles for the whole patch
-X = 256; # size of texture in pixels, needs to be to the power of 2!
+X = 395; # size of texture in pixels, needs to be to the power of 2!
 sf = CYCLES/X; # spatial frequency for texture, cycles per pixel
 
 gabortexture = (
     visual.filters.makeGrating(res=X, cycles=X * sf) *
     visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
 )
-# noise texture to use for the noise patch
-noiseTexture = np.random.rand(128, 128) * 2.0 - 1
-
-# custom trasparency mask for noise and signal
-with open('gaussian-mask.npy', 'rb') as f:
-    gaussian_ann = np.load(f)
-
 # get pair id via command-line argument
 try:
     pair_id = int(sys.argv[1])
@@ -206,7 +201,7 @@ while titration_over == False:
         key = []
         signal.opacity = contrast #update the difficulty or contrast from the staircase
         while not key:
-            draw_stim(noise, signal, reddot, annulus) # draw the stimulus
+            draw_stim(noise, signal, reddot) # draw the stimulus
             window.flip()
             key = kb.getKeys(keyList=keys)
         if keys[1] in key: # if they didn't see it

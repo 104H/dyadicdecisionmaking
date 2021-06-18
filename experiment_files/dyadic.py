@@ -74,12 +74,9 @@ REFRESH_RATE = 60
 myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=65)
 myMon.save()
 
-with open('gaussian-mask.npy', 'rb') as f:
-    gaussian_ann = np.load(f)
-
 # Gabor patch global variables
 CYCLES = 10 # required cycles for the whole patch
-X = 256; # size of texture in pixels, needs to be to the power of 2!
+X = 395; # size of texture in pixels, needs to be to the power of 2!
 sf = CYCLES/X; # spatial frequency for texture, cycles per pixel
 
 gabortexture = (
@@ -121,7 +118,7 @@ class subject:
         self.response = None
         self.actingheadphonebalance = "30%,0%" if position == "left" else "0%,30%"
 
-        stimuli = stimulus(X=X, window=window, xoffset=xoffset, gabortexture=gabortexture, threshold=self.threshold)
+        stimuli = stimulus(X=X, window=window, xoffset=xoffset, threshold=self.threshold)
 
         if pair_id < 13:
             self.buttons = {
@@ -193,6 +190,8 @@ def getKeyboards():
 
 keybs = getKeyboards()
 
+#import pdb; pdb.set_trace()
+
 sone = subject(1, ofs, "right", ["1", "2"], keyboard.Keyboard( keybs["chone"] ))
 stwo = subject(2, -ofs, "left", ["8", "7"], keyboard.Keyboard( keybs["chtwo"] ))
 subjects = [sone, stwo]
@@ -204,7 +203,7 @@ kb = keyboard.Keyboard() # variable including all keyboards for clearing buffers
 expinfo = {'pair': pair_id}
 
 blocks = range(2)
-ntrials = 20 # trials per block
+ntrials = 80 # trials per block
 
 # create beep for decision interval
 beep = Sound('A', secs=0.5, volume=0.1)
@@ -281,8 +280,8 @@ def genmandatorybreakscreen ():
 
 def genbaseline (subjects):
     for s in subjects:
-        s.noise.draw()
         s.noise.phase += (10 / 128.0, 10 / 128.0)
+        s.noise.draw()
         s.reddot.draw()
 
 def gendecisionint (subjects, condition):
@@ -296,8 +295,8 @@ def gendecisionint (subjects, condition):
         genbaseline(subjects)
     elif condition == 'signal':
         for s in subjects:
-            s.noise.draw()
             s.noise.phase += (10 / 128.0, 10 / 128.0)
+            s.noise.draw()
             s.signal.draw()
             s.reddot.draw()
     else:
@@ -305,8 +304,8 @@ def gendecisionint (subjects, condition):
 
 def genintertrial (subjects):
     for s in subjects:
-        s.noise.draw()
         s.noise.phase += (10 / 128.0, 10 / 128.0)
+        s.noise.draw()
         s.greendot.draw()
 
     # if subject one/two is in an acting state, add their response to the response box of subject two/one
