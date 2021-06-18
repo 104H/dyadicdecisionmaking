@@ -71,8 +71,11 @@ M_WIDTH = 1920*2
 M_HEIGHT = 1200
 REFRESH_RATE = 60
 
-myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=80)
+myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=65)
 myMon.save()
+
+with open('gaussian-mask.npy', 'rb') as f:
+    gaussian_ann = np.load(f)
 
 # Gabor patch global variables
 CYCLES = 10 # required cycles for the whole patch
@@ -135,9 +138,6 @@ class subject:
 
         # signal
         self.signal = stimuli.signal
-
-        # the annulus is created by passing a matrix of zeros to the texture argument
-        self.annulus = stimuli.annulus
 
         # noise patch
         self.noise = stimuli.noise
@@ -282,8 +282,7 @@ def genmandatorybreakscreen ():
 def genbaseline (subjects):
     for s in subjects:
         s.noise.draw()
-        s.noise.updateNoise()
-        s.annulus.draw()
+        s.noise.phase += (10 / 128.0, 10 / 128.0)
         s.reddot.draw()
 
 def gendecisionint (subjects, condition):
@@ -298,9 +297,8 @@ def gendecisionint (subjects, condition):
     elif condition == 'signal':
         for s in subjects:
             s.noise.draw()
-            s.noise.updateNoise()
+            s.noise.phase += (10 / 128.0, 10 / 128.0)
             s.signal.draw()
-            s.annulus.draw()
             s.reddot.draw()
     else:
         raise NotImplementedError
@@ -308,8 +306,7 @@ def gendecisionint (subjects, condition):
 def genintertrial (subjects):
     for s in subjects:
         s.noise.draw()
-        s.noise.updateNoise()
-        s.annulus.draw()
+        s.noise.phase += (10 / 128.0, 10 / 128.0)
         s.greendot.draw()
 
     # if subject one/two is in an acting state, add their response to the response box of subject two/one

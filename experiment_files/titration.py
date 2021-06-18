@@ -43,10 +43,17 @@ M_HEIGHT = 1200
 CYCLES = 10 # required cycles for the whole patch
 X = 256; # size of texture in pixels, needs to be to the power of 2!
 sf = CYCLES/X; # spatial frequency for texture, cycles per pixel
+
 gabortexture = (
     visual.filters.makeGrating(res=X, cycles=X * sf) *
     visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
 )
+# noise texture to use for the noise patch
+noiseTexture = np.random.rand(128, 128) * 2.0 - 1
+
+# custom trasparency mask for noise and signal
+with open('gaussian-mask.npy', 'rb') as f:
+    gaussian_ann = np.load(f)
 
 # get pair id via command-line argument
 try:
@@ -58,11 +65,10 @@ except:
 subjectData['pair_id'] = pair_id
 
 # stimulus draw function
-def draw_stim(noise, signal, reddot, annulus):
+def draw_stim(noise, signal, reddot):
+    noise.phase += (10 / 128.0, 10 / 128.0)
     noise.draw()
-    noise.updateNoise()
     signal.draw()
-    annulus.draw()
     reddot.draw()
 
 def genendscreen():
@@ -134,11 +140,10 @@ while titration_over == False:
     window.mouseVisible = False # hide cursor
 
     # the stimulus
-    stimuli = stimulus(X=X, window=window, xoffset=0, gabortexture=gabortexture, threshold=threshold)
+    stimuli = stimulus(X=X, window=window, xoffset=0, threshold=threshold)
     signal = stimuli.signal
     noise = stimuli.noise
     reddot = stimuli.reddot
-    annulus = stimuli.annulus
 
     '''
     1. Familiarization
@@ -158,7 +163,7 @@ while titration_over == False:
         key = []
         signal.opacity = contr
         while not key:
-            draw_stim(noise, signal, reddot, annulus) # draw the stimulus
+            draw_stim(noise, signal, reddot) # draw the stimulus
             window.flip()
             key = kb.getKeys(keyList=keys)
 
@@ -168,13 +173,13 @@ while titration_over == False:
 
     #the ladder
     staircase = QuestHandler(
-                                startVal=0.5,
-                                startValSd=0.2,
+                                startVal=0.01,
+                                startValSd=0.0095,
                                 pThreshold=0.63,  #because it is a one up one down staircase
                                 gamma=0.01,
                                 nTrials=numberOfTrials,
-                                minVal=0,
-                                maxVal=1
+                                minVal=0.00005,
+                                maxVal=0.1
                                 )
 
     while True:

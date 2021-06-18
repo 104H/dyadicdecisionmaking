@@ -6,25 +6,18 @@ from psychopy import visual
 
 
 class stimulus:
-    def __init__(self, X, window, xoffset, gabortexture, threshold):
+    def __init__(self, X, window, xoffset, threshold):
 
         self.signal = visual.GratingStim(
-            win=window, blendmode='add', tex=gabortexture, mask='gauss', pos=[0 + xoffset, 0],
+            win=window, blendmode='add', tex='sin', mask=gaussian_ann, pos=[0 + xoffset, 0],
             size=X, contrast=1.0, opacity=threshold,
         )
 
-        # the annulus is created by passing a matrix of zeros to the texture argument
-        self.annulus = visual.GratingStim(
-            win=window, mask='gauss', tex=np.zeros((64, 64)), pos=[0 + xoffset, 0],
-            size=50, contrast=1.0, opacity=1.0,
-        )
-
         # noise patch
-        self.noise = visual.NoiseStim(
-            win=window, blendmode='add', mask='gauss', pos=[0 + xoffset, 0],
-            size=X, noiseElementSize=1, contrast=0.05, opacity=1.0,
-            noiseType='Binary'
-        )
+        self.noise = visual.GratingStim(win, tex=noiseTexture,
+            size=(395, 395), units='pix', mask = gaussian_ann,
+            contrast=0.05,
+            interpolate=False, autoLog=False)
 
         # red fixation dot for decision phase
         self.reddot = visual.GratingStim(
