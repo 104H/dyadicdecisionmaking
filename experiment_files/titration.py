@@ -74,7 +74,7 @@ def genendscreen():
 def geninstrtitration():
     instructions = "Please read the instructions carefully.\n\
     1. Now we will determine your individual threshold for recognizing the vertical grating.\n\
-    2. The procedure is the same as before: when you hear a beep, press the {} key if you saw a grating, and the {} key if you didn’t.\n\
+    2. The procedure is the same as before: press the {} key if you saw a grating, and the {} key if you didn’t.\n\
     3. Fixate on the dot in the center of the circle.\n\
     3. The visibility of the grating will be adjusted throughout the trials.\n\n\
     Press yes to continue".format(instrmapping[0], instrmapping[1])
