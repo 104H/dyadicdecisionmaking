@@ -136,6 +136,10 @@ class subject:
 
 
 def getKeyboards():
+    '''
+        Search for the appropriate button box in each of the chambers
+        Create a keyboard object for each subject button box and assign it to them
+    '''
     keybs = keyboard.getKeyboards()
     k = {"chone" : None, "chtwo" : None}
 
@@ -174,6 +178,9 @@ ntrials = 80 # trials per block
 beep = Sound('A', secs=0.5, volume=0.1)
 
 def gentext (instr):
+    '''
+        Generate text on both subject screens
+    '''
     visual.TextStim(window,
                     text=instr, pos=[0 + sone.xoffset, 0],
                     color='black', height=20).draw()
@@ -244,6 +251,9 @@ def genmandatorybreakscreen ():
     gentext(instructions)
 
 def genbaseline (subjects):
+    '''
+        Generate the baseline stimulus (dynamic noise + red fixation dot)
+    '''
     for s in subjects:
         s.noise.phase += (10 / 128.0, 10 / 128.0)
         s.noise.draw()
@@ -268,12 +278,15 @@ def gendecisionint (subjects, condition):
         raise NotImplementedError
 
 def genintertrial (subjects):
+    '''
+        Keep displaying the stimulus but also display the other person's response if it wasn't their own turn
+    '''
     for s in subjects:
         s.noise.phase += (10 / 128.0, 10 / 128.0)
         s.noise.draw()
         s.greendot.draw()
 
-    # if subject one/two is in an acting state, add their response to the response box of subject two/one
+    # if subject one/two is in an acting state and responded, add their response to the response box of subject two/one
     if stwo.state:
         if stwo.response != "noresponse":
             sone.indicatordict[stwo.response].draw()
@@ -284,6 +297,8 @@ def genintertrial (subjects):
 
 def fetchbuttonpress (subjects):
     '''
+        Get the button box input from the acting subject
+        Return the response (yes/ no) and the reaction time
     '''
     for s in subjects:
         if not s.state:
@@ -302,6 +317,9 @@ def fetchbuttonpress (subjects):
     return resp
 
 def updatespeakerbalance ():
+    '''
+        Update the volume level of the left and right speaker so that only the acting subject can hear the beep
+    '''
     for s in subjects:
         if s.state:
             run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
@@ -309,7 +327,7 @@ def updatespeakerbalance ():
 
 def updatestate ():
     '''
-        Which dyad uses the button box
+        Update whose turn it is
     '''
     sone.state = next(iterstates)
     stwo.state = bool(1 - sone.state)
@@ -318,6 +336,9 @@ def secondstoframes (seconds):
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
 
 def getacknowledgements ():
+    '''
+        Wait until both subjects have confirmed they are ready by pressing "yes"
+    '''
     sone_ack, stwo_ack = None, None
 
     while (sone_ack != 'yes') or (stwo_ack != 'yes'):
@@ -334,12 +355,20 @@ def getacknowledgements ():
     stwo.kb.clearEvents(eventType="keyboard")
 
 def getexperimenterack ():
+    '''
+        Wait for the experimenter input
+            q: quit experiment
+            space: continue
+    '''
     keys = expkb.waitKeys(keyList=["q", "space"], clear=True)
     if "q" in keys: # exit experiment
         window.close()
         core.quit()
 
 def genactingstates ():
+    '''
+        Randomly generate list including the subject states (act/ observe)
+    '''
     return np.random.choice(a=[True, False], size=ntrials)
 
 # update speaker balance for the first time
