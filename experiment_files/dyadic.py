@@ -92,7 +92,7 @@ class subject:
 
         self.id = sid
         self.kb = kb
-        self.state = 0
+        self.state = False
         self.xoffset = ofs if sid == 1 else -ofs
         self.response = None
         self.actingheadphonebalance = "30%,0%" if sid == 2 else "0%,30%"
@@ -274,10 +274,10 @@ def genintertrial (subjects):
         s.greendot.draw()
 
     # if subject one/two is in an acting state, add their response to the response box of subject two/one
-    if stwo.state == 1:
+    if stwo.state:
         if stwo.response != "noresponse":
             sone.indicatordict[stwo.response].draw()
-    if sone.state == 1:
+    if sone.state:
         if sone.response != "noresponse":
             stwo.indicatordict[sone.response].draw()
 
@@ -286,7 +286,7 @@ def fetchbuttonpress (subjects):
     '''
     '''
     for s in subjects:
-        if s.state == 0:
+        if not s.state:
             continue
         else:
             temp = s.kb.getKeys(keyList=s.buttons.keys(), clear=True)
@@ -303,7 +303,7 @@ def fetchbuttonpress (subjects):
 
 def updatespeakerbalance ():
     for s in subjects:
-        if s.state == 1:
+        if s.state:
             run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
             #pass
 
@@ -312,7 +312,7 @@ def updatestate ():
         Which dyad uses the button box
     '''
     sone.state = next(iterstates)
-    stwo.state = 1 - sone.state
+    stwo.state = bool(1 - sone.state)
 
 def secondstoframes (seconds):
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
@@ -340,7 +340,7 @@ def getexperimenterack ():
         core.quit()
 
 def genactingstates ():
-    return np.random.randint(0, 2, ntrials)
+    return np.random.choice(a=[True, False], size=ntrials)
 
 # update speaker balance for the first time
 updatespeakerbalance()
@@ -372,7 +372,7 @@ getacknowledgements()
 npracticetrials = 2 # needs to be an even number
 
 # make sure signal/noise and acting/observing are equally distributed for practice trials
-practicestates = [0, 1] * (npracticetrials//2)
+practicestates = [False, True] * (npracticetrials//2)
 practicetriallist = ['signal', 'noise'] * (npracticetrials//2)
 
 # shuffle the lists
