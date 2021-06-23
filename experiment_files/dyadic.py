@@ -3,7 +3,6 @@
 '''
     Naming Convention:
         The subjects are either refered to as 'sone' or 'stwo'
-
 '''
 
 import ctypes
@@ -17,7 +16,7 @@ import numpy as np
 import psychtoolbox as ptb
 from psychopy import visual, event, core, gui, data, prefs, monitors
 from psychopy.hardware import keyboard
-from stimuli import stimulus
+import stimuli
 from random import choice, shuffle
 import json
 
@@ -44,27 +43,22 @@ except:
     sys.exit(-1)
 
 # monitor specs global variables
-M_WIDTH = 1920*2
-M_HEIGHT = 1200
-REFRESH_RATE = 60
+M_WIDTH = stimuli.M_WIDTH * 2
+M_HEIGHT = stimuli.M_HEIGHT
+REFRESH_RATE = stimuli.REFRESH_RATE
 
 myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=65)
 
 # Gabor patch global variables
-CYCLES = 10 # required cycles for the whole patch
-X = 395; # size of texture in pixels, needs to be to the power of 2!
-sf = CYCLES/X; # spatial frequency for texture, cycles per pixel
+CYCLES = stimuli.CYCLES  # required cycles for the whole patch
+X = stimuli.X  # size of texture in pixels, needs to be to the power of 2!
+sf = CYCLES/X  # spatial frequency for texture, cycles per pixel
 
-gabortexture = (
-    visual.filters.makeGrating(res=X, cycles=X * sf) *
-    visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
-)
+gabortexture = stimuli.gabortexture
 
 window = visual.Window(size=(M_WIDTH, M_HEIGHT), monitor=myMon, units='pix', blendMode='add', fullscr=False, useFBO=True, allowGUI=False, pos=(0,0))
 window.mouseVisible = False # hide cursor
 ofs = window.size[0] / 4
-
-noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
 
 class subject:
     def __init__(self, sid, kb):
@@ -97,7 +91,7 @@ class subject:
         self.response = None
         self.actingheadphonebalance = "30%,0%" if sid == 2 else "0%,30%"
 
-        stimuli = stimulus(X=X, window=window, xoffset=ofs, threshold=self.threshold)
+        stimulus = stimuli.stim(X=X, window=window, xoffset=ofs, threshold=self.threshold)
 
         self.buttons = {
                     keys[1] : "yes",
@@ -106,16 +100,16 @@ class subject:
                     }
 
         # signal
-        self.signal = stimuli.signal
+        self.signal = stimulus.signal
 
         # noise patch
-        self.noise = stimuli.noise
+        self.noise = stimulus.noise
 
         # red fixation dot for decision phase
-        self.reddot = stimuli.reddot
+        self.reddot = stimulus.reddot
 
         # green fixation dot for pre trial and inter trial condition
-        self.greendot = stimuli.greendot
+        self.greendot = stimulus.greendot
 
         # a dot which indicates to the subject they are in the observation state
         self.indicatordict = {
@@ -428,7 +422,6 @@ for idx in range(npracticetrials):
     stwo.kb.clearEvents(eventType='keyboard')
 
     # preparing time for next window flip, to precisely co-ordinate window flip and beep
-    # display stimulus
     nextflip = window.getFutureFlipTime(clock='ptb')
     beep.play(when=nextflip)
 

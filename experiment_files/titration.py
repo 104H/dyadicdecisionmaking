@@ -8,7 +8,7 @@ from psychopy import visual
 from psychopy.data import QuestHandler
 from psychopy.hardware import keyboard
 from psychopy import core
-from stimuli import stimulus
+import stimuli
 
 
 #import pdb; pdb.set_trace()
@@ -38,18 +38,16 @@ titration_counter = 0
 # initial threshold
 threshold = 1
 # monitor specs global variables
-M_WIDTH = 1920
-M_HEIGHT = 1200
+M_WIDTH = stimuli.M_WIDTH
+M_HEIGHT = stimuli.H_HEIGHT
 
 # Gabor patch global variables
-CYCLES = 10 # required cycles for the whole patch
-X = 395; # size of texture in pixels, needs to be to the power of 2!
-sf = CYCLES/X; # spatial frequency for texture, cycles per pixel
+CYCLES = stimuli.CYCLES # required cycles for the whole patch
+X = stimuli.X # size of texture in pixels, needs to be to the power of 2!
+sf = CYCLES/X # spatial frequency for texture, cycles per pixel
 
-gabortexture = (
-    visual.filters.makeGrating(res=X, cycles=X * sf) *
-    visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
-)
+gabortexture = stimuli.gabortexture
+
 # get pair id via command-line argument
 try:
     pair_id = int(sys.argv[1])
@@ -124,10 +122,10 @@ while titration_over == False:
     window.mouseVisible = False # hide cursor
 
     # the stimulus
-    stimuli = stimulus(X=X, window=window, xoffset=0, threshold=threshold)
-    signal = stimuli.signal
-    noise = stimuli.noise
-    reddot = stimuli.reddot
+    stimulus = stimuli.stim(X=X, window=window, xoffset=0, threshold=threshold)
+    signal = stimulus.signal
+    noise = stimulus.noise
+    reddot = stimulus.reddot
 
     '''
     1. Familiarization
