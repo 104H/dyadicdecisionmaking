@@ -43,12 +43,6 @@ except:
     print('Please enter a number as pair id as command-line argument!')
     sys.exit(-1)
 
-# button <> finger mapping
-if pair_id < 13:
-    instrmapping = ['right', 'left'] # variable for instructions - first element is 'yes'
-else:
-    instrmapping = ['left', 'right']
-
 # monitor specs global variables
 M_WIDTH = 1920*2
 M_HEIGHT = 1200
@@ -105,18 +99,11 @@ class subject:
 
         stimuli = stimulus(X=X, window=window, xoffset=ofs, threshold=self.threshold)
 
-        if pair_id < 13:
-            self.buttons = {
+        self.buttons = {
                     keys[1] : "yes",
                     keys[0] : "no",
                     None : "noresponse"
                     }
-        else:
-            self.buttons = {
-                keys[0]: "yes",
-                keys[1]: "no",
-                None: "noresponse"
-            }
 
         # signal
         self.signal = stimuli.signal
@@ -199,7 +186,7 @@ def genstartscreen ():
     instructions = "Welcome to our experiment! \n\n\
     Your task is to indicate whether you see a vertical grating or not.\n\
     If you have any questions after reading the instructions on the next screen, please feel free to ask the experimenter.\n\n\
-    Press the {} key to continue".format(instrmapping[0])
+    Press the green key to continue"
 
     gentext(instructions)
 
@@ -211,10 +198,10 @@ def geninstructionspractice ():
     4. The stimulus will be the same as you saw before: a circle of noise.\n\
     5. Fixate on the dot in the center of the circle.\n\
     6. What's new: Only when you hear a beep, it’s your turn to indicate whether you saw a vertical grating on top of the noise.\n\
-    7. Press the {} key for 'yes' and the {} key for 'no'.\n\
+    7. Press the green key for 'yes' and the red key for 'no'.\n\
     8. It’s very important that you respond as fast and as accurate as possible! You only have a limited amount of time for your response.\n\
     9. If you don’t hear a beep, it’s the other person’s turn to respond. You will both see the the same stimulus and you will also see their response on your screen.\n\n\
-    Press yes to continue".format(instrmapping[0], instrmapping[1])
+    Press yes to continue"
 
     gentext(instructions)
 
@@ -223,12 +210,12 @@ def geninstructionsexperiment ():
     1. Place your index finger on the left key and your middle finger on the right key.\n\
     2. Fixate on the dot in the center of the circle.\n\
     3. When you hear a beep it’s your turn. If you don’t hear a beep, you will see your partner’s response.\n\
-    4. Press the {} key for 'yes' and the {} key for 'no'.\n\
+    4. Press the green key for 'yes' and the red key for 'no'.\n\
     5. Please respond as quickly and as accurately as possible! \n\
     6. Once you finished one block, you’ll be asked if you’re ready for the next block.\n\
     7. After every second block, you will have a break.\n\
     8. There will be a total of 12 blocks.\n\n\
-    Press yes when you’re ready to start the experiment".format(instrmapping[0], instrmapping[1])
+    Press yes when you’re ready to start the experiment"
 
     gentext(instructions)
 

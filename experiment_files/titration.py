@@ -116,19 +116,8 @@ while titration_over == False:
     subjectData['titration_counter'] = titration_counter
     subjectData['chamber'] = chamber
 
-    # variables for instructions and key input
-    if int(pair_id) < 13:
-        instrmapping = ['right', 'left']
-        if chamber == "1":
-            keys = ["2", "1"]
-        else:
-            keys = ["7", "8"]
-    else:
-        instrmapping = ['left', 'right']
-        if chamber == "1":
-            keys = ["1", "2"]
-        else:
-            keys = ["8", "7"]
+    # variables for button box input
+    keys = ["2", "1"] if chamber == "1" else ["7", "8"] # first one is yes
 
     # the screen
     window = psychopy.visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', screen=int(chamber), fullscr=False, pos=None, blendMode='add', useFBO=True)
