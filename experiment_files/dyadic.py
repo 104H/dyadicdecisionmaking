@@ -49,12 +49,6 @@ REFRESH_RATE = stimuli.REFRESH_RATE
 
 myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=65)
 
-# Gabor patch global variables
-CYCLES = stimuli.CYCLES  # required cycles for the whole patch
-X = stimuli.X  # size of texture in pixels, needs to be to the power of 2!
-sf = CYCLES/X  # spatial frequency for texture, cycles per pixel
-
-gabortexture = stimuli.gabortexture
 
 window = visual.Window(size=(M_WIDTH, M_HEIGHT), monitor=myMon, units='pix', blendMode='add', fullscr=False, useFBO=True, allowGUI=False, pos=(0,0))
 window.mouseVisible = False # hide cursor
@@ -91,7 +85,7 @@ class subject:
         self.response = None
         self.actingheadphonebalance = "30%,0%" if sid == 2 else "0%,30%"
 
-        stimulus = stimuli.stim(X=X, window=window, xoffset=ofs, threshold=self.threshold)
+        stimulus = stimuli.stim(window=window, xoffset=self.xoffset, threshold=self.threshold)
 
         self.buttons = {
                     keys[1] : "yes",
@@ -112,17 +106,7 @@ class subject:
         self.greendot = stimulus.greendot
 
         # a dot which indicates to the subject they are in the observation state
-        self.indicatordict = {
-                "yes" : visual.TextStim(
-                            win = window, text="Yes", units='pix', pos=[0 + ofs, 0]
-                        ),
-                "no" : visual.TextStim(
-                            win = window, text="No", units='pix', pos=[0 + ofs, 0]
-                        ),
-                "noresponse" : visual.TextStim(
-                            win = window, text="No Response", units='pix', pos=[0 + ofs, 0]
-                        )
-                }
+        self.indicatordict = stimulus.indicatordict
 
     def __repr__ (self):
         return str(self.id)

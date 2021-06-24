@@ -10,18 +10,11 @@ M_HEIGHT = 1200
 REFRESH_RATE = 60
 
 # Gabor patch global variables
-CYCLES = 10  # required cycles for the whole patch
 X = 395  # size of texture in pixels, needs to be to the power of 2!
-sf = CYCLES/X
-
-gabortexture = (
-    visual.filters.makeGrating(res=X, cycles=X * sf) *
-    visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
-)
 
 
 class stim:
-    def __init__(self, X, window, xoffset, threshold):
+    def __init__(self, window, xoffset, threshold):
 
         # noise texture to use for the noise patch
         noiseTexture = np.random.rand(128, 128) * 2.0 - 1
@@ -51,3 +44,17 @@ class stim:
             win=window, size=5, units='pix', pos=[0 + xoffset, 0],
             sf=0, color='green', mask='circle'
         )
+        
+        # a dot which indicates to the subject they are in the observation state
+        self.indicatordict = {
+                "yes" : visual.TextStim(
+                            win = window, text="Yes", units='pix', pos=[0 + xoffset, 0]
+                        ),
+                "no" : visual.TextStim(
+                            win = window, text="No", units='pix', pos=[0 + xoffset, 0]
+                        ),
+                "noresponse" : visual.TextStim(
+                            win = window, text="No Response", units='pix', pos=[0 + xoffset, 0]
+                        )
+                }
+
