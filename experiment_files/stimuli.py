@@ -20,7 +20,7 @@ gabortexture = (
 )
 
 
-class stimulus:
+class stim:
     def __init__(self, X, window, xoffset, threshold):
 
         # noise texture to use for the noise patch
