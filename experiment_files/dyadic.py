@@ -6,8 +6,8 @@
 '''
 
 import ctypes
-xlib = ctypes.cdll.LoadLibrary("libX11.so")
-xlib.XInitThreads()
+#xlib = ctypes.cdll.LoadLibrary("libX11.so")
+#xlib.XInitThreads()
 
 import os
 import sys
@@ -37,7 +37,8 @@ from numpy.random import random
 
 # get pair id via command-line argument
 try:
-    pair_id = int(sys.argv[1])
+    pair_id=2
+    #pair_id = int(sys.argv[1])
 except:
     print('Please enter a number as pair id as command-line argument!')
     sys.exit(-1)
@@ -67,7 +68,7 @@ class subject:
         '''
 
         keys = ["1", "2"] if sid == 1 else ["8", "7"]
-
+        '''
         # fetching subject titration thresholds
         try:
             f = open("data/" + str(pair_id) + "/data_chamber" + str(sid) + ".json", "r")
@@ -77,7 +78,8 @@ class subject:
             exit(-1)
         else:
             self.threshold = data["threshold"]
-
+        '''
+        self.threshold = 0.01
         self.id = sid
         self.kb = kb
         self.state = False
@@ -117,7 +119,7 @@ def getKeyboards():
     '''
         Search for the appropriate button box in each of the chambers
         Create a keyboard object for each subject button box and assign it to them
-    '''
+
     keybs = keyboard.getKeyboards()
     k = {"chone" : None, "chtwo" : None}
 
@@ -138,11 +140,14 @@ def getKeyboards():
                 k['chone'] = keyb['index']
             else:
                 k['chtwo'] = keyb['index']
+    '''
+    pass
 
-keybs = getKeyboards()
+#keybs = getKeyboards()
+kbone = keyboard.Keyboard()
 
-sone = subject(1, keyboard.Keyboard( keybs["chone"] ))
-stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ))
+sone = subject(1, kbone)
+stwo = subject(2, kbone)
 subjects = [sone, stwo]
 
 expkb = keyboard.Keyboard()
@@ -300,8 +305,8 @@ def updatespeakerbalance ():
     '''
     for s in subjects:
         if s.state:
-            run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
-            #pass
+            #run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
+            pass
 
 def updatestate ():
     '''
@@ -325,10 +330,10 @@ def getacknowledgements ():
 
         if resp1:
             for r in resp1:
-                if sone_ack != 'yes': sone_ack = sone.buttons[r.name]
+                if sone_ack != 'yes': sone_ack = sone.buttons[str(r.name)]
         if resp2:
             for r in resp2:
-                if stwo_ack != 'yes': stwo_ack = stwo.buttons[r.name]
+                if stwo_ack != 'yes': stwo_ack = stwo.buttons[str(r.name)]
     sone.kb.clearEvents(eventType="keyboard")
     stwo.kb.clearEvents(eventType="keyboard")
 
