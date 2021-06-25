@@ -20,7 +20,7 @@ class stim:
         noiseTexture = np.random.rand(128, 128) * 2.0 - 1
 
         # custom trasparency mask for noise and signal
-        gaussian_ann = np.load(open('gaussian-mask.npy', 'rb'))
+        gaussian_ann = np.load(open('experiment_files/gaussian-mask.npy', 'rb'))
 
         self.signal = visual.GratingStim(
             win=window, blendmode='add', tex='sin', mask=gaussian_ann, pos=[0 + xoffset, 0],
