@@ -1,30 +1,34 @@
-# 15 May 2021
-
-
 import numpy as np
 from psychopy import visual
 
+# monitor specs global variables
+M_WIDTH = 1920
+M_HEIGHT = 1200
+REFRESH_RATE = 60
 
-class stimulus:
-    def __init__(self, X, window, xoffset, gabortexture, threshold):
+# stimulus size
+X = 395
+
+
+class stim:
+    def __init__(self, window, xoffset, threshold):
+
+        # noise texture to use for the noise patch
+        noiseTexture = np.random.rand(128, 128) * 2.0 - 1
+
+        # custom trasparency mask for noise and signal
+        gaussian_ann = np.load(open('experiment_files/gaussian-mask.npy', 'rb'))
 
         self.signal = visual.GratingStim(
-            win=window, blendmode='add', tex=gabortexture, mask='gauss', pos=[0 + xoffset, 0],
-            size=X, contrast=threshold, opacity=1.0,
-        )
-
-        # the annulus is created by passing a matrix of zeros to the texture argument
-        self.annulus = visual.GratingStim(
-            win=window, mask='gauss', tex=np.zeros((64, 64)), pos=[0 + xoffset, 0],
-            size=50, contrast=1.0, opacity=1.0,
+            win=window, blendmode='add', tex='sin', mask=gaussian_ann, pos=[0 + xoffset, 0],
+            size=X, sf=10/X, contrast=1.0, opacity=threshold,
         )
 
         # noise patch
-        self.noise = visual.NoiseStim(
-            win=window, blendmode='add', mask='gauss', pos=[0 + xoffset, 0],
-            size=X, noiseElementSize=1, contrast=0.05, opacity=1.0,
-            noiseType='Binary'
-        )
+        self.noise = visual.GratingStim(window, tex=noiseTexture,
+            size=(395, 395), units='pix', mask = gaussian_ann,
+            contrast=0.05, pos=[0 + xoffset, 0],
+            interpolate=False, autoLog=False)
 
         # red fixation dot for decision phase
         self.reddot = visual.GratingStim(
@@ -37,3 +41,16 @@ class stimulus:
             win=window, size=5, units='pix', pos=[0 + xoffset, 0],
             sf=0, color='green', mask='circle'
         )
+
+        # a dot which indicates to the subject they are in the observation state
+        self.indicatordict = {
+                "yes" : visual.TextStim(
+                            win = window, text="Yes", units='pix', pos=[0 + xoffset, 0]
+                        ),
+                "no" : visual.TextStim(
+                            win = window, text="No", units='pix', pos=[0 + xoffset, 0]
+                        ),
+                "noresponse" : visual.TextStim(
+                            win = window, text="No Response", units='pix', pos=[0 + xoffset, 0]
+                        )
+                }
