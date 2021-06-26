@@ -4,11 +4,9 @@ import json
 import time
 import numpy as np
 import psychopy
-from psychopy import visual
-from psychopy.data import QuestHandler
-from psychopy.hardware import keyboard
-from psychopy import core
-from stimuli import stimulus
+from psychopy import visual, event, core
+from psychopy.data import StairHandler
+import stimuli
 
 
 """
@@ -20,7 +18,7 @@ Set-up section:
 """
 
 # set the number of trials (for testing)!
-numberOfTrials = 100 # should be 100
+numberOfTrials = 40 # should be 100
 
 kb = keyboard.Keyboard()
 
@@ -167,15 +165,13 @@ while titration_over == False:
     '''
 
     #the ladder
-    staircase = QuestHandler(
-                                startVal=0.1,
-                                startValSd=0.095,
-                                pThreshold=0.63,  #because it is a one up one down staircase
-                                gamma=0.01,
-                                nTrials=numberOfTrials,
-                                minVal=0,
-                                maxVal=1
-                                )
+    staircase = StairHandler(startVal=0.01,
+        stepType='log',
+        stepSizes=[8, 4, 4, 2, 2, 1, 1],  # reduce step size every two reversals
+        minVal=0.0005, maxVal=0.15,
+        nUp=1, nDown=1, # for hopefully 75% acc rate
+        nTrials=numberOfTrials)
+
 
     while True:
         geninstrtitration() # display instructions
@@ -194,47 +190,25 @@ while titration_over == False:
         4. Pass on reponse evaluation to ladder (0 if subject responded correctly, 1 if subject did not)
         5. Do 1 to 4 for ntimes set in ladder constructor
     """
-    # list that is filled with the staircase values
-    staircase_means = []
-
     for contrast in staircase:
         key = []
         signal.contrast = contrast #update the difficulty or contrast from the staircase
         while not key:
             draw_stim(noise, signal, reddot, annulus) # draw the stimulus
             window.flip()
-            key = kb.getKeys(keyList=keys)
+            key = psychopy.event.getKeys(keyList=keys)
         if keys[1] in key: # if they didn't see it
             print("no")
             response = 0
-            staircase_means.append(staircase.mean())
         else:
             response = 1
             print("yes")
-            staircase_means.append(staircase.mean())
         staircase.addResponse(response)
 
-
-    """
-    End section:
-        1. Show the threshold to subject.
-        This part will be changed for the experiment.
-        We will store the threshold in a variable for the next core block to use.
-    """
-
-    # fill subject dictionary with threshold and staircase value list
-    subjectData['threshold'] = staircase.mean()
-    subjectData['threshold_list'] = staircase_means
-
-    # currently printing the threshold to the subject
-    #result = 'The threshold is %0.4f' %(staircase.mean())
-    #message2 = visual.TextStim(SCREEN, pos=(0,0), text=result)
-    #message2.draw()
-
-    print('The subjects threshold is: ' + str(staircase.mean()))
-    print('The titration values are: ')
-    for member in staircase_means:
-        print("%.4f" % member)
+    staircase.saveAsExcel(fileName='titration_data'+str(pair_id)+'_'+str(chamber))
+    print('reversals:')
+    print(staircase.reversalIntensities)
+    print("The subject's threshold is: = %.3f" % np.average(staircase.reversalIntensities[-6:]))
 
     window.flip()
     genendscreen()
@@ -253,12 +227,6 @@ while titration_over == False:
     else:
         if answer == 'y':
             titration_over = True
-            # Create directory and save as JSON
-            DATAPATH = HOME+DATA+str(pair_id)
-            if not os.path.exists(DATAPATH):
-                os.makedirs(DATAPATH)
-            os.chdir(DATAPATH)
-            with open('data_chamber'+chamber+'.json', 'w') as fp:
-                json.dump(subjectData, fp)
+            # using saveAsExcel for now to save data, have to bring back json later
         elif answer == 'n':
             Titration_over = False
