@@ -4,39 +4,30 @@ import json
 import time
 import numpy as np
 import psychopy
-from psychopy import visual
+from psychopy import visual, event, core
 from psychopy.data import QuestHandler
-from psychopy.hardware import keyboard
-from psychopy import core
 import stimuli
 
-
-#import pdb; pdb.set_trace()
-
-"""
-Set-up section:
-    1. Create the screen
-    2. Create the instructions message to be shown on intial screen
-    3. Create the stimulus. This needs to be replcaed with the stimulus being used in the experiment
-    4. Create the ladder object for controlling stimulus and measuring threshold. The ladder has to be updated to match the experiment needs.
-"""
 
 # set the number of trials (for testing)!
 numberOfTrials = 100 # should be 100
 
-kb = keyboard.Keyboard()
-
 # Directory Specs
 HOME = os.getcwd()
-DATA = '/data/'
+DATA = 'experiment_files/data/'
+
 # Subject data dictionary
 subjectData = {'pair_id': [], 'titration_counter': [], 'chamber':[], 'threshold': [], 'threshold_list': [] }
+
 # monitoring the while loop with..
 titration_over = False
+
 # monitoring how often the titration has been done
 titration_counter = 0
+
 # initial threshold
-threshold = 1
+threshold = 0.01
+
 # monitor specs global variables
 M_WIDTH = stimuli.M_WIDTH
 M_HEIGHT = stimuli.M_HEIGHT
@@ -68,9 +59,9 @@ def genendscreen():
 def geninstrtitration():
     instructions = "Please read the instructions carefully.\n\
     1. Now we will determine your individual threshold for recognizing the vertical grating.\n\
-    2. The procedure is the same as before: when you hear a beep, press the green key if you saw a grating, and the red key if you didn’t.\n\
-    3. Fixate on the dot in the center of the circle.\n\
-    3. The visibility of the grating will be adjusted throughout the trials.\n\n\
+    2. The procedure is the same as before: Press the green key if you saw a grating, and the red key if you didn’t.\n\
+    3. Fixate on the red dot in the center of the circle.\n\
+    4. The visibility of the grating will be adjusted throughout the trials.\n\n\
     Press yes to continue"
 
     visual.TextStim(window,
@@ -97,11 +88,10 @@ while titration_over == False:
     if chamber == []:
         print("Enter chamber number (1 or 2):")
         chamber = input()
-    elif chamber != "1" & chamber != "2":
-        print("Wrong. Enter chamber number (1 or 2):")
-        continue
-    else:
-        print("You already entered a chamber number! You entered:" + chamber)
+
+        if chamber not in ["1", "2"]:
+            print("Wrong. Enter chamber number (1 or 2):")
+            continue
 
     titration_counter += 1
     subjectData['titration_counter'] = titration_counter
@@ -123,16 +113,12 @@ while titration_over == False:
     '''
     1. Familiarization
     '''
-    while True:
-        geninstrfamiliarization() # display instructions
-        window.flip()
-        key = kb.getKeys()
-        if len(key) > 0:
-            if keys[0] in key:
-                break
+    geninstrfamiliarization() # display instructions
+    window.flip()
+    key = event.waitKeys(keyList=keys[:1])
 
-    nfamtrials = 3
     famcontrast = [0.15,0.002,0.08]
+    nfamtrials = len(famcontrast)
 
     for contr in famcontrast:
         key = []
@@ -140,7 +126,7 @@ while titration_over == False:
         while not key:
             draw_stim(noise, signal, reddot) # draw the stimulus
             window.flip()
-            key = kb.getKeys(keyList=keys)
+            key = event.getKeys(keyList=keys)
 
     '''
     2. Titration
@@ -148,8 +134,8 @@ while titration_over == False:
 
     #the ladder
     staircase = QuestHandler(
-                                startVal=0.01,
-                                startValSd=0.0095,
+                                startVal=0.008,
+                                startValSd=0.1,
                                 pThreshold=0.63,  #because it is a one up one down staircase
                                 gamma=0.01,
                                 nTrials=numberOfTrials,
@@ -157,14 +143,9 @@ while titration_over == False:
                                 maxVal=0.1
                                 )
 
-    while True:
-        geninstrtitration() # display instructions
-        window.flip()
-        key = kb.getKeys()
-        if len(key) > 0:
-            if keys[0] in key:
-                break
-
+    geninstrtitration() # display instructions
+    window.flip()
+    key = event.waitKeys(keyList=keys[:1])
 
     """
     Main section:
@@ -183,46 +164,33 @@ while titration_over == False:
         while not key:
             draw_stim(noise, signal, reddot) # draw the stimulus
             window.flip()
-            key = kb.getKeys(keyList=keys)
+            key = event.getKeys(keyList=keys)
+
         if keys[1] in key: # if they didn't see it
             print("no")
             response = 0
             staircase_means.append(staircase.mean())
         else:
-            response = 1
             print("yes")
+            response = 1
             staircase_means.append(staircase.mean())
         staircase.addResponse(response)
 
-
-    """
-    End section:
-        1. Show the threshold to subject.
-        This part will be changed for the experiment.
-        We will store the threshold in a variable for the next core block to use.
-    """
 
     # fill subject dictionary with threshold and staircase value list
     subjectData['threshold'] = staircase.mean()
     subjectData['threshold_list'] = staircase_means
 
-    # currently printing the threshold to the subject
-    #result = 'The threshold is %0.4f' %(staircase.mean())
-    #message2 = visual.TextStim(SCREEN, pos=(0,0), text=result)
-    #message2.draw()
-
-    print('The subjects threshold is: ' + str(staircase.mean()))
     print('The titration values are: ')
     for member in staircase_means:
         print("%.4f" % member)
+    print('The subjects threshold is: ' + str(staircase.mean()))
 
-    window.flip()
     genendscreen()
     window.flip()
     core.wait(5)
     window.close()
 
-    answer = []
     print('Titration result sufficient? Enter y/n')
     answer = input()
 
