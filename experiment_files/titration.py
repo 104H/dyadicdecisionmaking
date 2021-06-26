@@ -14,7 +14,7 @@ numberOfTrials = 40 # should be 100
 
 # Directory Specs
 HOME = os.getcwd()
-DATA = 'experiment_files/data/'
+DATA = '/data/'
 
 # Subject data dictionary
 subjectData = {'pair_id': [], 'titration_counter': [], 'chamber':[], 'threshold': [], 'threshold_list': [] }
@@ -169,9 +169,12 @@ while titration_over == False:
         staircase.addResponse(response)
 
     staircase.saveAsExcel(fileName='titration_data'+str(pair_id)+'_'+str(chamber))
+    subjectData['threshold'] = np.average(staircase.reversalIntensities[-6:])
+
+
     print('reversals:')
     print(staircase.reversalIntensities)
-    print("The subject's threshold is: = %.3f" % np.average(staircase.reversalIntensities[-6:]))
+    print("The subject's threshold is: = %.5f" % np.average(staircase.reversalIntensities[-6:]))
 
     genendscreen()
     window.flip()
@@ -188,6 +191,13 @@ while titration_over == False:
     else:
         if answer == 'y':
             titration_over = True
-            # using saveAsExcel for now to save data, have to bring back json later
+            # the json file for now only contains the threshold
+            # while the trial data are in the Excel file
+            DATAPATH = HOME+DATA+str(pair_id)
+            if not os.path.exists(DATAPATH):
+                os.makedirs(DATAPATH)
+            os.chdir(DATAPATH)
+            with open('data_chamber'+chamber+'.json', 'w') as fp:
+                json.dump(subjectData, fp)
         elif answer == 'n':
             Titration_over = False
