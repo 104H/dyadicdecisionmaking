@@ -149,18 +149,18 @@ while titration_over == False:
     Main section:
         1. use the ladder already created to change the contrast of the grating
         2. Show the patch to subject
-        3. Collect response-left is subject can see the grating, right otherwise
+        3. Gather responses
         4. Pass on reponse evaluation to ladder (0 if subject responded correctly, 1 if subject did not)
         5. Do 1 to 4 for ntimes set in ladder constructor
     """
     for contrast in staircase:
         key = []
-        signal.opacity = contrast #update the difficulty or contrast from the staircase
+        signal.opacity = contrast # set stimulus opacity to the value from the staircase
         while not key:
             draw_stim(noise, signal, reddot) # draw the stimulus
             window.flip()
             key = psychopy.event.getKeys(keyList=keys)
-        if keys[1] in key: # if they didn't see it
+        if keys[1] in key: # if the participant didn't detect signal, record a 'no' response
             print("no")
             response = 0
         else:
@@ -170,6 +170,7 @@ while titration_over == False:
 
     staircase.saveAsExcel(fileName='titration_data'+str(pair_id)+'_'+str(chamber))
     subjectData['threshold'] = np.average(staircase.reversalIntensities[-6:])
+    subjectData['threshold_list'] = staircase.intensities # all contrast values the participant saw during titration
 
 
     print('reversals:')
@@ -191,8 +192,6 @@ while titration_over == False:
     else:
         if answer == 'y':
             titration_over = True
-            # the json file for now only contains the threshold
-            # while the trial data are in the Excel file
             DATAPATH = HOME+DATA+str(pair_id)
             if not os.path.exists(DATAPATH):
                 os.makedirs(DATAPATH)
