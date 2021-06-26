@@ -9,42 +9,28 @@ from psychopy.data import StairHandler
 import stimuli
 
 
-"""
-Set-up section:
-    1. Create the screen
-    2. Create the instructions message to be shown on intial screen
-    3. Create the stimulus. This needs to be replcaed with the stimulus being used in the experiment
-    4. Create the ladder object for controlling stimulus and measuring threshold. The ladder has to be updated to match the experiment needs.
-"""
-
 # set the number of trials (for testing)!
 numberOfTrials = 40 # should be 100
 
-kb = keyboard.Keyboard()
-
 # Directory Specs
 HOME = os.getcwd()
-DATA = '/data/'
+DATA = 'experiment_files/data/'
+
 # Subject data dictionary
 subjectData = {'pair_id': [], 'titration_counter': [], 'chamber':[], 'threshold': [], 'threshold_list': [] }
+
 # monitoring the while loop with..
 titration_over = False
+
 # monitoring how often the titration has been done
 titration_counter = 0
-# initial threshold
-threshold = 0.5
-# monitor specs global variables
-M_WIDTH = 1920
-M_HEIGHT = 1200
 
-# Gabor patch global variables
-CYCLES = 10 # required cycles for the whole patch
-X = 256; # size of texture in pixels, needs to be to the power of 2!
-sf = CYCLES/X; # spatial frequency for texture, cycles per pixel
-gabortexture = (
-    visual.filters.makeGrating(res=X, cycles=X * sf) *
-    visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
-)
+# initial threshold
+threshold = 0.01
+
+# monitor specs global variables
+M_WIDTH = stimuli.M_WIDTH
+M_HEIGHT = stimuli.M_HEIGHT
 
 # get pair id via command-line argument
 try:
@@ -56,11 +42,10 @@ except:
 subjectData['pair_id'] = pair_id
 
 # stimulus draw function
-def draw_stim(noise, signal, reddot, annulus):
+def draw_stim(noise, signal, reddot):
+    noise.phase += (10 / 128.0, 10 / 128.0)
     noise.draw()
-    noise.updateNoise()
     signal.draw()
-    annulus.draw()
     reddot.draw()
 
 def genendscreen():
@@ -74,10 +59,10 @@ def genendscreen():
 def geninstrtitration():
     instructions = "Please read the instructions carefully.\n\
     1. Now we will determine your individual threshold for recognizing the vertical grating.\n\
-    2. The procedure is the same as before: when you hear a beep, press the {} key if you saw a grating, and the {} key if you didn’t.\n\
-    3. Fixate on the dot in the center of the circle.\n\
-    3. The visibility of the grating will be adjusted throughout the trials.\n\n\
-    Press yes to continue".format(instrmapping[0], instrmapping[1])
+    2. The procedure is the same as before: Press the green key if you saw a grating, and the red key if you didn’t.\n\
+    3. Fixate on the red dot in the center of the circle.\n\
+    4. The visibility of the grating will be adjusted throughout the trials.\n\n\
+    Press yes to continue"
 
     visual.TextStim(window,
                     text=instructions, pos=(0, 0),
@@ -90,8 +75,8 @@ def geninstrfamiliarization():
     3. For the stimulus, a red dot is shown in the middle of the screen, surrounded by a circular pattern that looks similar to white noise.\n\
     4. You need to indicate whether you saw a vertical grating on top of the noise.\n\
     5. Fixate on the dot in the center of the circular pattern.\n\
-    6. Press the {} key for 'yes' and the {} key for 'no'.\n\n\
-    Press yes to continue".format(instrmapping[0], instrmapping[1])
+    6. Press the green key for 'yes' and the red key for 'no'.\n\n\
+    Press yes to continue"
 
     visual.TextStim(window,
                     text=instructions, pos=(0, 0),
@@ -103,62 +88,45 @@ while titration_over == False:
     if chamber == []:
         print("Enter chamber number (1 or 2):")
         chamber = input()
-    elif chamber != "1" & chamber != "2":
-        print("Wrong. Enter chamber number (1 or 2):")
-        continue
-    else:
-        print("You already entered a chamber number! You entered:" + chamber)
+
+        if chamber not in ["1", "2"]:
+            print("Wrong. Enter chamber number (1 or 2):")
+            continue
 
     titration_counter += 1
     subjectData['titration_counter'] = titration_counter
     subjectData['chamber'] = chamber
 
-    # variables for instructions and key input
-    if int(pair_id) < 13:
-        instrmapping = ['right', 'left']
-        if chamber == "1":
-            keys = ["2", "1"]
-        else:
-            keys = ["7", "8"]
-    else:
-        instrmapping = ['left', 'right']
-        if chamber == "1":
-            keys = ["1", "2"]
-        else:
-            keys = ["8", "7"]
+    # variables for button box input
+    keys = ["2", "1"] if chamber == "1" else ["7", "8"] # first one is yes
 
     # the screen
     window = psychopy.visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', screen=int(chamber), fullscr=False, pos=None, blendMode='add', useFBO=True)
     window.mouseVisible = False # hide cursor
 
     # the stimulus
-    stimuli = stimulus(X=X, window=window, xoffset=0, gabortexture=gabortexture, threshold=threshold)
-    signal = stimuli.signal
-    noise = stimuli.noise
-    reddot = stimuli.reddot
-    annulus = stimuli.annulus
+    stimulus = stimuli.stim(window=window, xoffset=0, threshold=threshold)
+    signal = stimulus.signal
+    noise = stimulus.noise
+    reddot = stimulus.reddot
 
     '''
     1. Familiarization
     '''
-    while True:
-        geninstrfamiliarization() # display instructions
-        window.flip()
-        key = kb.getKeys()
-        if len(key) > 0:
-            if keys[0] in key:
-                break
+    geninstrfamiliarization() # display instructions
+    window.flip()
+    key = event.waitKeys(keyList=keys[:1])
 
-    nfamtrials = 3
     famcontrast = [0.15,0.002,0.08]
+    nfamtrials = len(famcontrast)
 
     for contr in famcontrast:
         key = []
-        signal.contrast = contr
+        signal.opacity = contr
         while not key:
-            draw_stim(noise, signal, reddot, annulus) # draw the stimulus
+            draw_stim(noise, signal, reddot) # draw the stimulus
             window.flip()
-            key = kb.getKeys(keyList=keys)
+            key = event.getKeys(keyList=keys)
 
     '''
     2. Titration
@@ -173,14 +141,9 @@ while titration_over == False:
         nTrials=numberOfTrials)
 
 
-    while True:
-        geninstrtitration() # display instructions
-        window.flip()
-        key = kb.getKeys()
-        if len(key) > 0:
-            if keys[0] in key:
-                break
-
+    geninstrtitration() # display instructions
+    window.flip()
+    key = event.waitKeys(keyList=keys[:1])
 
     """
     Main section:
@@ -192,9 +155,9 @@ while titration_over == False:
     """
     for contrast in staircase:
         key = []
-        signal.contrast = contrast #update the difficulty or contrast from the staircase
+        signal.opacity = contrast #update the difficulty or contrast from the staircase
         while not key:
-            draw_stim(noise, signal, reddot, annulus) # draw the stimulus
+            draw_stim(noise, signal, reddot) # draw the stimulus
             window.flip()
             key = psychopy.event.getKeys(keyList=keys)
         if keys[1] in key: # if they didn't see it
@@ -210,13 +173,11 @@ while titration_over == False:
     print(staircase.reversalIntensities)
     print("The subject's threshold is: = %.3f" % np.average(staircase.reversalIntensities[-6:]))
 
-    window.flip()
     genendscreen()
     window.flip()
     core.wait(5)
     window.close()
 
-    answer = []
     print('Titration result sufficient? Enter y/n')
     answer = input()
 
