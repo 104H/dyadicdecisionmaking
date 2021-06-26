@@ -134,8 +134,9 @@ while titration_over == False:
 
     #the ladder
     staircase = StairHandler(startVal=0.01,
-        stepType='log',
-        stepSizes=[8, 4, 4, 2, 2, 1, 1],  # reduce step size every two reversals
+        stepType='db',
+        stepSizes=4,
+        # stepSizes=[8, 4, 4, 2, 2, 1, 1],  # reduce step size every two reversals
         minVal=0.0005, maxVal=0.15,
         nUp=1, nDown=1, # for hopefully 75% acc rate
         nTrials=numberOfTrials)
