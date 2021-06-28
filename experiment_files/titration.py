@@ -14,7 +14,7 @@ numberOfTrials = 100 # should be 100
 
 # Directory Specs
 HOME = os.getcwd()
-DATA = 'experiment_files/data/'
+DATA = '/data/'
 
 # Subject data dictionary
 subjectData = {'pair_id': [], 'titration_counter': [], 'chamber':[], 'threshold': [], 'threshold_list': [] }
@@ -140,7 +140,8 @@ while titration_over == False:
                                 gamma=0.01,
                                 nTrials=numberOfTrials,
                                 minVal=0.00005,
-                                maxVal=0.1
+                                maxVal=0.1,
+                                method='quantile'
                                 )
 
     geninstrtitration() # display instructions
@@ -169,22 +170,25 @@ while titration_over == False:
         if keys[1] in key: # if they didn't see it
             print("no")
             response = 0
-            staircase_means.append(staircase.mean())
         else:
             print("yes")
             response = 1
-            staircase_means.append(staircase.mean())
+
+        #staircase_means.append(contrast)
+        staircase_means.append(staircase.quantile(0.5))
         staircase.addResponse(response)
 
 
     # fill subject dictionary with threshold and staircase value list
-    subjectData['threshold'] = staircase.mean()
+    subjectData['threshold'] = staircase.quantile(0.5)
     subjectData['threshold_list'] = staircase_means
 
     print('The titration values are: ')
     for member in staircase_means:
         print("%.4f" % member)
-    print('The subjects threshold is: ' + str(staircase.mean()))
+    print('The subjects mean threshold is: ' + str(staircase.mean()))
+    print('The subjects median threshold is: ' + str(staircase.quantile(0.5)))
+    print('The subjects mode threshold is: ' + str(staircase.mode()))
 
     genendscreen()
     window.flip()

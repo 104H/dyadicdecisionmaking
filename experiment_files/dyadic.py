@@ -149,7 +149,7 @@ expkb = keyboard.Keyboard()
 
 expinfo = {'pair': pair_id}
 
-blocks = range(2)
+blocks = range(8)
 ntrials = 80 # trials per block
 
 # create beep for decision interval
