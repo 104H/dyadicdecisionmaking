@@ -42,10 +42,11 @@ except:
 subjectData['pair_id'] = pair_id
 
 # stimulus draw function
-def draw_stim(noise, signal, reddot):
-    noise.phase += (10 / 128.0, 10 / 128.0)
+def draw_stim(noise, signal, reddot, donut):
+    noise.updateNoise()
     noise.draw()
     signal.draw()
+    donut.draw()
     reddot.draw()
 
 def genendscreen():
@@ -109,6 +110,7 @@ while titration_over == False:
     signal = stimulus.signal
     noise = stimulus.noise
     reddot = stimulus.reddot
+    donutmaker = stimulus.donutmaker
 
     '''
     1. Familiarization
@@ -124,7 +126,7 @@ while titration_over == False:
         key = []
         signal.opacity = contr
         while not key:
-            draw_stim(noise, signal, reddot) # draw the stimulus
+            draw_stim(noise, signal, reddot, donutmaker) # draw the stimulus
             window.flip()
             key = event.getKeys(keyList=keys)
 

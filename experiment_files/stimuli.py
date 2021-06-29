@@ -10,28 +10,27 @@ M_HEIGHT = 1200
 REFRESH_RATE = 60
 
 # Gabor patch global variables
-X = 395  # size of texture in pixels, needs to be to the power of 2!
+X = 512  # size of texture in pixels, needs to be to the power of 2!
 
 
 class stim:
     def __init__(self, window, xoffset, threshold):
 
-        # noise texture to use for the noise patch
-        noiseTexture = np.random.rand(128, 128) * 2.0 - 1
-
-        # custom trasparency mask for noise and signal
-        gaussian_ann = np.load(open('experiment_files/gaussian-mask.npy', 'rb'))
-
-        self.signal = visual.GratingStim(
-            win=window, blendmode='add', tex='sin', mask=gaussian_ann, pos=[0 + xoffset, 0],
-            size=X, sf=10/X, contrast=1.0, opacity=threshold,
+        self.noise = visual.NoiseStim(
+            win=window, mask='gauss', ori=1.0, pos=[0 + xoffset, 0], blendmode='add', size=X, sf=None,
+            phase=0, color=[1, 1, 1], colorSpace='rgb', opacity=1, contrast=1, filter='none',
+            noiseType='Binary', noiseElementSize=1
         )
 
-        # noise patch
-        self.noise = visual.GratingStim(window, tex=noiseTexture,
-            size=(395, 395), units='pix', mask = gaussian_ann,
-            contrast=0.05, pos=[0 + xoffset, 0],
-            interpolate=False, autoLog=False)
+        self.donutmaker = visual.GratingStim(
+            win=window, color='grey', tex=np.ones((X, X)), mask='gauss',
+            size=X, contrast=1, opacity=1, pos=[0 + xoffset, 0]
+        )
+
+        self.signal = visual.GratingStim(
+            win=window, blendmode='add', tex='sin', mask='gauss', pos=[0 + xoffset, 0],
+            size=X, sf=10 / X, contrast=1.0, opacity=threshold
+        )
 
         # red fixation dot for decision phase
         self.reddot = visual.GratingStim(

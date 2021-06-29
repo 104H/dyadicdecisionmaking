@@ -99,6 +99,9 @@ class subject:
         # noise patch
         self.noise = stimulus.noise
 
+        # donutmaker
+        self.donutmaker = stimulus.donutmaker
+
         # red fixation dot for decision phase
         self.reddot = stimulus.reddot
 
@@ -233,8 +236,9 @@ def genbaseline (subjects):
         Generate the baseline stimulus (dynamic noise + red fixation dot)
     '''
     for s in subjects:
-        s.noise.phase += (10 / 128.0, 10 / 128.0)
+        s.noise.updateNoise()
         s.noise.draw()
+        s.donutmaker.draw()
         s.reddot.draw()
 
 def gendecisionint (subjects, condition):
@@ -248,9 +252,10 @@ def gendecisionint (subjects, condition):
         genbaseline(subjects)
     elif condition == 'signal':
         for s in subjects:
-            s.noise.phase += (10 / 128.0, 10 / 128.0)
+            s.noise.updateNoise()
             s.noise.draw()
             s.signal.draw()
+            s.donutmaker.draw()
             s.reddot.draw()
     else:
         raise NotImplementedError
@@ -260,8 +265,9 @@ def genintertrial (subjects):
         Keep displaying the stimulus but also display the other person's response if it wasn't their own turn
     '''
     for s in subjects:
-        s.noise.phase += (10 / 128.0, 10 / 128.0)
+        s.noise.updateNoise()
         s.noise.draw()
+        s.donutmaker.draw()
         s.greendot.draw()
 
     # if subject one/two is in an acting state and responded, add their response to the response box of subject two/one
