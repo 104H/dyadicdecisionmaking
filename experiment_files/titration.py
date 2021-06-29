@@ -165,7 +165,7 @@ while titration_over == False:
         key = []
         signal.opacity = contrast #update the difficulty or contrast from the staircase
         while not key:
-            draw_stim(noise, signal, reddot) # draw the stimulus
+            draw_stim(noise, signal, reddot, donutmaker) # draw the stimulus
             window.flip()
             key = event.getKeys(keyList=keys)
 
