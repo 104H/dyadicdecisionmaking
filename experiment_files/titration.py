@@ -26,7 +26,7 @@ titration_over = False
 titration_counter = 0
 
 # initial threshold
-threshold = 0.1
+threshold = 0.01
 
 # monitor specs global variables
 M_WIDTH = stimuli.M_WIDTH
@@ -43,7 +43,7 @@ subjectData['pair_id'] = pair_id
 
 # stimulus draw function
 def draw_stim(noise, signal, reddot, donut):
-    noise.updateNoise()
+    stimulus.updateNoise()
     noise.draw()
     signal.draw()
     donut.draw()
@@ -85,6 +85,7 @@ def geninstrfamiliarization():
 
 while titration_over == False:
     # input the chamber number in which titration takes place
+
     chamber = []
     if chamber == []:
         print("Enter chamber number (1 or 2):")

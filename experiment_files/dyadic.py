@@ -85,7 +85,7 @@ class subject:
         self.response = None
         self.actingheadphonebalance = "30%,0%" if sid == 2 else "0%,30%"
 
-        stimulus = stimuli.stim(window=window, xoffset=self.xoffset, threshold=self.threshold)
+        self.stimulus = stimuli.stim(window=window, xoffset=self.xoffset, threshold=self.threshold)
 
         self.buttons = {
                     keys[1] : "yes",
@@ -94,22 +94,22 @@ class subject:
                     }
 
         # signal
-        self.signal = stimulus.signal
+        self.signal = self.stimulus.signal
 
         # noise patch
-        self.noise = stimulus.noise
+        self.noise = self.stimulus.noise
 
         # donutmaker
-        self.donutmaker = stimulus.donutmaker
+        self.donutmaker = self.stimulus.donutmaker
 
         # red fixation dot for decision phase
-        self.reddot = stimulus.reddot
+        self.reddot = self.stimulus.reddot
 
         # green fixation dot for pre trial and inter trial condition
-        self.greendot = stimulus.greendot
+        self.greendot = self.stimulus.greendot
 
         # a dot which indicates to the subject they are in the observation state
-        self.indicatordict = stimulus.indicatordict
+        self.indicatordict = self.stimulus.indicatordict
 
     def __repr__ (self):
         return str(self.id)
@@ -236,7 +236,7 @@ def genbaseline (subjects):
         Generate the baseline stimulus (dynamic noise + red fixation dot)
     '''
     for s in subjects:
-        s.noise.updateNoise()
+        s.stimulus.updateNoise()
         s.noise.draw()
         s.donutmaker.draw()
         s.reddot.draw()
@@ -252,7 +252,7 @@ def gendecisionint (subjects, condition):
         genbaseline(subjects)
     elif condition == 'signal':
         for s in subjects:
-            s.noise.updateNoise()
+            s.stimulus.noise.updateNoise()
             s.noise.draw()
             s.signal.draw()
             s.donutmaker.draw()
@@ -265,7 +265,7 @@ def genintertrial (subjects):
         Keep displaying the stimulus but also display the other person's response if it wasn't their own turn
     '''
     for s in subjects:
-        s.noise.updateNoise()
+        s.stimulus.noise.updateNoise()
         s.noise.draw()
         s.donutmaker.draw()
         s.greendot.draw()
