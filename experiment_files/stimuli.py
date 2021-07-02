@@ -10,18 +10,17 @@ M_HEIGHT = 1200
 REFRESH_RATE = 60
 
 # gabor patch global variables
-X = 512  # size of texture in pixels, needs to be to the power of 2!
+X = 684  # size of texture in pixels, needs to be to the power of 2!
 
 # custom gaussian mask
 maskarray = np.load('maskarray.npy')
-
 
 class stim:
     def __init__(self, window, xoffset, threshold):
         # noise patch
         self.noise = visual.GratingStim(
             win=window, mask=maskarray, ori=1.0, pos=[0 + xoffset, 0], blendmode='add', size=X,
-            opacity=0.2, contrast=1, tex=np.random.rand(X, X) * 2.0 - 1
+            opacity=0.05, contrast=1, tex=np.random.rand(X, X) * 2.0 - 1
         )
 
         # signal

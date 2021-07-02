@@ -42,11 +42,10 @@ except:
 subjectData['pair_id'] = pair_id
 
 # stimulus draw function
-def draw_stim(noise, signal, reddot, donut):
+def draw_stim(noise, signal, reddot):
     stimulus.updateNoise()
     noise.draw()
     signal.draw()
-    donut.draw()
     reddot.draw()
 
 def genendscreen():
@@ -111,7 +110,6 @@ while titration_over == False:
     signal = stimulus.signal
     noise = stimulus.noise
     reddot = stimulus.reddot
-    donutmaker = stimulus.donutmaker
 
     '''
     1. Familiarization
@@ -127,7 +125,7 @@ while titration_over == False:
         key = []
         signal.opacity = contr
         while not key:
-            draw_stim(noise, signal, reddot, donutmaker) # draw the stimulus
+            draw_stim(noise, signal, reddot) # draw the stimulus
             window.flip()
             key = event.getKeys(keyList=keys)
 
@@ -166,7 +164,7 @@ while titration_over == False:
         key = []
         signal.opacity = contrast #update the difficulty or contrast from the staircase
         while not key:
-            draw_stim(noise, signal, reddot, donutmaker) # draw the stimulus
+            draw_stim(noise, signal, reddot) # draw the stimulus
             window.flip()
             key = event.getKeys(keyList=keys)
 

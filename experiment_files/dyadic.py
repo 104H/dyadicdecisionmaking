@@ -99,9 +99,6 @@ class subject:
         # noise patch
         self.noise = self.stimulus.noise
 
-        # donutmaker
-        self.donutmaker = self.stimulus.donutmaker
-
         # red fixation dot for decision phase
         self.reddot = self.stimulus.reddot
 
@@ -238,7 +235,6 @@ def genbaseline (subjects):
     for s in subjects:
         s.stimulus.updateNoise()
         s.noise.draw()
-        s.donutmaker.draw()
         s.reddot.draw()
 
 def gendecisionint (subjects, condition):
@@ -255,7 +251,6 @@ def gendecisionint (subjects, condition):
             s.stimulus.noise.updateNoise()
             s.noise.draw()
             s.signal.draw()
-            s.donutmaker.draw()
             s.reddot.draw()
     else:
         raise NotImplementedError
@@ -267,7 +262,6 @@ def genintertrial (subjects):
     for s in subjects:
         s.stimulus.noise.updateNoise()
         s.noise.draw()
-        s.donutmaker.draw()
         s.greendot.draw()
 
     # if subject one/two is in an acting state and responded, add their response to the response box of subject two/one
