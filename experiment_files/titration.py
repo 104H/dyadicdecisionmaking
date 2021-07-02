@@ -10,7 +10,7 @@ import stimuli
 
 
 # set the number of trials (for testing)!
-numberOfTrials = 40 # should be 100
+numberOfTrials = 100 # should be 100
 
 # Directory Specs
 HOME = os.getcwd()
@@ -43,7 +43,7 @@ subjectData['pair_id'] = pair_id
 
 # stimulus draw function
 def draw_stim(noise, signal, reddot):
-    noise.phase += (10 / 128.0, 10 / 128.0)
+    stimulus.updateNoise()
     noise.draw()
     signal.draw()
     reddot.draw()
@@ -84,6 +84,7 @@ def geninstrfamiliarization():
 
 while titration_over == False:
     # input the chamber number in which titration takes place
+
     chamber = []
     if chamber == []:
         print("Enter chamber number (1 or 2):")
@@ -160,12 +161,11 @@ while titration_over == False:
         while not key:
             draw_stim(noise, signal, reddot) # draw the stimulus
             window.flip()
-            key = psychopy.event.getKeys(keyList=keys)
+            key = event.getKeys(keyList=keys)
         if keys[1] in key: # if the participant didn't detect signal, record a 'no' response
             print("no")
             response = 0
         else:
-            response = 1
             print("yes")
         staircase.addResponse(response)
 
