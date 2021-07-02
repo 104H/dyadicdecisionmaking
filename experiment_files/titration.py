@@ -26,7 +26,7 @@ titration_over = False
 titration_counter = 0
 
 # initial threshold
-threshold = 0.01
+threshold = 0.1
 
 # monitor specs global variables
 M_WIDTH = stimuli.M_WIDTH
