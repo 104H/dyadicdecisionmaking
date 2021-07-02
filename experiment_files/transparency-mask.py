@@ -2,10 +2,10 @@ import numpy as np
 from scipy import ndimage as ndi
 import cv2
 
-X = 1024 # size of the mask, has to be a power of two
+X = 2048 # size of the mask, has to be to the power of two
 center = int(X/2)
-radius = 186 # 4.8 degress of visual angle; the value in pixels is for 60cm distance to screen
-sigma = 70 # 1.8 degrees of visual angle; the value in pixels is for 60cm distance to screen
+radius = 252 # 4.8 degress of visual angle; the value in pixels is for 80cm distance to screen
+sigma = 94 # 1.8 degrees of visual angle; the value in pixels is for 80cm distance to screen
 
 
 x = np.zeros((X, X))
