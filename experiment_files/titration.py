@@ -167,6 +167,7 @@ while titration_over == False:
             response = 0
         else:
             print("yes")
+            response = 1
         staircase.addResponse(response)
 
     staircase.saveAsExcel(fileName='titration_data'+str(pair_id)+'_'+str(chamber))
