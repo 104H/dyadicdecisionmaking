@@ -129,6 +129,7 @@ while titration_over == False:
             window.flip()
             key = event.getKeys(keyList=keys)
 
+
     '''
     2. Titration
     '''
