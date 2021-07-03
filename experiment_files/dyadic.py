@@ -3,17 +3,11 @@
 '''
     Naming Convention:
         The subjects are either refered to as 'sone' or 'stwo'
-        The variables for each are prepended with `sone_` or `stwo_`
-
-    To Do:
-        - There is a warning that a providing data file can prevent data loss in case of crash. Is it writing to the disk and should we have this?
 '''
 
 import ctypes
 xlib = ctypes.cdll.LoadLibrary("libX11.so")
 xlib.XInitThreads()
-
-from typing import Any, Callable
 
 import os
 import sys
@@ -22,11 +16,9 @@ import numpy as np
 import psychtoolbox as ptb
 from psychopy import visual, event, core, gui, data, prefs, monitors
 from psychopy.hardware import keyboard
-from stimuli import stimulus
+import stimuli
 from random import choice, shuffle
 import json
-
-# setting PTB as our preferred sound library and then import sound
 
 '''
 To obtain your sounddevices run the following line on the terminal
@@ -34,6 +26,7 @@ python3 -c "from psychopy.sound.backend_sounddevice import getDevices;print(getD
 Copy the `name` attribute of your device to the audioDevice
 '''
 
+# setting PTB as our preferred sound library and then import sound
 prefs.hardware['audioLib'] = ['PTB']
 
 from psychopy import sound
@@ -42,68 +35,42 @@ sound.setDevice('USB Audio Device: - (hw:3,0)')
 from psychopy.sound import Sound
 from numpy.random import random
 
-
-# get pair id via GUI
-#name = 'Experiment: Dyadic Decision Making'
-#info = {'pair ID':''}
-#while (info['pair ID']==''):
-#    dlg = gui.DlgFromDict(dictionary=info, sortKeys=False, title=name)
-#    if dlg.OK == False:
-#        core.quit()
-#pair_id = int(info['pair ID'])
-
 # get pair id via command-line argument
 try:
     pair_id = int(sys.argv[1])
 except:
     print('Please enter a number as pair id as command-line argument!')
-    sys.exit(0)
-    #pair_id=2
-
-# button <> finger mapping
-if pair_id < 13:
-    instrmapping = ['right', 'left'] # variable for instructions - first element is 'yes'
-else:
-    instrmapping = ['left', 'right']
+    sys.exit(-1)
 
 # monitor specs global variables
-M_WIDTH = 1920*2
-M_HEIGHT = 1200
-REFRESH_RATE = 60
+M_WIDTH = stimuli.M_WIDTH * 2
+M_HEIGHT = stimuli.M_HEIGHT
+REFRESH_RATE = stimuli.REFRESH_RATE
 
-myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=80)
-myMon.save()
+myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=65)
 
-# Gabor patch global variables
-CYCLES = 10 # required cycles for the whole patch
-X = 256; # size of texture in pixels, needs to be to the power of 2!
-sf = CYCLES/X; # spatial frequency for texture, cycles per pixel
-
-gabortexture = (
-    visual.filters.makeGrating(res=X, cycles=X * sf) *
-    visual.filters.makeMask(matrixSize=X, shape="circle", range=[0, 1])
-)
 
 window = visual.Window(size=(M_WIDTH, M_HEIGHT), monitor=myMon, units='pix', blendMode='add', fullscr=False, useFBO=True, allowGUI=False, pos=(0,0))
 window.mouseVisible = False # hide cursor
-
-noisetexture = random([X,X])*2.-1. # a X-by-X array of random numbers in [-1,1]
-
+ofs = window.size[0] / 4
 
 class subject:
-    def __init__(self, sid, xoffset, position, keys, kb):
+    def __init__(self, sid, kb):
         '''
-            state is either 0 or 1 for observing or acting conditions, respectively
-            xoffset is the constant added to all stimuli rendered for the subject
-            signal is the signal according to the subject's threshold
-            position is either left of right. it is used to determine the speaker of the subject
+            sid is 1 for chamber 1, and 2 for chamber 2
+
+            kb is the psychopy keyboard object to connect to the button box
             keys is a list of keys expected from the user. it has to be in the order of yes and no
+            state is either 0 or 1 for observing or acting conditions, respectively
+            threshold is the signal according to the subject's threshold
+            xoffset is the constant added to all stimuli rendered for the subject
         '''
+
+        keys = ["1", "2"] if sid == 1 else ["8", "7"]
 
         # fetching subject titration thresholds
         try:
-            n = "1" if position == "left" else "2"
-            f = open("data/" + str(pair_id) + "/data_chamber" + n + ".json", "r")
+            f = open("data/" + str(pair_id) + "/data_chamber" + str(sid) + ".json", "r")
             data = json.load(f)
         except FileNotFoundError:
             print("Titration file not found for subject in chamber " + n)
@@ -113,63 +80,44 @@ class subject:
 
         self.id = sid
         self.kb = kb
-        self.state = 0
-        self.xoffset = xoffset
+        self.state = False
+        self.xoffset = ofs if sid == 1 else -ofs
         self.response = None
-        self.actingheadphonebalance = "30%,0%" if position == "left" else "0%,30%"
+        self.actingheadphonebalance = "30%,0%" if sid == 2 else "0%,30%"
 
-        stimuli = stimulus(X=X, window=window, xoffset=xoffset, gabortexture=gabortexture, threshold=self.threshold)
+        self.stimulus = stimuli.stim(window=window, xoffset=self.xoffset, threshold=self.threshold)
 
-        if pair_id < 13:
-            self.buttons = {
+        self.buttons = {
                     keys[1] : "yes",
                     keys[0] : "no",
                     None : "noresponse"
                     }
-        else:
-            self.buttons = {
-                keys[0]: "yes",
-                keys[1]: "no",
-                None: "noresponse"
-            }
 
         # signal
-        self.signal = stimuli.signal
-
-        # the annulus is created by passing a matrix of zeros to the texture argument
-        self.annulus = stimuli.annulus
+        self.signal = self.stimulus.signal
 
         # noise patch
-        self.noise = stimuli.noise
+        self.noise = self.stimulus.noise
 
         # red fixation dot for decision phase
-        self.reddot = stimuli.reddot
+        self.reddot = self.stimulus.reddot
 
         # green fixation dot for pre trial and inter trial condition
-        self.greendot = stimuli.greendot
+        self.greendot = self.stimulus.greendot
 
         # a dot which indicates to the subject they are in the observation state
-        self.indicatordict = {
-                "yes" : visual.TextStim(
-                            win = window, text="Yes", units='pix', pos=[0 + xoffset, 0]
-                        ),
-                "no" : visual.TextStim(
-                            win = window, text="No", units='pix', pos=[0 + xoffset, 0]
-                        ),
-                "noresponse" : visual.TextStim(
-                            win = window, text="No Response", units='pix', pos=[0 + xoffset, 0]
-                        )
-                }
+        self.indicatordict = self.stimulus.indicatordict
 
     def __repr__ (self):
         return str(self.id)
 
 
-### Global variables for rendering stimuli
-
-ofs = window.size[0] / 4 # determine the offset once, assign it as neg or pos next
 
 def getKeyboards():
+    '''
+        Search for the appropriate button box in each of the chambers
+        Create a keyboard object for each subject button box and assign it to them
+    '''
     keybs = keyboard.getKeyboards()
     k = {"chone" : None, "chtwo" : None}
 
@@ -193,23 +141,24 @@ def getKeyboards():
 
 keybs = getKeyboards()
 
-sone = subject(1, ofs, "right", ["1", "2"], keyboard.Keyboard( keybs["chone"] ))
-stwo = subject(2, -ofs, "left", ["8", "7"], keyboard.Keyboard( keybs["chtwo"] ))
+sone = subject(1, keyboard.Keyboard( keybs["chone"] ))
+stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ))
 subjects = [sone, stwo]
 
-expkb = keyboard.Keyboard() # @Hunaid: change this to the experimenter keyboard
-
-kb = keyboard.Keyboard() # variable including all keyboards for clearing buffers and resetting clocks
+expkb = keyboard.Keyboard()
 
 expinfo = {'pair': pair_id}
 
-blocks = range(2)
-ntrials = 20 # trials per block
+blocks = range(8)
+ntrials = 80 # trials per block
 
 # create beep for decision interval
 beep = Sound('A', secs=0.5, volume=0.1)
 
 def gentext (instr):
+    '''
+        Generate text on both subject screens
+    '''
     visual.TextStim(window,
                     text=instr, pos=[0 + sone.xoffset, 0],
                     color='black', height=20).draw()
@@ -222,7 +171,7 @@ def genstartscreen ():
     instructions = "Welcome to our experiment! \n\n\
     Your task is to indicate whether you see a vertical grating or not.\n\
     If you have any questions after reading the instructions on the next screen, please feel free to ask the experimenter.\n\n\
-    Press the {} key to continue".format(instrmapping[0])
+    Press the green key to continue"
 
     gentext(instructions)
 
@@ -234,10 +183,10 @@ def geninstructionspractice ():
     4. The stimulus will be the same as you saw before: a circle of noise.\n\
     5. Fixate on the dot in the center of the circle.\n\
     6. What's new: Only when you hear a beep, it’s your turn to indicate whether you saw a vertical grating on top of the noise.\n\
-    7. Press the {} key for 'yes' and the {} key for 'no'.\n\
+    7. Press the green key for 'yes' and the red key for 'no'.\n\
     8. It’s very important that you respond as fast and as accurate as possible! You only have a limited amount of time for your response.\n\
     9. If you don’t hear a beep, it’s the other person’s turn to respond. You will both see the the same stimulus and you will also see their response on your screen.\n\n\
-    Press yes to continue".format(instrmapping[0], instrmapping[1])
+    Press yes to continue"
 
     gentext(instructions)
 
@@ -246,12 +195,12 @@ def geninstructionsexperiment ():
     1. Place your index finger on the left key and your middle finger on the right key.\n\
     2. Fixate on the dot in the center of the circle.\n\
     3. When you hear a beep it’s your turn. If you don’t hear a beep, you will see your partner’s response.\n\
-    4. Press the {} key for 'yes' and the {} key for 'no'.\n\
+    4. Press the green key for 'yes' and the red key for 'no'.\n\
     5. Please respond as quickly and as accurately as possible! \n\
     6. Once you finished one block, you’ll be asked if you’re ready for the next block.\n\
     7. After every second block, you will have a break.\n\
     8. There will be a total of 12 blocks.\n\n\
-    Press yes when you’re ready to start the experiment".format(instrmapping[0], instrmapping[1])
+    Press yes when you’re ready to start the experiment"
 
     gentext(instructions)
 
@@ -280,56 +229,57 @@ def genmandatorybreakscreen ():
     gentext(instructions)
 
 def genbaseline (subjects):
+    '''
+        Generate the baseline stimulus (dynamic noise + red fixation dot)
+    '''
     for s in subjects:
+        s.stimulus.updateNoise()
         s.noise.draw()
-        s.noise.updateNoise()
-        s.annulus.draw()
         s.reddot.draw()
 
 def gendecisionint (subjects, condition):
     '''
         Generate the stimulus
         condition:
-            's' for Signal
-            'n' for Noise
+            signal
+            noise
     '''
     if condition == 'noise':
         genbaseline(subjects)
     elif condition == 'signal':
         for s in subjects:
+            s.stimulus.noise.updateNoise()
             s.noise.draw()
-            s.noise.updateNoise()
             s.signal.draw()
-            s.annulus.draw()
             s.reddot.draw()
     else:
         raise NotImplementedError
 
 def genintertrial (subjects):
+    '''
+        Keep displaying the stimulus but also display the other person's response if it wasn't their own turn
+    '''
     for s in subjects:
+        s.stimulus.noise.updateNoise()
         s.noise.draw()
-        s.noise.updateNoise()
-        s.annulus.draw()
         s.greendot.draw()
 
-    # if subject one/two is in an acting state, add their response to the response box of subject two/one
-    if stwo.state == 1:
+    # if subject one/two is in an acting state and responded, add their response to the response box of subject two/one
+    if stwo.state:
         if stwo.response != "noresponse":
             sone.indicatordict[stwo.response].draw()
-    if sone.state == 1:
+    if sone.state:
         if sone.response != "noresponse":
             stwo.indicatordict[sone.response].draw()
 
 
 def fetchbuttonpress (subjects):
     '''
-        Looks for input from a pyserial connector
-        Args:
-            connector: PySerial object of connection to button box
-            clock: PsychoPy clock object
+        Get the button box input from the acting subject
+        Return the response (yes/ no) and the reaction time
     '''
     for s in subjects:
-        if s.state == 0:
+        if not s.state:
             continue
         else:
             temp = s.kb.getKeys(keyList=s.buttons.keys(), clear=True)
@@ -345,24 +295,28 @@ def fetchbuttonpress (subjects):
     return resp
 
 def updatespeakerbalance ():
-    # we can a terminal command to shift the balance. it does not work if both the subject are acting (in the individual condition)
-    # but it is a more efficient solution if we don't have a condition where both are acting
+    '''
+        Update the volume level of the left and right speaker so that only the acting subject can hear the beep
+    '''
     for s in subjects:
-        if s.state == 1:
+        if s.state:
             run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
             #pass
 
 def updatestate ():
     '''
-        Which dyad makes the button box
+        Update whose turn it is
     '''
     sone.state = next(iterstates)
-    stwo.state = 1 - sone.state
+    stwo.state = bool(1 - sone.state)
 
 def secondstoframes (seconds):
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
 
 def getacknowledgements ():
+    '''
+        Wait until both subjects have confirmed they are ready by pressing "yes"
+    '''
     sone_ack, stwo_ack = None, None
 
     while (sone_ack != 'yes') or (stwo_ack != 'yes'):
@@ -375,18 +329,25 @@ def getacknowledgements ():
         if resp2:
             for r in resp2:
                 if stwo_ack != 'yes': stwo_ack = stwo.buttons[r.name]
-
-    kb.clearEvents(eventType='keyboard') # clearing buffers
+    sone.kb.clearEvents(eventType="keyboard")
+    stwo.kb.clearEvents(eventType="keyboard")
 
 def getexperimenterack ():
+    '''
+        Wait for the experimenter input
+            q: quit experiment
+            space: continue
+    '''
     keys = expkb.waitKeys(keyList=["q", "space"], clear=True)
     if "q" in keys: # exit experiment
         window.close()
         core.quit()
 
-
 def genactingstates ():
-    return np.random.randint(0, 2, ntrials)
+    '''
+        Randomly generate list including the subject states (act/ observe)
+    '''
+    return np.random.choice(a=[True, False], size=ntrials)
 
 # update speaker balance for the first time
 updatespeakerbalance()
@@ -396,18 +357,11 @@ _thisDir = os.path.dirname(os.path.abspath(__file__))
 expName = 'DDM'
 filename = _thisDir + os.sep + u'data/%s_pair%s_%s' % (expName, expinfo['pair'], data.getDateStr())
 
-
-# set up trial handler and experiment handler
-triallist=[]
-# make sure signal is present on 50% of trials
-for Idx in range(ntrials//2):
-    triallist.append({"condition": "signal"})
-    triallist.append({"condition": "noise"})
+triallist = [{"condition": "signal"}, {"condition": "noise"}] * (ntrials//2)
 
 exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideText=True, dataFileName=filename)
 for b in blocks:
     exphandler.addLoop(data.TrialHandler(trialList=triallist, nReps=1, method='random', originPath=-1, extraInfo=expinfo) )
-
 
 ##### PRACTICE TRIALS #####
 
@@ -423,14 +377,10 @@ getacknowledgements()
 
 # set up practice trials
 npracticetrials = 2 # needs to be an even number
-practicestates=[]
-practicetriallist=[]
+
 # make sure signal/noise and acting/observing are equally distributed for practice trials
-for _ in range (npracticetrials//2):
-    practicestates.append(0)
-    practicestates.append(1)
-    practicetriallist.append("signal")
-    practicetriallist.append("noise")
+practicestates = [False, True] * (npracticetrials//2)
+practicetriallist = ['signal', 'noise'] * (npracticetrials//2)
 
 # shuffle the lists
 shuffle(practicestates)
@@ -452,13 +402,12 @@ for idx in range(npracticetrials):
         genbaseline(subjects)
         window.flip()
 
+    sone.kb.clearEvents(eventType='keyboard')
+    stwo.kb.clearEvents(eventType='keyboard')
 
     # preparing time for next window flip, to precisely co-ordinate window flip and beep
-    # display stimulus
     nextflip = window.getFutureFlipTime(clock='ptb')
     beep.play(when=nextflip)
-
-    kb.clearEvents(eventType='keyboard')
 
     response = [] # we have no response yet
     for frame in secondstoframes(2.5):
@@ -496,11 +445,9 @@ for trials in exphandler.loops:
 
     # variables for data saving
     block+=1
-    trialInBlock=0
 
     # make an iterator object
-    states = genactingstates()
-    iterstates = iter(states)
+    iterstates = iter(genactingstates())
 
     # traverse through trials
     for trial in trials:
@@ -511,28 +458,24 @@ for trials in exphandler.loops:
         updatespeakerbalance()
 
         # save trial data to file
-        trialInBlock += 1
         exphandler.addData('block', block)
-        exphandler.addData('trial', trialInBlock)
-        exphandler.addData('totalTrials', (block-1)*ntrials+trialInBlock)
+        exphandler.addData('trial', trials.thisTrialN)
         exphandler.addData('s1_state', sone.state)
-        exphandler.addData('s2_state', stwo.state)
 
         # display baseline for a random time between 2 to 4 seconds
         for frame in secondstoframes( np.random.uniform(2, 4) ):
             genbaseline(subjects)
             window.flip()
 
-        kb.clearEvents(eventType='keyboard')
+        sone.kb.clearEvents(eventType='keyboard')
+        stwo.kb.clearEvents(eventType='keyboard')
 
-        # preparing time for next window flip, to precisely co-ordinate window flip and beep
-        # display stimulus
-        nextflip = window.getFutureFlipTime(clock='ptb')
-        beep.play(when=nextflip)
-
-        #kb.clock.reset()  resets clocks for all keyboards
         sone.kb.clock.reset()
         stwo.kb.clock.reset()
+
+        # preparing time for next window flip, to precisely co-ordinate window flip and beep
+        nextflip = window.getFutureFlipTime(clock='ptb')
+        beep.play(when=nextflip)
 
         response = []  # we have no response yet
         for frame in secondstoframes(2.5):
@@ -571,7 +514,7 @@ for trials in exphandler.loops:
         window.flip()
         getexperimenterack()
     # otherwise, wait for the subjects to start their next block
-    elif block % 2 == 1:
+    else:
         genbreakscreen()
         window.flip()
         getacknowledgements()
