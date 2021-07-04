@@ -7,13 +7,13 @@ M_HEIGHT = 1200
 REFRESH_RATE = 60
 
 # gabor patch global variables
-X = 2048  # size of texture in pixels, needs to be a power of 2
+X = 1024  # size of texture in pixels, needs to be a power of 2
 CYCLES = 20
-size=1066
+size=1024 # stimulus size in pixels
 sf = CYCLES/size;
 
 # custom transparency mask
-with open('gaussian_ann.npy', 'rb') as f:
+with open('experiment_files/gaussian_ann.npy', 'rb') as f:
      gaussian_ann = np.load(f)
 
 class stim:
@@ -27,7 +27,7 @@ class stim:
         # signal
         self.signal = visual.GratingStim(
             win=window, blendmode='add', tex='sin', mask=gaussian_ann, pos=[0 + xoffset, 0],
-            size=size, sf=10 / size, contrast=1.0, opacity=threshold
+            size=size, sf=sf, contrast=1.0, opacity=threshold
         )
 
         # red fixation dot for baseline and decision interval
