@@ -47,7 +47,8 @@ M_WIDTH = stimuli.M_WIDTH * 2
 M_HEIGHT = stimuli.M_HEIGHT
 REFRESH_RATE = stimuli.REFRESH_RATE
 
-myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=65)
+myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=80)
+myMon.setSizePix([M_WIDTH, M_HEIGHT])
 
 
 window = visual.Window(size=(M_WIDTH, M_HEIGHT), monitor=myMon, units='pix', blendMode='add', fullscr=False, useFBO=True, allowGUI=False, pos=(0,0))
@@ -116,7 +117,8 @@ class subject:
 def getKeyboards():
     '''
         Search for the appropriate button box in each of the chambers
-        Create a keyboard object for each subject button box and assign it to them
+        Once a button has been pressed on one of the button boxes,
+            create a keyboard object for each subject button box and assign it to them
     '''
     keybs = keyboard.getKeyboards()
     k = {"chone" : None, "chtwo" : None}
@@ -149,7 +151,7 @@ expkb = keyboard.Keyboard()
 
 expinfo = {'pair': pair_id}
 
-blocks = range(8)
+blocks = range(12)
 ntrials = 80 # trials per block
 
 # create beep for decision interval
@@ -241,8 +243,8 @@ def gendecisionint (subjects, condition):
     '''
         Generate the stimulus
         condition:
-            signal
-            noise
+            signal + noise + red fixation dot
+            noise + red fixation dot
     '''
     if condition == 'noise':
         genbaseline(subjects)
@@ -258,13 +260,14 @@ def gendecisionint (subjects, condition):
 def genintertrial (subjects):
     '''
         Keep displaying the stimulus but also display the other person's response if it wasn't their own turn
+        Indicated to the subject by a green fixation dot (instead of a red one)
     '''
     for s in subjects:
         s.stimulus.noise.updateNoise()
         s.noise.draw()
         s.greendot.draw()
 
-    # if subject one/two is in an acting state and responded, add their response to the response box of subject two/one
+    # if subject one/two is in an acting state and responded, display their response on the screen of subject two/one
     if stwo.state:
         if stwo.response != "noresponse":
             sone.indicatordict[stwo.response].draw()
@@ -335,7 +338,7 @@ def getacknowledgements ():
 def getexperimenterack ():
     '''
         Wait for the experimenter input
-            q: quit experiment
+            q: quit experiment (data is saved)
             space: continue
     '''
     keys = expkb.waitKeys(keyList=["q", "space"], clear=True)
@@ -363,7 +366,7 @@ exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideTex
 for b in blocks:
     exphandler.addLoop(data.TrialHandler(trialList=triallist, nReps=1, method='random', originPath=-1, extraInfo=expinfo) )
 
-##### PRACTICE TRIALS #####
+##### PRACTICE TRIALS  START #####
 
 # diplay welcome screen
 genstartscreen()
@@ -429,8 +432,9 @@ for idx in range(npracticetrials):
         genintertrial(subjects)
         window.flip()
 
+##### PRACTICE TRIALS  END #####
 
-##### MAIN EXPERIMENT #####
+##### MAIN EXPERIMENT START #####
 
 # display instructions for experiment
 geninstructionsexperiment()
@@ -438,13 +442,13 @@ window.flip()
 getacknowledgements()
 
 # variables for data saving
-block=0
+block = 0
 
-# start MAIN EXPERIMENT
+# start main experiment
 for trials in exphandler.loops:
 
     # variables for data saving
-    block+=1
+    block += 1
 
     # make an iterator object
     iterstates = iter(genactingstates())
@@ -489,7 +493,6 @@ for trials in exphandler.loops:
                 break
 
         # need to explicity call stop() to go back to the beginning of the track
-        # we reset after collecting a response, otherwise the beep is stopped too early
         beep.stop()
 
         # display inter trial interval for 2s

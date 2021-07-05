@@ -4,12 +4,11 @@ import json
 import time
 import numpy as np
 import psychopy
-from psychopy import visual, event, core
+from psychopy import visual, event, core, monitors
 from psychopy.data import QuestHandler
 import stimuli
 
-
-# set the number of trials (for testing)!
+# set the number of trials
 numberOfTrials = 100 # should be 100
 
 # Directory Specs
@@ -31,6 +30,10 @@ threshold = 0.01
 # monitor specs global variables
 M_WIDTH = stimuli.M_WIDTH
 M_HEIGHT = stimuli.M_HEIGHT
+
+myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=80)
+myMon.setSizePix([M_WIDTH, M_HEIGHT])
+
 
 # get pair id via command-line argument
 try:
@@ -84,7 +87,6 @@ def geninstrfamiliarization():
 
 while titration_over == False:
     # input the chamber number in which titration takes place
-
     chamber = []
     if chamber == []:
         print("Enter chamber number (1 or 2):")
@@ -102,8 +104,8 @@ while titration_over == False:
     keys = ["2", "1"] if chamber == "1" else ["7", "8"] # first one is yes
 
     # the screen
-    window = psychopy.visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', screen=int(chamber), fullscr=False, pos=None, blendMode='add', useFBO=True)
-    window.mouseVisible = False # hide cursor
+    window = psychopy.visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', screen=int(chamber), fullscr=False, pos=None, blendMode='add', useFBO=True, monitor=myMon)
+    window.mouseVisible = False
 
     # the stimulus
     stimulus = stimuli.stim(window=window, xoffset=0, threshold=threshold)
@@ -136,8 +138,8 @@ while titration_over == False:
 
     #the ladder
     staircase = QuestHandler(
-                                startVal=0.008,
-                                startValSd=0.1,
+                                startVal=0.1,
+                                startValSd=0.2,
                                 pThreshold=0.63,  #because it is a one up one down staircase
                                 gamma=0.01,
                                 nTrials=numberOfTrials,
