@@ -117,7 +117,7 @@ class subject:
 def getKeyboards():
     '''
         Search for the appropriate button box in each of the chambers
-        Once a button has been pressed on one of the button boxes,
+        Once a button has been pressed on each of the button boxes,
             create a keyboard object for each subject button box and assign it to them
     '''
     keybs = keyboard.getKeyboards()
