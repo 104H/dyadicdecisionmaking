@@ -2,12 +2,31 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+from math import tan, ceil
+
+
+''' 1. Calculating the size of the mask '''
+M_WIDTH = 1920 # monitor width in pixels
+M_WIDTH_CM = 51.84
+
+radius_degrees = 4.8 # radius of stimulus in degrees of visual angle
+sd_degrees = 1.8 # sd of the gaussian distribution of the mask in degrees of visual angle
+distance = 80 # distance to screen in cm
+
+radius_cm = tan(radius_degrees * np.pi / 180) * distance
+radius_pix = radius_cm * M_WIDTH / M_WIDTH_CM
+
+sd_cm = tan(sd_degrees * np.pi / 180) * distance
+sd_pix = sd_cm * M_WIDTH / M_WIDTH_CM
+
+diameter_pix = 2 * radius_pix + 2 * sd_pix # diameter of the whole stimulus in pixels
+desired_pixels = int(ceil(diameter_pix))
 
 my_dpi = 96 # dpi of the lab monitor
-desired_pixels = 684
 desired_figsize = desired_pixels/my_dpi
 
-# defining the variables
+''' 2. Creating the mask '''
+# defining the variables for the mask
 sigma = 37.5
 muu = 180
 radius = 240

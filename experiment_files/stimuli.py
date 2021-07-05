@@ -2,18 +2,20 @@
 
 
 import numpy as np
+from math import tan, ceil
 from psychopy import visual
 
 # monitor specs global variables
 M_WIDTH = 1920
+M_WIDTH_CM = 51.84
 M_HEIGHT = 1200
 REFRESH_RATE = 60
 
-# gabor patch global variables
-X = 684  # size of texture in pixels, needs to be to the power of 2!
-
 # custom gaussian mask
 maskarray = np.load('maskarray.npy')
+
+# size of stimulus in pixels
+X = maskarray.shape[0]
 
 class stim:
     def __init__(self, window, xoffset, threshold):
