@@ -118,7 +118,7 @@ while titration_over == False:
     window.flip()
     key = event.waitKeys(keyList=keys[:1])
 
-    famcontrast = [0.15,0.002,0.08]
+    famcontrast = [0.5,0.1,0.8]
     nfamtrials = len(famcontrast)
 
     for contr in famcontrast:
@@ -135,10 +135,10 @@ while titration_over == False:
 
     #the ladder
     staircase = StairHandler(startVal=0.01,
-        stepType='db',
-        stepSizes=4,
-        # stepSizes=[8, 4, 4, 2, 2, 1, 1],  # reduce step size every two reversals
-        minVal=0.0005, maxVal=0.15,
+        stepType='log',
+        # stepSizes=4,
+        stepSizes=[8, 4, 4, 2, 2, 1, 1],  # reduce step size every two reversals
+        minVal=0.0005, maxVal=0.5,
         nUp=1, nDown=1, # for hopefully 75% acc rate
         nTrials=numberOfTrials)
 

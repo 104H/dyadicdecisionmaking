@@ -14,20 +14,29 @@ sf = CYCLES/size;
 
 # custom transparency mask
 with open('experiment_files/gaussian_ann.npy', 'rb') as f:
-     gaussian_ann = np.load(f)
+     gaussian = np.load(f)
+
+mask_signal = np.interp(gaussian, (gaussian.min(), gaussian.max()), (0, 1))
+
+mask_noise = np.interp(gaussian, (gaussian.min(), gaussian.max()), (-1, 1))
+
+gabortexture = (
+    visual.filters.makeGrating(res=X, cycles= 20) * mask_signal
+)
 
 class stim:
     def __init__(self, window, xoffset, threshold):
+
         # noise patch
         self.noise = visual.GratingStim(
-            win=window, mask=gaussian_ann, ori=1.0, pos=[0 + xoffset, 0], blendmode='add', size=size,
-            opacity=0.05, contrast=1, tex=np.random.rand(X, X) * 2.0 - 1
+            win=window, mask=mask_noise, pos=[0 + xoffset, 0], size=size,
+            opacity=0.15, contrast=1, tex=np.random.rand(X, X) * 2.0 - 1
         )
 
         # signal
         self.signal = visual.GratingStim(
-            win=window, blendmode='add', tex='sin', mask=gaussian_ann, pos=[0 + xoffset, 0],
-            size=size, sf=sf, contrast=1.0, opacity=threshold
+            win=window, tex=gabortexture, mask=None, pos=[0 + xoffset, 0],
+            size=size, contrast=1.0, opacity=threshold
         )
 
         # red fixation dot for baseline and decision interval
