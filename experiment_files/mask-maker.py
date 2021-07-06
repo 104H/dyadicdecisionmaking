@@ -9,17 +9,17 @@ from math import tan, ceil
 M_WIDTH = 1920 # monitor width in pixels
 M_WIDTH_CM = 51.84
 
-radius_degrees = 4.8 # radius of stimulus in degrees of visual angle
+mean_degrees = 4.8 # mean distance to fixation in degrees of visual angle
 sd_degrees = 1.8 # sd of the gaussian distribution of the mask in degrees of visual angle
 distance = 80 # distance to screen in cm
 
-radius_cm = tan(radius_degrees * np.pi / 180) * distance
-radius_pix = radius_cm * M_WIDTH / M_WIDTH_CM
+mean_cm = tan(mean_degrees * np.pi / 180) * distance
+mean_pix = mean_cm * M_WIDTH / M_WIDTH_CM
 
 sd_cm = tan(sd_degrees * np.pi / 180) * distance
 sd_pix = sd_cm * M_WIDTH / M_WIDTH_CM
 
-diameter_pix = 2 * radius_pix + 2 * sd_pix # diameter of the whole stimulus in pixels
+diameter_pix = 2 * mean_pix + 2 * sd_pix # diameter of the whole stimulus in pixels
 desired_pixels = int(ceil(diameter_pix))
 
 my_dpi = 96 # dpi of the lab monitor
@@ -27,12 +27,12 @@ desired_figsize = desired_pixels/my_dpi
 
 ''' 2. Creating the mask '''
 # defining the variables for the mask
-sigma = 37.5
-muu = 180
-radius = 240
+sigma = sd_pix
+muu = mean_pix
+radius = mean_pix + 3.5 * sd_pix
 smoothness = 100  # smoothness of the blur
 
-theta = np.linspace(-2*np.pi, 2*np.pi, desired_pixels)
+theta = np.linspace(-2 * np.pi, 2 * np.pi, desired_pixels)
 
 x = radius * np.cos(theta)
 y = radius * np.sin(theta)
@@ -41,6 +41,7 @@ x, y = np.meshgrid(x, y)
 
 # calculating the distance of all points to the center
 distance = np.sqrt(x*x + y*y)
+
 
 # calculating the Gaussian array
 gauss = (1 / sigma * np.sqrt(2 * np.pi)) * np.exp(-0.5 * ( ( distance - muu ) / sigma)**2)
