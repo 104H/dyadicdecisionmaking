@@ -19,17 +19,17 @@ mean_pix = mean_cm * M_WIDTH / M_WIDTH_CM
 sd_cm = tan(sd_degrees * np.pi / 180) * distance
 sd_pix = sd_cm * M_WIDTH / M_WIDTH_CM
 
-diameter_pix = 2 * mean_pix + 2 * sd_pix # diameter of the whole stimulus in pixels
-desired_pixels = int(ceil(diameter_pix))
+radius_mask_pix = mean_pix + 3.5 * sd_pix
 
 my_dpi = 96 # dpi of the lab monitor
+desired_pixels = int(ceil(2 * radius_mask_pix))
 desired_figsize = desired_pixels/my_dpi
 
 ''' 2. Creating the mask '''
 # defining the variables for the mask
 sigma = sd_pix
 muu = mean_pix
-radius = mean_pix + 3.5 * sd_pix
+radius = radius_mask_pix
 smoothness = 100  # smoothness of the blur
 
 theta = np.linspace(-2 * np.pi, 2 * np.pi, desired_pixels)
