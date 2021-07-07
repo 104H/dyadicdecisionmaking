@@ -512,7 +512,7 @@ for trials in exphandler.loops:
         exphandler.nextEntry()
 
     # after every second block (unless after the last block), there will be a mandatory break which only the experimenter can end
-    if block % 2 == 0 and block != blocks[-1]:
+    if block % 2 == 0 and block != (blocks[-1] + 1):
         genmandatorybreakscreen()
         window.flip()
         getexperimenterack()
