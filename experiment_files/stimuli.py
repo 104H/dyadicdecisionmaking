@@ -1,5 +1,6 @@
 import numpy as np
 from psychopy import visual
+from numpy.random import random
 
 # monitor specs global variables
 M_WIDTH = 1920
@@ -16,12 +17,14 @@ sf = CYCLES/size;
 with open('experiment_files/gaussian_ann.npy', 'rb') as f:
      gaussian = np.load(f)
 
-mask_signal = np.interp(gaussian, (gaussian.min(), gaussian.max()), (0, 1))
+mask_tex = np.interp(gaussian, (gaussian.min(), gaussian.max()), (0, 1))
 
-mask_noise = np.interp(gaussian, (gaussian.min(), gaussian.max()), (-1, 1))
+mask = np.interp(gaussian, (gaussian.min(), gaussian.max()), (-1, 1))
+
+noiseTexture = random([X,X]) * 2.0 - 1
 
 gabortexture = (
-    visual.filters.makeGrating(res=X, cycles= 20) * mask_signal
+    visual.filters.makeGrating(res=X, cycles= 20) * mask_tex
 )
 
 class stim:
@@ -29,26 +32,28 @@ class stim:
 
         # noise patch
         self.noise = visual.GratingStim(
-            win=window, mask=mask_noise, pos=[0 + xoffset, 0], size=size,
-            opacity=0.15, contrast=1, tex=np.random.rand(X, X) * 2.0 - 1
+            win=window, tex=noiseTexture,
+            mask=mask,
+            size=size, units='pix',
+            opacity=0.05, contrast=1
         )
 
         # signal
         self.signal = visual.GratingStim(
-            win=window, tex=gabortexture, mask=None, pos=[0 + xoffset, 0],
+            win=window, tex=gabortexture, mask=mask, pos=[0 + xoffset, 0],
             size=size, contrast=1.0, opacity=threshold
         )
 
         # red fixation dot for baseline and decision interval
         self.reddot = visual.GratingStim(
             win=window, size=5, units='pix', pos=[0 + xoffset, 0],
-            sf=0, color='red', mask='circle'
+            sf=0, color='red', mask='circle', blendmode='avg'
         )
 
         # green fixation dot for inter trial condition
         self.greendot = visual.GratingStim(
             win=window, size=5, units='pix', pos=[0 + xoffset, 0],
-            sf=0, color='green', mask='circle'
+            sf=0, color='green', mask='circle', blendmode='avg'
         )
 
         # a dot which indicates to the subject they are in the observation state
@@ -65,4 +70,4 @@ class stim:
         }
 
     def updateNoise(self):
-        self.noise.tex = np.random.rand(X, X) * 2.0 - 1
+        self.noise.tex = random([X,X]) * 2.0 - 1
