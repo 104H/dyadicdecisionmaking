@@ -10,10 +10,10 @@ import stimuli
 
 
 # set the number of trials (for testing)!
-numberOfTrials = 100 # should be 100
+numberOfTrials = 40 # should be 100
 
 # Stimuli
-opacities = np.arange(start=0.001, stop=0.2, step=0.001)
+opacities = np.arange(start=0.001, stop=0.0025, step=0.0001)
 stim_domain = dict(intensity=opacities)
 
 # Parameters of the staircase
@@ -36,14 +36,15 @@ outcome_domain = dict(response=responses)
 func = 'weibull'
 stim_scale = 'log10'
 stim_selection_method = 'min_entropy'
-param_estimation_method = 'mean'
+stim_selection_options = {'max_consecutive_reps': 2}
+param_estimation_method = 'mode'
 
 # Directory Specs
 HOME = os.getcwd()
 DATA = '/data/'
 
 # Subject data dictionary
-subjectData = {'pair_id': [], 'titration_counter': [], 'chamber':[], 'threshold': [], 'threshold_list': [], 'method': 'questplus' }
+subjectData = {'pair_id': [], 'titration_counter': [], 'chamber':[], 'threshold': [], 'threshold_list': [], 'slope': [], 'lower_asymptote': [], 'lapse_rate': [], 'method': 'questplus' }
 
 # monitoring the while loop with..
 titration_over = False
@@ -159,6 +160,7 @@ while titration_over == False:
     2. Titration
     '''
 
+    thresholds = []
     #the ladder
     staircase = qp.QuestPlus(stim_domain=stim_domain,
                  func=func,
@@ -166,6 +168,7 @@ while titration_over == False:
                  param_domain=param_domain,
                  outcome_domain=outcome_domain,
                  stim_selection_method=stim_selection_method,
+                 stim_selection_options=stim_selection_options,
                  param_estimation_method=param_estimation_method)
 
 
@@ -185,6 +188,7 @@ while titration_over == False:
         key = []
         next_stim = staircase.next_stim
         signal.opacity = next_stim['intensity'] # set stimulus opacity to the next value from the staircase
+        thresholds.append(next_stim['intensity'])
         while not key:
             draw_stim(noise, signal, reddot) # draw the stimulus
             window.flip()
@@ -200,6 +204,12 @@ while titration_over == False:
 
     for param_name, value in staircase.param_estimate.items():
         print(f'    {param_name}: {value:.3f}')
+
+    subjectData['threshold'] = staircase.param_estimate['threshold']
+    subjectData['slope'] = staircase.param_estimate['slope']
+    subjectData['lower_asymptote'] = staircase.param_estimate['lower_asymptote']
+    subjectData['lapse_rate'] = staircase.param_estimate['lapse_rate']
+    subjectData['threshold_list'] = thresholds
 
     genendscreen()
     window.flip()
