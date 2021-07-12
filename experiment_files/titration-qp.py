@@ -10,10 +10,10 @@ import stimuli
 
 
 # set the number of trials (for testing)!
-numberOfTrials = 40 # should be 100
+numberOfTrials = 150 # should be 100
 
 # Stimuli
-opacities = np.arange(start=0.001, stop=0.0025, step=0.0001)
+opacities = np.arange(start=0.001, stop=0.003, step=0.0001)
 stim_domain = dict(intensity=opacities)
 
 # Parameters of the staircase
@@ -21,7 +21,7 @@ stim_domain = dict(intensity=opacities)
 thresholds = opacities.copy()
 slopes = np.linspace(0.5, 15, 5)
 lower_asymptotes = np.linspace(0.01, 0.5, 5)
-lapse_rate = 0.01 # this is like gamma in QUEST
+lapse_rate = 0.01
 
 param_domain = dict(threshold=thresholds,
                     slope=slopes,
@@ -37,14 +37,14 @@ func = 'weibull'
 stim_scale = 'log10'
 stim_selection_method = 'min_entropy'
 stim_selection_options = {'max_consecutive_reps': 2}
-param_estimation_method = 'mode'
+param_estimation_method = 'mean'
 
 # Directory Specs
 HOME = os.getcwd()
 DATA = '/data/'
 
 # Subject data dictionary
-subjectData = {'pair_id': [], 'titration_counter': [], 'chamber':[], 'threshold': [], 'threshold_list': [], 'slope': [], 'lower_asymptote': [], 'lapse_rate': [], 'method': 'questplus' }
+subjectData = {'pair_id': [], 'titration_counter': [], 'chamber':[], 'threshold': [], 'threshold_list': [], 'responses': [], 'slope': [], 'lower_asymptote': [], 'lapse_rate': [], 'method': 'questplus' }
 
 # monitoring the while loop with..
 titration_over = False
@@ -161,6 +161,8 @@ while titration_over == False:
     '''
 
     thresholds = []
+    responses = []
+
     #the ladder
     staircase = qp.QuestPlus(stim_domain=stim_domain,
                  func=func,
@@ -199,6 +201,7 @@ while titration_over == False:
         else:
             print("yes")
             outcome = dict(response='Yes')
+        responses.append(outcome['response'])
         staircase.update(stim=next_stim, outcome=outcome)
 
 
@@ -210,6 +213,7 @@ while titration_over == False:
     subjectData['lower_asymptote'] = staircase.param_estimate['lower_asymptote']
     subjectData['lapse_rate'] = staircase.param_estimate['lapse_rate']
     subjectData['threshold_list'] = thresholds
+    subjectData['responses'] = responses
 
     genendscreen()
     window.flip()
