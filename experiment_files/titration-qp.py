@@ -10,10 +10,10 @@ import stimuli
 
 
 # set the number of trials (for testing)!
-numberOfTrials = 150 # should be 100
+numberOfTrials = 50 # should be 100
 
 # Stimuli
-opacities = np.arange(start=0.001, stop=0.003, step=0.0001)
+opacities = np.arange(start=0.001, stop=0.0018, step=0.0000095)
 stim_domain = dict(intensity=opacities)
 
 # Parameters of the staircase
@@ -28,6 +28,7 @@ param_domain = dict(threshold=thresholds,
                     lower_asymptote=lower_asymptotes,
                     lapse_rate=lapse_rate)
 
+prior = dict(threshold = 0.0012, slope = 1, lapse_rate = 0.01, lower_asymptote = 1)
 # Outcome (response)
 responses = ['Yes', 'No']
 outcome_domain = dict(response=responses)
@@ -35,7 +36,7 @@ outcome_domain = dict(response=responses)
 # Other parameters
 func = 'weibull'
 stim_scale = 'log10'
-stim_selection_method = 'min_entropy'
+stim_selection_method = 'min_n_entropy'
 stim_selection_options = {'max_consecutive_reps': 2}
 param_estimation_method = 'mean'
 
@@ -169,6 +170,7 @@ while titration_over == False:
                  stim_scale=stim_scale,
                  param_domain=param_domain,
                  outcome_domain=outcome_domain,
+                 prior=prior,
                  stim_selection_method=stim_selection_method,
                  stim_selection_options=stim_selection_options,
                  param_estimation_method=param_estimation_method)
