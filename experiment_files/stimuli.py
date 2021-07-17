@@ -27,7 +27,7 @@ gabortexture = (
     visual.filters.makeGrating(res=X, cycles= 20)
 )
 
-gabortexture = np.interp(gabortexture, (gabortexture.min(), gabortexture.max()), (-0.1, 0.1)) * mask_tex
+gabortexture = gabortexture * 0.1 * mask_tex
 
 
 class stim:
