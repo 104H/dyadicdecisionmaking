@@ -10,10 +10,10 @@ import stimuli
 
 
 # set the number of trials (for testing)!
-numberOfTrials = 50 # should be 100
+numberOfTrials = 180 # should be 100
 
 # Stimuli
-opacities = np.arange(start=0.001, stop=0.0018, step=0.0000095)
+opacities = np.arange(start=0.001, stop=0.1, step=0.00045)
 stim_domain = dict(intensity=opacities)
 
 # Parameters of the staircase
@@ -28,7 +28,8 @@ param_domain = dict(threshold=thresholds,
                     lower_asymptote=lower_asymptotes,
                     lapse_rate=lapse_rate)
 
-prior = dict(threshold = 0.0012, slope = 1, lapse_rate = 0.01, lower_asymptote = 1)
+prior = dict(threshold = 1, slope = 15, lapse_rate = 0.01, lower_asymptote = 1)
+
 # Outcome (response)
 responses = ['Yes', 'No']
 outcome_domain = dict(response=responses)

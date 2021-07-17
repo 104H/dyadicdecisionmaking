@@ -24,8 +24,11 @@ mask = np.interp(gaussian, (gaussian.min(), gaussian.max()), (-1, 1))
 noiseTexture = random([X,X]) * 2.0 - 1
 
 gabortexture = (
-    visual.filters.makeGrating(res=X, cycles= 20) * mask_tex
+    visual.filters.makeGrating(res=X, cycles= 20)
 )
+
+gabortexture = np.interp(gabortexture, (gabortexture.min(), gabortexture.max()), (-0.1, 0.1)) * mask_tex
+
 
 class stim:
     def __init__(self, window, xoffset, threshold):
