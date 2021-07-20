@@ -259,7 +259,7 @@ def gendecisionint (subjects, condition):
 
 def genintertrial (subjects):
     '''
-        Keep displaying the stimulus but also display the other person's response if it wasn't their own turn
+        Display noise and the other person's response if it wasn't their own turn
         Indicated to the subject by a green fixation dot (instead of a red one)
     '''
     for s in subjects:
