@@ -21,7 +21,7 @@ mask_tex = np.interp(gaussian, (gaussian.min(), gaussian.max()), (0, 1))
 
 mask = np.interp(gaussian, (gaussian.min(), gaussian.max()), (-1, 1))
 
-noiseTexture = random([X,X]) * 2.0 - 1
+noiseTexture = random([X**2]) * 2.0 - 1
 
 gabortexture = (
     visual.filters.makeGrating(res=X, cycles= 20)
@@ -35,7 +35,7 @@ class stim:
 
         # noise patch
         self.noise = visual.GratingStim(
-            win=window, tex=noiseTexture,
+            win=window, tex=np.reshape(noiseTexture,(size,size)),
             mask=mask,
             size=size, units='pix',
             opacity=0.05, contrast=1
@@ -73,4 +73,5 @@ class stim:
         }
 
     def updateNoise(self):
-        self.noise.tex = random([X,X]) * 2.0 - 1
+        np.random.shuffle(noiseTexture)
+        self.noise.tex = np.reshape(noiseTexture,(X,X))
