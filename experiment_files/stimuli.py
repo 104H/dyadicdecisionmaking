@@ -91,5 +91,4 @@ class stim:
         }
 
     def updateNoise(self):
-        self.noise = choice(self.noiseList) # why doesn't this work?
-        #self.noise.tex = np.random.rand(X, X) * 2.0 - 1
+        return choice(self.noiseList)

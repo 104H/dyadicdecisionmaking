@@ -46,7 +46,7 @@ subjectData['pair_id'] = pair_id
 
 # stimulus draw function
 def draw_stim(noise, signal, reddot):
-    stimulus.updateNoise()
+    noise = stimulus.updateNoise()
     noise.draw()
     signal.draw()
     reddot.draw()
