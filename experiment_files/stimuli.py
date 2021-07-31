@@ -1,6 +1,7 @@
 import numpy as np
 from psychopy import visual
 from numpy.random import random
+from random import choice
 
 # monitor specs global variables
 M_WIDTH = 1920
@@ -21,25 +22,46 @@ mask_tex = np.interp(gaussian, (gaussian.min(), gaussian.max()), (0, 1))
 
 mask = np.interp(gaussian, (gaussian.min(), gaussian.max()), (-1, 1))
 
-noiseTexture = random([X**2]) * 2.0 - 1
-
 gabortexture = (
     visual.filters.makeGrating(res=X, cycles= 20)
 )
 
 gabortexture = gabortexture * 0.1 * mask_tex
 
+N = 25 # how many random noise textures should be created
+
+def createNoise (X, N, window, xoffset):
+    '''
+        create N random noise textures of size X, pad them, create noise objects, and add those to a list
+            why not just create an array with the textures?
+            -> since texture rendering takes a lot of time, we need to create the noise objects beforehand
+    '''
+
+    noiseList = []
+
+    for _ in range(N):
+        # create random noise texture
+        temp = random([X,X]) * 2.0 - 1
+
+        # create noise object
+        tempNoise = visual.GratingStim(
+            win=window, mask=mask, ori=1.0, pos=[0 + xoffset, 0], blendmode='add', size=X,
+            opacity=0.1, contrast=1, tex=temp
+        )
+
+        # add noise object to list
+        noiseList.append(tempNoise)
+
+    return noiseList
+
 
 class stim:
     def __init__(self, window, xoffset, threshold):
 
-        # noise patch
-        self.noise = visual.GratingStim(
-            win=window, tex=np.reshape(noiseTexture,(size,size)),
-            mask=mask,
-            size=size, units='pix',
-            opacity=0.05, contrast=1
-        )
+        # noise
+        self.noiseList = createNoise(X, N, window, xoffset)
+
+        self.noise = choice(self.noiseList)
 
         # signal
         self.signal = visual.GratingStim(
@@ -73,5 +95,4 @@ class stim:
         }
 
     def updateNoise(self):
-        np.random.shuffle(noiseTexture)
-        self.noise.tex = np.reshape(noiseTexture,(X,X))
+        self.noise = choice(self.noiseList)
