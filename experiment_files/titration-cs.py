@@ -18,7 +18,7 @@ HOME = os.getcwd()
 DATA = '/data/'
 
 # Subject data dictionary
-subjectData = {'pair_id': [], 'titration_counter': [], 'chamber':[], 'threshold': [], 'threshold_list': [] }
+subjectData = {'pair_id': [], 'titration_counter': [], 'chamber':[], 'threshold': [], 'threshold_list': [], 'responses': [], 'method': 'constants' }
 
 # monitoring the while loop with..
 titration_over = False
@@ -26,8 +26,7 @@ titration_over = False
 # monitoring how often the titration has been done
 titration_counter = 0
 
-# initial threshold
-threshold = 0.01
+threshold = 0.1
 
 # monitor specs global variables
 M_WIDTH = stimuli.M_WIDTH
@@ -51,15 +50,9 @@ subjectData['pair_id'] = pair_id
 # stimulus draw function
 def draw_stim(noise, signal, reddot):
     #print("Contrast in draw stim ",signal.opacity)
-    stimulus.updateNoise()
+    noise = stimulus.updateNoise()
     noise.draw()
     signal.draw()
-    reddot.draw()
-
-# stimulus draw function
-def drawintertrial(noise, reddot):
-    stimulus.updateNoise()
-    noise.draw()
     reddot.draw()
 
 
@@ -147,34 +140,34 @@ while titration_over == False:
     noise = stimulus.noise
     reddot = stimulus.reddot
 
-    '''
-    1. Familiarization
-    '''
-    geninstrfamiliarization() # display instructions
-    window.flip()
-    key = event.waitKeys(keyList=keys[:1])
-
-    famcontrast = [0.00397,0.3619,0.01314]
-    nfamtrials = len(famcontrast)
-
-    for contr in famcontrast:
-        key = []
-        signal.opacity = contr
-        while not key:
-            draw_stim(noise, signal, reddot) # draw the stimulus
-            window.flip()
-            key = event.getKeys(keyList=keys)
+    # '''
+    # 1. Familiarization
+    # '''
+    # geninstrfamiliarization() # display instructions
+    # window.flip()
+    # key = event.waitKeys(keyList=keys[:1])
+    #
+    # famcontrast = [0.00397,0.3619,0.01314]
+    # nfamtrials = len(famcontrast)
+    #
+    # for contr in famcontrast:
+    #     key = []
+    #     signal.opacity = contr
+    #     while not key:
+    #         draw_stim(noise, signal, reddot) # draw the stimulus
+    #         window.flip()
+    #         key = event.getKeys(keyList=keys)
 
 
     '''
     2. Titration
     '''
     # the contrast set to be tested
-    min_contrast = 0.01
-    max_contrast = 0.2
-    contrast_levels = np.linspace(0.005, 0.2, 51)
+    min_contrast = 0.0185
+    max_contrast = 0.03
+    contrast_levels = np.linspace(0.0185,0.03,15)
     trial_contrasts = [{'contrast': x} for x in contrast_levels]
-    num_repetitions = 5
+    num_repetitions = 20
 
     # the trialhandler
     trials = data.TrialHandler(trial_contrasts, num_repetitions, method='random')
@@ -194,29 +187,32 @@ while titration_over == False:
         5. Do 1 to 4 for ntimes set in ladder constructor
     """
     # list that is filled with the staircase values
-    staircase_means = []
+    thresholds = []
+    responses = []
 
     for trial in trials:
         key = []
-        #print("Contrast from handler ",trial['contrast'])
-        signal.opacity = trial['contrast'] #update the difficulty or contrast
+        # print("Contrast from handler ",trial['contrast'])
+        signal.opacity = trial['contrast'] # update the contrast
+        thresholds.append(trial['contrast'])
         while not key:
             draw_stim(noise, signal, reddot) # draw the stimulus
             window.flip()
             key = event.getKeys(keyList=keys)
 
         if keys[1] in key: # if they didn't see it
-            print("no")
             response = 0
+            outcome = dict(response='No')
         else:
-            print("yes")
             response = 1
+            outcome = dict(response='Yes')
 
+        responses.append(outcome['response'])
         trials.data.add('response', response)
 
     # fill subject dictionary with threshold and staircase value list
-    subjectData['threshold'] = 0
-    subjectData['threshold_list'] = []
+    subjectData['threshold_list'] = thresholds
+    subjectData['responses'] = responses
 
     genendscreen()
     window.flip()
@@ -239,4 +235,4 @@ while titration_over == False:
     with open('data_chamber' + chamber + '.json', 'w') as fp:
         json.dump(subjectData, fp)
 
-    print('The subjects threshold is: ' + str(subjectData['threshold']))
+    print("The subject's threshold is: " + str(subjectData['threshold']))

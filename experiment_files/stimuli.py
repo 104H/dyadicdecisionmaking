@@ -95,4 +95,4 @@ class stim:
         }
 
     def updateNoise(self):
-        self.noise = choice(self.noiseList)
+        return choice(self.noiseList)
