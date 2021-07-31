@@ -70,6 +70,17 @@ maskarray = maskarray[:,:,0]
 maskarray = np.interp(maskarray, (maskarray.min(), maskarray.max()), (-1, +1)) # normalize [-1,1]
 maskarray[np.where(maskarray == 1)] = -1
 
+# pad array with zeros until it reaches the size of the next power of 2 (required by psychopy)
+def findNextPowerOf2(n):
+    k = 1
+    while k < n:
+        k = k << 1
+    return k
+
+nextp2 = findNextPowerOf2(maskarray.shape[0]) # next power of 2
+nZeros = int(0.5 * (nextp2 - maskarray.shape[0])) # number of 0 to be padded on each side (top, bottom, left, right)
+maskarray = np.pad(maskarray, ((nZeros, nZeros), (nZeros, nZeros)), 'constant', constant_values=-1)
+
 np.save('maskarray', maskarray)
 
 

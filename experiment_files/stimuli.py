@@ -15,7 +15,7 @@ REFRESH_RATE = 60
 # custom gaussian mask
 maskarray = np.load('maskarray.npy')
 
-# size of stimulus in pixels
+# size of stimulus
 X = maskarray.shape[0]
 
 N = 25 # how many random noise textures should be created
@@ -34,15 +34,10 @@ def createNoise (X, N, window, xoffset):
     '''
 
     noiseList = []
-    nextp2 = findNextPowerOf2(maskarray.shape[0]) # next power of 2
-    nZeros = int(0.5 * (nextp2 - X)) # number of 0 to be padded on each side (top, bottom, left, right)
 
     for _ in range(N):
         # create random noise texture
         temp = np.random.rand(X, X) * 2.0 - 1
-
-        # pad array with zeros until it reaches the size of the next power of 2 (required by psychopy)
-        temp = np.pad(temp, ((nZeros, nZeros), (nZeros, nZeros)), 'constant')
 
         # create noise object
         tempNoise = visual.GratingStim(
@@ -55,16 +50,14 @@ def createNoise (X, N, window, xoffset):
 
     return noiseList
 
+
 class stim:
     def __init__(self, window, xoffset, threshold):
         # list with noise objects
         self.noiseList = createNoise(X, N, window, xoffset)
 
         # noise patch
-        self.noise = visual.GratingStim(
-            win=window, mask=maskarray, ori=1.0, pos=[0 + xoffset, 0], blendmode='add', size=X,
-            opacity=0.05, contrast=1, tex=choice(self.noiseList)
-        )
+        self.noise = self.noiseList[0]
 
         # signal
         self.signal = visual.GratingStim(
@@ -98,4 +91,5 @@ class stim:
         }
 
     def updateNoise(self):
-        self.noise = choice(self.noiseList)
+        self.noise = choice(self.noiseList) # why doesn't this work?
+        #self.noise.tex = np.random.rand(X, X) * 2.0 - 1
