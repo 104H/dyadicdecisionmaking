@@ -10,16 +10,16 @@ import stimuli
 
 
 # set the number of trials (for testing)!
-numberOfTrials = 180 # should be 100
+numberOfTrials = 180
 
 # Stimuli
-opacities = np.arange(start=0.001, stop=0.1, step=0.00045)
+opacities = np.arange(start=0.01, stop=0.1, step=0.00045)
 stim_domain = dict(intensity=opacities)
 
 # Parameters of the staircase
 
 thresholds = opacities.copy()
-slopes = np.linspace(0.5, 15, 5)
+slopes = np.linspace(0.5, 50, 10)
 lower_asymptotes = np.linspace(0.01, 0.5, 5)
 lapse_rate = 0.01
 
@@ -28,7 +28,7 @@ param_domain = dict(threshold=thresholds,
                     lower_asymptote=lower_asymptotes,
                     lapse_rate=lapse_rate)
 
-prior = dict(threshold = 1, slope = 15, lapse_rate = 0.01, lower_asymptote = 1)
+# prior = dict(threshold = 1, lapse_rate = 0.01, lower_asymptote = 1)
 
 # Outcome (response)
 responses = ['Yes', 'No']
@@ -72,7 +72,7 @@ subjectData['pair_id'] = pair_id
 
 # stimulus draw function
 def draw_stim(noise, signal, reddot):
-    stimulus.updateNoise()
+    noise = stimulus.updateNoise()
     noise.draw()
     signal.draw()
     reddot.draw()
@@ -171,7 +171,7 @@ while titration_over == False:
                  stim_scale=stim_scale,
                  param_domain=param_domain,
                  outcome_domain=outcome_domain,
-                 prior=prior,
+                 # prior=prior,
                  stim_selection_method=stim_selection_method,
                  stim_selection_options=stim_selection_options,
                  param_estimation_method=param_estimation_method)

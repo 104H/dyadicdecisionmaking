@@ -233,7 +233,7 @@ def genbaseline (subjects):
         Generate the baseline stimulus (dynamic noise + red fixation dot)
     '''
     for s in subjects:
-        s.stimulus.updateNoise()
+        s.noise = s.stimulus.updateNoise()
         s.noise.draw()
         s.reddot.draw()
 
@@ -248,7 +248,7 @@ def gendecisionint (subjects, condition):
         genbaseline(subjects)
     elif condition == 'signal':
         for s in subjects:
-            s.stimulus.noise.updateNoise()
+            s.noise = s.stimulus.updateNoise()
             s.noise.draw()
             s.signal.draw()
             s.reddot.draw()
@@ -260,7 +260,7 @@ def genintertrial (subjects):
         Keep displaying the stimulus but also display the other person's response if it wasn't their own turn
     '''
     for s in subjects:
-        s.stimulus.noise.updateNoise()
+        s.noise = s.stimulus.updateNoise()
         s.noise.draw()
         s.greendot.draw()
 
