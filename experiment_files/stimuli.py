@@ -1,5 +1,4 @@
-# 15 May 2021
-
+# 4 August 2021
 
 import numpy as np
 from math import tan, ceil
@@ -18,13 +17,11 @@ maskarray = np.load('maskarray.npy')
 # size of stimulus
 X = maskarray.shape[0]
 
-N = 25 # how many random noise textures should be created
+N = 25 # how many noise object with random textures should be created
 
-def findNextPowerOf2(n):
-    k = 1
-    while k < n:
-        k = k << 1
-    return k
+# create custom texture for the signal
+mask_tex = np.interp(maskarray, (maskarray.min(), maskarray.max()), (0, 1))
+gabortexture = visual.filters.makeGrating(res=X, cycles=40) * 0.1 * mask_tex
 
 def createNoise (X, N, window, xoffset):
     '''
@@ -61,8 +58,8 @@ class stim:
 
         # signal
         self.signal = visual.GratingStim(
-            win=window, blendmode='add', tex='sin', mask=maskarray, pos=[0 + xoffset, 0],
-            size=X, sf=10 / X, contrast=1.0, opacity=threshold
+            win=window, tex=gabortexture, mask=maskarray, pos=[0 + xoffset, 0],
+            size=X, contrast=1.0, opacity=threshold
         )
 
         # red fixation dot for baseline and decision interval
