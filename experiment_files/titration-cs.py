@@ -90,27 +90,26 @@ def geninstrfamiliarization():
                     text=instructions, pos=(0, 0),
                     color='black', height=20).draw()
 
-def get_threshold(df):
-    df.apply(pd.to_numeric)
-    df['accuracy'] = df.iloc[:, 1:num_repetitions + 1].sum(axis=1) / num_repetitions
-    df.to_csv(file_name + '_rawdata.csv',index=False)
-    fit = data.FitWeibull(df['contrast'].to_list(), df['accuracy'].to_list())
-    test_contrasts = np.linspace(min_contrast*0.8, max_contrast*1.2, 100)
-    test_resp = fit.eval(test_contrasts)
-    thresh = fit.inverse(0.75)
+def get_threshold(intensities,responses):
+    df = pd.DataFrame(intensities, columns = ['intensity'],dtype=float)
+    df2 = pd.DataFrame(responses, columns = ['response'],dtype=float)
+    df = pd.concat([df,df2],axis=1)
+    df = df.groupby(['intensity'])['response'].mean().reset_index()
+    fit = data.FitWeibull(df['intensity'], df['response'],expectedMin=0.0)
+    smooth_intensities = np.linspace(min_contrast, max_contrast, 100)
+    test_resp = fit.eval(smooth_intensities)
+    threshold = fit.inverse(0.75)
 
     fig, ax = plt.subplots(1, 1)
-    ax.plot(test_contrasts, test_resp, '-')
+    ax.plot(smooth_intensities, test_resp, '-')
     ax.axhline(0.75, linestyle='-', color='orange')
-    ax.axvline(thresh, linestyle='-', color='orange')
-    plt.title('threshold = %0.3f' % thresh)
-    plt.plot(df['contrast'], df['accuracy'], 'o')
+    ax.axvline(threshold, linestyle='-', color='orange')
+    plt.title('threshold = %0.3f' % threshold)
+    plt.plot(df['intensity'], df['response'], 'o')
     plt.ylim([0, 1])
     plt.savefig(file_name + '_psyfunc.jpg')
 
-    return thresh
-
-
+    return threshold
 
 while titration_over == False:
     # input the chamber number in which titration takes place
@@ -163,16 +162,14 @@ while titration_over == False:
     2. Titration
     '''
     # the contrast set to be tested
-    min_contrast = 0.0185
-    max_contrast = 0.03
-    contrast_levels = np.linspace(0.0185,0.03,15)
+    min_contrast = 0.01
+    max_contrast = 0.04
+    contrast_levels = np.geomspace(0.01,0.04,15)
     trial_contrasts = [{'contrast': x} for x in contrast_levels]
     num_repetitions = 20
 
     # the trialhandler
     trials = data.TrialHandler(trial_contrasts, num_repetitions, method='random')
-    trials.data.addDataType('response')
-
 
     geninstrtitration() # display instructions
     window.flip()
@@ -189,6 +186,7 @@ while titration_over == False:
     # list that is filled with the staircase values
     thresholds = []
     responses = []
+    resp = []
 
     for trial in trials:
         key = []
@@ -208,7 +206,7 @@ while titration_over == False:
             outcome = dict(response='Yes')
 
         responses.append(outcome['response'])
-        trials.data.add('response', response)
+        resp.append(response)
 
     # fill subject dictionary with threshold and staircase value list
     subjectData['threshold_list'] = thresholds
@@ -230,9 +228,9 @@ while titration_over == False:
                       stimOut=[],
                       dataOut=['all_raw'],
                       delim=",")
-    tmpdf = pd.read_csv(file_name + '.csv', header=0)
-    subjectData['threshold'] = get_threshold(tmpdf)
+    
+    subjectData['threshold'] = get_threshold(thresholds,resp)
     with open('data_chamber' + chamber + '.json', 'w') as fp:
         json.dump(subjectData, fp)
 
-    print("The subject's threshold is: " + str(subjectData['threshold']))
+    print("The participant's threshold is: " + str(subjectData['threshold']))
