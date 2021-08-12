@@ -26,7 +26,7 @@ gabortexture = (
     visual.filters.makeGrating(res=X, cycles= 20)
 )
 
-gabortexture = gabortexture * 0.1 * mask_tex
+gabortexture = gabortexture * 0.08 * mask_tex
 
 N = 25 # how many random noise textures should be created
 
