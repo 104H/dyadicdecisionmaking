@@ -82,7 +82,7 @@ def secondstoframes (seconds):
 
 # create the staircase handler
 staircase = data.StairHandler(startVal = 0.1, nReversals=10,
-                          stepType = 'db', stepSizes=[0.08,0.04,0.04,0.02],
+                          stepType = 'log', stepSizes=[0.08,0.04,0.04,0.02],
                           nUp=1, nDown=3,  # will home in on the 80% threshold
                           nTrials=20, minVal=0, maxVal=1)
 
