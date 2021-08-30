@@ -8,8 +8,6 @@ from psychopy import visual, event, core, monitors, data
 import stimuli
 from psychopy.sound import Sound
 
-nTrials = 50
-
 # Directory Specs
 HOME = os.getcwd()
 DATA = '/data/'
@@ -54,12 +52,6 @@ keys = ["2", "1"] if chamber == "1" else ["7", "8"] # first one is yes
 window = psychopy.visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', screen=int(chamber), fullscr=False, pos=None, blendMode='add', useFBO=True, monitor=myMon)
 window.mouseVisible = False
 
-# create the staircase handler
-staircase = data.StairHandler(startVal = 0.1,
-                          stepType = 'db', stepSizes=[8,4,4,2],
-                          nUp=1, nDown=3,  # will home in on the 80% threshold
-                          nTrials=1, minVal=0)
-
 # the stimulus
 stimulus = stimuli.stim(window=window, xoffset=0, threshold=0.2)
 signal = stimulus.signal
@@ -87,49 +79,57 @@ def draw_stim(noise, signal, reddot):
 def secondstoframes (seconds):
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
 
+
+# create the staircase handler
+staircase = data.StairHandler(startVal = 0.1, nReversals=10,
+                          stepType = 'db', stepSizes=[0.08,0.04,0.04,0.02],
+                          nUp=1, nDown=3,  # will home in on the 80% threshold
+                          nTrials=20, minVal=0, maxVal=1)
+
 # do the titration
 contrastList = []
+responses = []
 trial = 0
 
 for thisIncrement in staircase:  # will continue the staircase until it terminates!
 
-    if trial < nTrials:
-        trial+=1
-        # set contrast of stimulus
-        signal.opacity = thisIncrement
-        contrastList.append(thisIncrement)
+    trial+=1
+    # set contrast of stimulus
+    signal.opacity = thisIncrement
+    contrastList.append(thisIncrement)
 
-        # draw noise for 4-6 seconds
-        for _ in secondstoframes( np.random.uniform(6, 4) ):
-            noise = stimulus.updateNoise()
-            noise.draw()
-            reddot.draw()
-            window.flip()
+    # draw noise for 4-6 seconds
+    for _ in secondstoframes( np.random.uniform(6, 4) ):
+        noise = stimulus.updateNoise()
+        noise.draw()
+        reddot.draw()
+        window.flip()
 
-        event.clearEvents()
-        beep.play()
-        # get response
-        thisResp = None
-        key = []
-        while not key:
-            draw_stim(noise, signal, reddot)
-            window.flip()
-            key = event.getKeys(keyList=keys)
+    event.clearEvents()
+    beep.play()
+    # get response
+    thisResp = None
+    key = []
+    while not key:
+        draw_stim(noise, signal, reddot)
+        window.flip()
+        key = event.getKeys(keyList=keys)
 
-        if keys[1] in key: # if they didn't see it
-            thisResp = -1
-        elif keys[0] in key:
-            thisResp = 1
-        else:
-            print("Wrong key!")
-
-        beep.stop()
-        event.clearEvents()
-
-        # add the data to the staircase so it can calculate the next level
-        staircase.addData(thisResp)
+    if keys[1] in key: # if they didn't see it
+        thisResp = 0
+        responses.append(thisResp)
+    elif keys[0] in key:
+        thisResp = 1
+        responses.append(thisResp)
     else:
-        break
+        print("Wrong key!")
+
+    beep.stop()
+    event.clearEvents()
+
+    # add the data to the staircase so it can calculate the next level
+    staircase.addData(thisResp)
+
 
 # show end screen
 instructions = "You have finished the titration.\n\n\
@@ -157,6 +157,11 @@ subjectData['threshold_list'] = contrastList
 print('The shown contrast values are: ')
 for member in contrastList:
     print("%.4f" % member)
+
+print("responses: ")
+print(responses)
+print("number of trials: ")
+print(trial)
 
 # Create directory and save as JSON
 DATAPATH = HOME+DATA+str(pair_id)
