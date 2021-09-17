@@ -60,14 +60,14 @@ reddot = stimulus.reddot
 
 beep = Sound('A', secs=0.5, volume=0.1)
 
-# display instructions and wait
-key = []
-while not key:
-    visual.TextStim(window,
-                        text="Press yes (2 or 7) to start", pos=(0, 0),
-                        color='black', height=20).draw()
-    window.flip()
-    key = event.waitKeys(keyList=keys[:1])
+# # display instructions and wait
+# key = []
+# while not key:
+#     visual.TextStim(window,
+#                         text="Press yes (2 or 7) to start", pos=(0, 0),
+#                         color='black', height=20).draw()
+#     window.flip()
+#     key = event.waitKeys(keyList=keys[:1])
 
 # stimulus draw function
 def draw_stim(noise, signal, reddot):
@@ -167,6 +167,6 @@ print(trial)
 DATAPATH = HOME+DATA+str(pair_id)
 if not os.path.exists(DATAPATH):
     os.makedirs(DATAPATH)
-    os.chdir(DATAPATH)
-    with open('data_chamber'+str(chamber)+'.json', 'w') as fp:
+os.chdir(DATAPATH)
+with open('data_chamber'+str(chamber)+'.json', 'w') as fp:
         json.dump(subjectData, fp)
