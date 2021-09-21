@@ -1,4 +1,4 @@
-# 21 Sept 2021
+# 4 August 2021
 
 import numpy as np
 from math import tan, ceil
@@ -48,8 +48,7 @@ def createNoise (X, N, window, xoffset):
 
     return noiseList
 
-green_color = "darkgreen"
-red_color = "darkred"
+
 
 class stim:
     def __init__(self, window, xoffset, threshold):
@@ -65,11 +64,11 @@ class stim:
             size=X, contrast=1.0, opacity=threshold
         )
 
-        # fixation composite targets in green and red
+        # fixation composite targets
         self.fixation_red =[
             visual.GratingStim(
                 win=window, size=21, units='pix', pos=[0 + xoffset, 0],
-                sf=0, color=red_color, mask='circle'
+                sf=0, color="darkred", mask='circle'
             ),
 
             visual.GratingStim(
@@ -79,14 +78,14 @@ class stim:
 
             visual.GratingStim(
                 win=window, size=7, units='pix', pos=[0 + xoffset, 0],
-                sf=0, color=red_color, mask='circle'
+                sf=0, color="darkred", mask='circle'
             )
         ]
 
         self.fixation_green =[
             visual.GratingStim(
                 win=window, size=21, units='pix', pos=[0 + xoffset, 0],
-                sf=0, color=green_color, mask='circle'
+                sf=0, color="darkgreen", mask='circle'
             ),
 
             visual.GratingStim(
@@ -96,7 +95,24 @@ class stim:
 
             visual.GratingStim(
                 win=window, size=7, units='pix', pos=[0 + xoffset, 0],
-                sf=0, color=green_color, mask='circle'
+                sf=0, color="darkgreen", mask='circle'
+            )
+        ]
+
+        self.fixation_black =[
+            visual.GratingStim(
+                win=window, size=21, units='pix', pos=[0 + xoffset, 0],
+                sf=0, color="black", mask='circle'
+            ),
+
+            visual.GratingStim(
+                win=window, size=25, units="pix",  pos=[0 + xoffset, 0],
+                sf=0, color="gray", mask="cross"
+            ),
+
+            visual.GratingStim(
+                win=window, size=7, units='pix', pos=[0 + xoffset, 0],
+                sf=0, color="black", mask='circle'
             )
         ]
 

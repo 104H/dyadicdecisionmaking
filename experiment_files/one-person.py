@@ -1,3 +1,4 @@
+
 '''
     Naming Convention:
         The subjects are either refered to as 'sone' or 'stwo'
@@ -12,6 +13,7 @@ from psychopy import visual, event, core, gui, data, prefs, monitors
 import stimuli
 from random import choice, shuffle
 import json
+import pandas as pd
 
 '''
 To obtain your sounddevices run the following line on the terminal
@@ -23,7 +25,7 @@ Copy the `name` attribute of your device to the audioDevice
 prefs.hardware['audioLib'] = ['PTB']
 
 from psychopy import sound
-#sound.setDevice('USB Audio Device: - (hw:3,0)')
+sound.setDevice('USB Audio Device: - (hw:3,0)')
 
 from psychopy.sound import Sound
 from numpy.random import random
@@ -44,7 +46,7 @@ myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=80)
 myMon.setSizePix([M_WIDTH, M_HEIGHT])
 
 
-window = visual.Window(size=(M_WIDTH, M_HEIGHT), monitor=myMon, units='pix', fullscr=False, useFBO=True, allowGUI=False, pos=(0,0))
+window = visual.Window(size=(M_WIDTH, M_HEIGHT), monitor=myMon, units='pix', fullscr=True, useFBO=True, allowGUI=False, pos=(0,0))
 window.mouseVisible = False # hide cursor
 
 class subject:
@@ -67,7 +69,7 @@ class subject:
         #    exit(-1)
         #else:
         #    self.threshold = data["threshold"]
-        self.threshold = # ADD THRESHOLD ESTIMATE HERE!
+        self.threshold = 0.018088
 
         self.id = sid
         self.state = False
@@ -82,11 +84,11 @@ class subject:
         # noise patch
         self.noise = self.stimulus.noise
 
-        # red fixation dot for decision phase
-        self.reddot = self.stimulus.reddot
+        # red fixation target for decision phase
+        self.fixation_red = self.stimulus.fixation_red
 
-        # green fixation dot for pre trial and inter trial condition
-        self.greendot = self.stimulus.greendot
+        # green fixation target for pre trial and inter trial condition
+        self.fixation_green = self.stimulus.fixation_green
 
         # a dot which indicates to the subject they are in the observation state
         self.indicatordict = self.stimulus.indicatordict
@@ -101,7 +103,7 @@ subjects = [sone]
 expinfo = {'pair': pair_id, 'threshold': sone.threshold}
 
 blocks = range(2)
-ntrials = 20 # trials per block
+ntrials = 2 # trials per block
 
 # create beep for decision interval
 beep = Sound('A', secs=0.5, volume=0.1)
@@ -122,40 +124,31 @@ def gentext (instr):
 
 def genstartscreen ():
     instructions = "Welcome to our experiment! \n\n\
-    Your task is to indicate whether you see a vertical grating or not.\n\
-    If you have any questions after reading the instructions on the next screen, please feel free to ask the experimenter.\n\n\
-    Press the green key to continue"
+    Press the green button to continue"
 
     gentext(instructions)
 
 
 def geninstructionspractice ():
-    instructions = "Please read the instructions carefully.\n\
-    1. Place your index finger on the left key and your middle finger on the right key.\n\
-    2. Now, you will have a few practice trials to see how the experiment works.\n\
-    3. You will do the task together with your partner.\n\
-    4. The stimulus will be the same as you saw before: a circle of noise.\n\
-    5. Fixate on the dot in the center of the circle.\n\
-    6. What's new: Only when you hear a beep, it’s your turn to indicate whether you saw a vertical grating on top of the noise.\n\
-    7. Press the green key for 'yes' and the red key for 'no'.\n\
-    8. It’s very important that you respond as fast and as accurate as possible! You only have a limited amount of time for your response.\n\
-    9. If you don’t hear a beep, it’s the other person’s turn to respond. You will both see the the same stimulus and you will also see their response on your screen.\n\n\
-    Press yes to continue"
-
+    instructions = "Please read the instructions carefully.\n\n\
+    1. Place your index finger on the left button and your middle finger on the right button.\n\
+    2. Fixate on the dot in the center of the screen.\n\
+    3. After the beep, press the green button if noise had stripes. Press the red button if it did not.\n\
+    4. Try to respond as fast and accurate as possible. You will have 2.5 seconds to respond.\n\n\
+    Press the green button to begin with practice trials.\
+    "
     gentext(instructions)
 
 
 def geninstructionsexperiment ():
-    instructions = "Now you’re ready to start the experiment. Please remember:\n\
-    1. Place your index finger on the left key and your middle finger on the right key.\n\
-    2. Fixate on the dot in the center of the circle.\n\
-    3. When you hear a beep it’s your turn. If you don’t hear a beep, you will see your partner’s response.\n\
-    4. Press the green key for 'yes' and the red key for 'no'.\n\
-    5. Please respond as quickly and as accurately as possible! \n\
-    6. Once you finished one block, you’ll be asked if you’re ready for the next block.\n\
-    7. After every second block, you will have a break.\n\
-    8. There will be a total of 12 blocks.\n\n\
-    Press yes when you’re ready to start the experiment"
+    instructions = "You are about to start the main experiment. Please read the instructions. \n\n\
+    1. There will be a total of 4 blocks.\n\n\
+    2. After every block, you can have a break.\n\
+    3. Place your index finger on the left button and your middle finger on the right button.\n\
+    4. Fixate on the dot in the center of the screen.\n\
+    5. After the beep, press the green button if noise had stripes. Press the red button if it did not. \n\n\
+    Press the green button when you’re ready to start the experiment.\n\
+    If you have any questions, address the experimenter."
 
     gentext(instructions)
 
@@ -187,14 +180,15 @@ def genmandatorybreakscreen ():
     gentext(instructions)
 
 
-def genbaseline (subjects):
+def noise (subjects):
     '''
-        Generate the baseline stimulus (dynamic noise + red fixation dot)
+        Show dynamic noise + red fixation dot
     '''
     for s in subjects:
-        s.stimulus.updateNoise()
+        s.noise = s.stimulus.updateNoise()
         s.noise.draw()
-        s.reddot.draw()
+        for grating in s.fixation_red:
+            grating.draw()
 
 
 def gendecisionint (subjects, condition):
@@ -205,13 +199,14 @@ def gendecisionint (subjects, condition):
             noise + red fixation dot
     '''
     if condition == 'noise':
-        genbaseline(subjects)
+        noise(subjects)
     elif condition == 'signal':
         for s in subjects:
-            s.stimulus.updateNoise()
+            s.noise = s.stimulus.updateNoise()
             s.noise.draw()
             s.signal.draw()
-            s.reddot.draw()
+            for grating in s.fixation_red:
+                grating.draw()
     else:
         raise NotImplementedError
 
@@ -222,9 +217,10 @@ def genintertrial (subjects):
         Indicated to the subject by a green fixation dot (instead of a red one)
     '''
     for s in subjects:
-        s.stimulus.updateNoise()
+        s.noise = s.stimulus.updateNoise()
         s.noise.draw()
-        s.greendot.draw()
+        for grating in s.fixation_green:
+            grating.draw()
 
 
 def secondstoframes (seconds):
@@ -276,52 +272,53 @@ window.flip()
 event.waitKeys()
 
 # # display instructions for practice trials
-# geninstructionspractice()
-# window.flip()
-# event.waitKeys()
-#
-# # set up practice trials
-# npracticetrials = 2 # needs to be an even number
-#
-# # make sure signal/noise and acting/observing are equally distributed for practice trials
-# practicetriallist = ['signal', 'noise'] * (npracticetrials//2)
-#
-# # shuffle the lists
-# shuffle(practicetriallist)
-#
-# # traverse through practice trials
-# for idx in range(npracticetrials):
-#     # display baseline
-#     # wait for a random time between 2 to 4 seconds
-#     for frame in secondstoframes( np.random.uniform(1, 2) ):
-#         genbaseline(subjects)
-#         window.flip()
-#
-#     # preparing time for next window flip, to precisely co-ordinate window flip and beep
-#     nextflip = window.getFutureFlipTime(clock='ptb')
-#     beep.play(when=nextflip)
-#     event.clearEvents()
-#
-#     response = [] # we have no response yet
-#     for frame in secondstoframes(2.5):
-#         gendecisionint(subjects, practicetriallist[idx])
-#         window.flip()
-#
-#         # fetch button press
-#         if not response:
-#             response = fetchbuttonpress()
-#         else:
-#             event.clearEvents()
-#             break
-#
-#     # need to explicity call stop() to go back to the beginning of the track
-#     # we reset after collecting a response, otherwise the beep is stopped too early
-#     beep.stop()
-#
-#     # display inter trial interval for 2s
-#     for frame in secondstoframes(1):
-#         genintertrial(subjects)
-#         window.flip()
+geninstructionspractice()
+window.flip()
+#core.wait(10)
+event.waitKeys()
+
+# set up practice trials
+npracticetrials = 10 # needs to be an even number
+
+# make sure signal/noise and acting/observing are equally distributed for practice trials
+practicetriallist = ['signal', 'noise'] * (npracticetrials//2)
+
+# shuffle the lists
+shuffle(practicetriallist)
+
+# traverse through practice trials
+for idx in range(npracticetrials):
+    # display baseline
+    # wait for a random time between 2 to 4 seconds
+    for frame in secondstoframes( np.random.uniform(2, 4) ):
+        noise(subjects)
+        window.flip()
+
+    # preparing time for next window flip, to precisely co-ordinate window flip and beep
+    nextflip = window.getFutureFlipTime(clock='ptb')
+    beep.play(when=nextflip)
+    event.clearEvents()
+
+    response = [] # we have no response yet
+    for frame in secondstoframes(2.5):
+        gendecisionint(subjects, practicetriallist[idx])
+        window.flip()
+
+        # fetch button press
+        if not response:
+            response = fetchbuttonpress()
+        else:
+            event.clearEvents()
+            break
+
+    # need to explicity call stop() to go back to the beginning of the track
+    # we reset after collecting a response, otherwise the beep is stopped too early
+    beep.stop()
+
+    # display inter trial interval for 2s
+    for frame in secondstoframes(2):
+        genintertrial(subjects)
+        window.flip()
 
 ##### PRACTICE TRIALS  END #####
 
@@ -330,7 +327,8 @@ event.waitKeys()
 # display instructions for experiment
 geninstructionsexperiment()
 window.flip()
-core.wait(2)
+#core.wait(10)
+event.waitKeys()
 
 # variables for data saving
 block = 0
@@ -348,8 +346,8 @@ for trials in exphandler.loops:
         exphandler.addData('trial', trials.thisTrialN)
 
         # display baseline for a random time between 2 to 4 seconds
-        for frame in secondstoframes( np.random.uniform(1, 2) ):
-            genbaseline(subjects)
+        for frame in secondstoframes( np.random.uniform(2, 4) ):
+            noise(subjects)
             window.flip()
 
         # preparing time for next window flip, to precisely co-ordinate window flip and beep
@@ -373,7 +371,7 @@ for trials in exphandler.loops:
         beep.stop()
 
         # display inter trial interval for 2s
-        for frame in secondstoframes(1.5):
+        for frame in secondstoframes(2):
             genintertrial(subjects)
             window.flip()
 
@@ -389,17 +387,35 @@ for trials in exphandler.loops:
         exphandler.nextEntry()
 
     # after every second block (unless after the last block), there will be a mandatory break which only the experimenter can end
-    if block % 2 == 0 and block != (blocks[-1] + 1):
-        genmandatorybreakscreen()
-        window.flip()
-        getexperimenterack()
+    #if block % 2 == 0 and block != (blocks[-1] + 1):
+    #    genmandatorybreakscreen()
+    #    window.flip()
+    #    getexperimenterack()
     # otherwise, wait for the subjects to start their next block
-    else:
-        genbreakscreen()
-        window.flip()
-        event.waitKeys()
-        continue
+    #else:
+    genbreakscreen()
+    window.flip()
+    event.waitKeys()
+        #continue
 
 genendscreen()
 window.flip()
 core.wait(5)
+
+#code to calculate and show the performance metrics
+exphandler.saveAsWideText(str(pair_id) + '.csv',delim=',')
+df = pd.read_csv(str(pair_id) + '.csv')
+df = df[['condition','response']]
+conditions = [
+    (df['condition'] == 'signal') & (df['response'] == 1),
+    (df['condition'] == 'signal') & (df['response'] == 2),
+    (df['condition'] == 'noise')  & (df['response'] == 1),
+    (df['condition'] == 'noise')  & (df['response'] == 2),
+    (df['response'] == 'noresponse')
+]
+values = ['hit', 'miss', 'false-alarm', 'correct-reject','no-response']
+df['outcome'] = np.select(conditions, values)
+accuracy = df[df['outcome'].isin(['hit','correct-reject'])].shape[0]/df.shape[0]
+print("     Overall Accuracy %.2f\n" % (accuracy*100))
+print(df.groupby(['condition'])['outcome'].value_counts(normalize=True,sort=False)*100)
+df = df[['condition','response','outcome']]
