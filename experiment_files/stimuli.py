@@ -1,34 +1,27 @@
+# 21 Sept 2021
+
 import numpy as np
+from math import tan, ceil
 from psychopy import visual
-from numpy.random import random
 from random import choice
 
 # monitor specs global variables
 M_WIDTH = 1920
+M_WIDTH_CM = 51.84
 M_HEIGHT = 1200
 REFRESH_RATE = 60
 
-# gabor patch global variables
-X = 1024  # size of texture in pixels, needs to be a power of 2
-CYCLES = 20
-size=1024 # stimulus size in pixels
-sf = CYCLES/size;
+# custom gaussian mask
+maskarray = np.load('maskarray.npy')
 
-# custom transparency mask
-with open('experiment_files/gaussian_ann.npy', 'rb') as f:
-     gaussian = np.load(f)
+# size of stimulus
+X = maskarray.shape[0]
 
-mask_tex = np.interp(gaussian, (gaussian.min(), gaussian.max()), (0, 1))
+N = 25 # how many noise object with random textures should be created
 
-mask = np.interp(gaussian, (gaussian.min(), gaussian.max()), (-1, 1))
-
-gabortexture = (
-    visual.filters.makeGrating(res=X, cycles= 20)
-)
-
-gabortexture = gabortexture * 0.08 * mask_tex
-
-N = 25 # how many random noise textures should be created
+# create custom texture for the signal
+mask_tex = np.interp(maskarray, (maskarray.min(), maskarray.max()), (0, 1))
+gabortexture = visual.filters.makeGrating(res=X, cycles=40) * 0.1 * mask_tex
 
 def createNoise (X, N, window, xoffset):
     '''
@@ -41,11 +34,12 @@ def createNoise (X, N, window, xoffset):
 
     for _ in range(N):
         # create random noise texture
-        temp = random([X,X]) * 2.0 - 1
+        temp = np.random.rand(X, X) * 2.0 - 1
+        # temp = np.random.random_integers(0, 1, (X, X)) # binary noise
 
         # create noise object
         tempNoise = visual.GratingStim(
-            win=window, mask=mask, ori=1.0, pos=[0 + xoffset, 0], blendmode='add', size=X,
+            win=window, mask=maskarray, ori=1.0, pos=[0 + xoffset, 0], blendmode='add', size=X,
             opacity=0.1, contrast=1, tex=temp
         )
 
@@ -54,34 +48,59 @@ def createNoise (X, N, window, xoffset):
 
     return noiseList
 
+green_color = "darkgreen"
+red_color = "darkred"
 
 class stim:
     def __init__(self, window, xoffset, threshold):
-
-        # noise
+        # list with noise objects
         self.noiseList = createNoise(X, N, window, xoffset)
 
-        self.noise = choice(self.noiseList)
+        # noise patch
+        self.noise = self.noiseList[0]
 
         # signal
         self.signal = visual.GratingStim(
-            win=window, tex=gabortexture, mask=mask, pos=[0 + xoffset, 0],
-            size=size, contrast=1.0, opacity=threshold
+            win=window, tex=gabortexture, mask=maskarray, pos=[0 + xoffset, 0],
+            size=X, contrast=1.0, opacity=threshold
         )
 
-        # red fixation dot for baseline and decision interval
-        self.reddot = visual.GratingStim(
-            win=window, size=5, units='pix', pos=[0 + xoffset, 0],
-            sf=0, color='red', mask='circle', blendmode='avg'
-        )
+        # fixation composite targets in green and red
+        self.fixation_red =[
+            visual.GratingStim(
+                win=window, size=21, units='pix', pos=[0 + xoffset, 0],
+                sf=0, color=red_color, mask='circle'
+            ),
 
-        # green fixation dot for inter trial condition
-        self.greendot = visual.GratingStim(
-            win=window, size=5, units='pix', pos=[0 + xoffset, 0],
-            sf=0, color='green', mask='circle', blendmode='avg'
-        )
+            visual.GratingStim(
+                win=window, size=25, units="pix",  pos=[0 + xoffset, 0],
+                sf=0, color="gray", mask="cross"
+            ),
 
-        # a dot which indicates to the subject they are in the observation state
+            visual.GratingStim(
+                win=window, size=7, units='pix', pos=[0 + xoffset, 0],
+                sf=0, color=red_color, mask='circle'
+            )
+        ]
+
+        self.fixation_green =[
+            visual.GratingStim(
+                win=window, size=21, units='pix', pos=[0 + xoffset, 0],
+                sf=0, color=green_color, mask='circle'
+            ),
+
+            visual.GratingStim(
+                win=window, size=25, units="pix",  pos=[0 + xoffset, 0],
+                sf=0, color="gray", mask="cross"
+            ),
+
+            visual.GratingStim(
+                win=window, size=7, units='pix', pos=[0 + xoffset, 0],
+                sf=0, color=green_color, mask='circle'
+            )
+        ]
+
+        # response from the other subject to be shown on top of the fixation dot
         self.indicatordict = {
             "yes": visual.TextStim(
                 win=window, text="Yes", units='pix', pos=[0 + xoffset, 0]
