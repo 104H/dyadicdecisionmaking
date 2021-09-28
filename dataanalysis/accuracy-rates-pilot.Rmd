@@ -1,0 +1,121 @@
+---
+title: "Accuracy rates"
+output: pdf_document
+fontsize: 11pt
+---
+
+```{r libraries, include=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+theme_set(theme_minimal())
+theme_update(
+  plot.title = element_text(face = "bold", size = 20),
+  axis.title.x = element_text(face = "bold", margin = margin(t = 15), size = 15),
+  axis.title.y = element_text(face = "bold", margin = margin(r = 20), size = 15),
+  legend.title = element_text(face = "bold", size = 12),
+  strip.text.x = element_text(face = "bold", size = 15, hjust = 1, 
+                             margin = margin(r = 6)),
+  plot.margin = margin(rep(20, 4))
+)
+# colors
+project_colors = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000")
+
+# setting theme colors globally
+scale_colour_discrete <- function(...) {
+  scale_colour_manual(..., values = project_colors)
+}
+scale_fill_discrete <- function(...) {
+   scale_fill_manual(..., values = project_colors)
+} 
+
+# global knitr options
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, 
+                      cache = FALSE, fig.align = 'center')
+```
+
+## Accuracy rates for every participant of the pilot experiment
+
+```{r barplots}
+pilot_data <- list.files(path = ".",
+              pattern="*.csv", 
+              full.names = T) %>% 
+    map_df(~read_csv(., col_types=cols_only(
+      'condition' = col_character(),
+      'response' = col_character(),
+      'pair_id' = col_character())))
+
+accuracy <- pilot_data %>%
+  group_by(pair_id) %>%
+  summarise(n_strials = sum(condition=="signal"),
+            n_ntrials = sum(condition=="noise"),
+            signal = sum(condition == "signal" & response=="7")/n_strials,
+            noise = sum(condition == "noise" & response == "8")/n_ntrials) %>%
+  pivot_longer(cols = c(signal, noise),
+               names_to = "condition",
+               values_to = "correctness_rate")
+accuracy$pair_id <- replace_na(accuracy$pair_id, "23")
+accuracy %>%
+  ggplot(aes(y = condition, x = correctness_rate, fill = condition)) + 
+  geom_bar(stat = "identity", width = 0.75, alpha = .75) +
+  geom_text(aes(label = round(correctness_rate,2), x = correctness_rate - 0.2),
+            position = position_dodge(0.9),
+            hjust = 0) +
+  facet_wrap(~pair_id, ncol = 2, scales='free') +
+  scale_x_continuous(limits=c(0,1)) +
+  ylab("") +
+  xlab("Proportion of correct answers") +
+  theme(legend.position = "none") +
+  ggtitle("Pilot participants' accuracy rates")
+```
+
+```{r, fig.width = 4, fig.height = 6}
+ggplot(accuracy, aes(x=condition, y=correctness_rate, fill = condition)) + 
+  geom_dotplot(alpha = .75, binaxis = "y",
+               binwidth = 0.02, method="histodot",
+               dotsize = 2) +
+  geom_hline(yintercept = 0.75, linetype = "dashed") +
+  xlab("") +
+  ylab("Proportion of correct answers") +
+  labs(fill = "Condition") +
+  theme(legend.position = "none") +
+  ggtitle("Pilot data")
+```
+
+## Accuracy rates in the original study (https://www.pnas.org/content/111/5/E618)
+
+```{r faceted bar plot, fig.height = 12, fig.width = 7}
+dat <- read_csv("https://figshare.com/ndownloader/files/15515483")
+accuracy <- dat %>%
+  group_by(subj_idx) %>%
+  summarise(n_strials = sum(stimulus==1),
+            n_ntrials = sum(stimulus==-1),
+            signal = sum(stimulus == response)/n_strials,
+            noise = sum(stimulus == -1 & response == 0)/n_ntrials) %>%
+  pivot_longer(cols = c(signal, noise),
+               names_to = "condition",
+               values_to = "proportion")
+
+ggplot(accuracy, aes(y = condition, x = proportion, fill = condition)) + 
+  geom_bar(stat = "identity", width = 0.75, alpha = .75) +
+  geom_text(aes(label = round(proportion,2), x = proportion - 0.2),
+            position = position_dodge(0.9),
+            hjust = 0) +
+  facet_wrap(~subj_idx, ncol = 3, scales='free') +
+  scale_x_continuous(limits=c(0,1)) +
+  ylab("") +
+  xlab("Proportion of correct answers") +
+  theme(legend.position = "none") +
+  ggtitle("Accuracy rates in the original study")
+```
+
+```{r dot plot, fig.height = 7, fig.width = 4}
+ggplot(accuracy, aes(x=condition, y=proportion, fill = condition)) + 
+  geom_dotplot(alpha = .75, binaxis = "y",
+               binwidth = 0.02, method="histodot") +
+  geom_hline(yintercept = 0.75, linetype = "dashed") +
+  xlab("") +
+  ylab("Proportion of correct answers") +
+  labs(fill = "Condition") +
+  scale_y_continuous(breaks = c(seq(0.5,0.9, by = 0.05))) +
+  theme(legend.position = "none") +
+  ggtitle("Original study")
+```
