@@ -78,11 +78,14 @@ window = visual.Window(size=(M_WIDTH, M_HEIGHT), monitor=myMon,
                        fullscr=False, useFBO=True, allowGUI=False)
 '''
 window = visual.Window(size=(1000, 800), monitor=myMon,
-                       color = "black", pos=(0,0), units='pix', blendMode='add',
+                       color="black", pos=(0,0), units='pix', blendMode='add',
                        fullscr=False, useFBO=True, allowGUI=False)
 
 window.mouseVisible = False # hide cursor
 ofs = window.size[0] / 4
+
+# update volume level of both speakers
+run(["amixer", "-D", "pulse", "sset", "Master", "30%,30%", "quiet"])
 
 class subject:
     def __init__(self, sid, kb):
@@ -95,7 +98,7 @@ class subject:
             xoffset is the constant added to all stimuli rendered for the subject
         '''
 
-        # for now: right key = green, left key = red
+        # for now: right key = green (2, 7), left key = red (1, 8)
 
         keys = ["1", "2"] if sid == 1 else ["8", "7"]
 
@@ -104,7 +107,9 @@ class subject:
         self.state = False
         self.xoffset = ofs if sid == 1 else -ofs
         self.response = None
-        self.actingheadphonebalance = "30%,0%" if sid == 2 else "0%,30%"
+
+        soundclass = 'A' if sid == 1 else 'E'
+        self.beep = Sound(soundclass, secs=0.5, volume=0.1)
 
         self.stimulus = stimuli.stim(window=window, xoffset=self.xoffset)
 
@@ -176,9 +181,6 @@ expinfo = {'pair': pair_id}
 blocks = range(2)
 ntrials = 2 # trials per block
 
-# create beep for decision interval
-beep = Sound('A', secs=0.5, volume=0.1)
-
 
 #### FUNCTIONS TO CREATE DIFFERENT TEXT SCREENS #####
 def gentext (instr):
@@ -195,37 +197,22 @@ def gentext (instr):
 
 def genstartscreen ():
     instructions = "Welcome to our experiment! \n\n\
-    Your task is to indicate whether you see a vertical grating or not.\n\
-    If you have any questions after reading the instructions on the next screen, please feel free to ask the experimenter.\n\n\
+    X.\n\
+    X.\n\n\
     Press the green key to continue"
 
     gentext(instructions)
 
 def geninstructionspractice ():
     instructions = "Please read the instructions carefully.\n\
-    1. Place your index finger on the left key and your middle finger on the right key.\n\
-    2. Now, you will have a few practice trials to see how the experiment works.\n\
-    3. You will do the task together with your partner.\n\
-    4. The stimulus will be the same as you saw before: a circle of noise.\n\
-    5. Fixate on the dot in the center of the circle.\n\
-    6. What's new: Only when you hear a beep, it’s your turn to indicate whether you saw a vertical grating on top of the noise.\n\
-    7. Press the green key for 'yes' and the red key for 'no'.\n\
-    8. It’s very important that you respond as fast and as accurate as possible! You only have a limited amount of time for your response.\n\
-    9. If you don’t hear a beep, it’s the other person’s turn to respond. You will both see the the same stimulus and you will also see their response on your screen.\n\n\
+    X\n\n\
     Press yes to continue"
 
     gentext(instructions)
 
 def geninstructionsexperiment ():
     instructions = "Now you’re ready to start the experiment. Please remember:\n\
-    1. Place your index finger on the left key and your middle finger on the right key.\n\
-    2. Fixate on the dot in the center of the circle.\n\
-    3. When you hear a beep it’s your turn. If you don’t hear a beep, you will see your partner’s response.\n\
-    4. Press the green key for 'yes' and the red key for 'no'.\n\
-    5. Please respond as quickly and as accurately as possible! \n\
-    6. Once you finished one block, you’ll be asked if you’re ready for the next block.\n\
-    7. After every second block, you will have a break.\n\
-    8. There will be a total of 12 blocks.\n\n\
+    X\n\n\
     Press yes when you’re ready to start the experiment"
 
     gentext(instructions)
@@ -313,15 +300,6 @@ def fetchbuttonpress (subjects):
 
     return resp
 
-def updatespeakerbalance ():
-    '''
-        Update the volume level of the left and right speaker so that only the acting subject can hear the beep
-    '''
-    for s in subjects:
-        if s.state:
-            #run(["amixer", "-D", "pulse", "sset", "Master", s.actingheadphonebalance, "quiet"])
-            pass
-
 def updatestate ():
     '''
         Update whose turn it is
@@ -386,8 +364,6 @@ def genactingstates ():
     '''
     return np.random.choice(a=[True, False], size=ntrials)
 
-# update speaker balance for the first time
-updatespeakerbalance()
 
 # specifications of output file
 _thisDir = os.path.dirname(os.path.abspath(__file__))
@@ -444,7 +420,6 @@ geninstructionsexperiment()
 window.flip()
 getacknowledgements()
 
-
 # start main experiment
 for blockNumber in blocks:
 
@@ -456,8 +431,9 @@ for blockNumber in blocks:
 
         # subject state update
         updatestate()
-        # update the speaker balance to play the beep for the right subject
-        updatespeakerbalance()
+
+        # whose turn it is defines which beep is played
+        beep = sone.beep if sone.state == 1 else stwo.beep
 
         # save trial data to file
         exphandler.addData('block', blockNumber)
