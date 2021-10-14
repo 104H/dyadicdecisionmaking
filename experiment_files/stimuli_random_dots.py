@@ -9,8 +9,10 @@ M_WIDTH_CM = 51.84
 M_HEIGHT = 1200
 REFRESH_RATE = 60
 
-dotsSpeed = 0.01
+my_dpi = 96 # dpi of the lab monitor
+distance = 60 # distance to screen in cm
 
+dotsSpeed = 0.01
 
 class stim:
     def __init__(self, window, xoffset):

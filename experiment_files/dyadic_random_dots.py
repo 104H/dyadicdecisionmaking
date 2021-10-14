@@ -69,7 +69,7 @@ M_WIDTH = stimuli.M_WIDTH * 2
 M_HEIGHT = stimuli.M_HEIGHT
 REFRESH_RATE = stimuli.REFRESH_RATE
 
-myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=80)
+myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=stimuli.distance)
 myMon.setSizePix([M_WIDTH, M_HEIGHT])
 
 '''
