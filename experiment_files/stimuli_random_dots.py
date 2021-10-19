@@ -42,3 +42,17 @@ class stim:
             win=window, size=10, units='pix', pos=[0 + xoffset, 0],
             sf=0, color='green', mask='cross'
         )
+        
+        """
+        For response time related warning to be shown on top of fixation cross
+        a. if response time < 200 ms: Too Fast
+        b. response time > 1500 ms: Too Slow
+        """
+        self.indicatordict = {
+            "slow": visual.TextStim(
+                win=window, text="Too Slow", units='pix', pos=[0 + xoffset, 0],color=[1.0, -1.0, -1.0]
+            ),
+            "fast": visual.TextStim(
+                win=window, text="Too Fast", units='pix', pos=[0 + xoffset, 0],color=[1.0, -1.0, -1.0]
+            )
+        }

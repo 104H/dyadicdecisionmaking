@@ -85,7 +85,7 @@ window.mouseVisible = False # hide cursor
 ofs = window.size[0] / 4
 
 # update volume level of both speakers
-run(["amixer", "-D", "pulse", "sset", "Master", "30%,30%", "quiet"])
+#run(["amixer", "-D", "pulse", "sset", "Master", "30%,30%", "quiet"])
 
 class subject:
     def __init__(self, sid, kb):
@@ -94,7 +94,7 @@ class subject:
 
             kb is the psychopy keyboard object to connect to the button box
             keys is a list of keys expected from the user. it has to be in the order of yes and no
-            state is either 0 or 1 for observing or acting conditions, respectively
+            state is either 0 or 1 for observing or do conditions, respectively
             xoffset is the constant added to all stimuli rendered for the subject
         '''
 
@@ -274,10 +274,22 @@ def gendecisionint (subjects):
     drawFixation("blue")
     drawDots(subjects)
 
-def genfeedbackint (subjects, color):
-    # TO BE DONE
+def genfeedbackint (subjects, color,rt_msg="NA"):
+    '''
+        1. Display static dot screen
+        2. Correctness of response indicated by fixation dot color: correct/green,incorrect/light-red
+        3. The "do" subject sees response time message
+    '''
     drawFixation(color)
     drawDots(subjects)
+    
+    if rt_msg != "NA":
+        if stwo.state:
+            stwo.indicatordict[rt_msg].draw()
+        else:
+            sone.indicatordict[rt_msg].draw()
+    
+
 
 def fetchbuttonpress (subjects):
     '''
@@ -431,6 +443,7 @@ for blockNumber in blocks:
 
         # subject state update
         updatestate()
+        flag = "NA"
 
         # whose turn it is defines which beep is played
         beep = sone.beep if sone.state == 1 else stwo.beep
@@ -478,9 +491,14 @@ for blockNumber in blocks:
             color = "red"
         elif response[0] == "right": # right
             color = "green"
+            
+        if response[1] > 1500:
+            flag = "slow"
+        elif response[1] < 100: 
+            flag = "fast"
 
         for frame in secondstoframes(0.7):
-            genfeedbackint(subjects, color)
+            genfeedbackint(subjects, color, flag)
             window.flip()
 
 
