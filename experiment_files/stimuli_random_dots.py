@@ -17,8 +17,8 @@ dotsSpeed = 0.01
 class stim:
     def __init__(self, window, xoffset):
         # dot patch
-        self.dotPatch = visual.DotStim(window, color="white", dir=270,
-                                       nDots=500, fieldShape='circle', fieldPos=[0 + xoffset, 0], fieldSize=250,
+        self.dotPatch = visual.DotStim(window, color=(1.0, 1.0, 1.0), dir=180, units="pix",
+                                       nDots=328, fieldShape='circle', fieldPos=[0 + xoffset, 0], fieldSize=199,
                                        dotLife=5,  # number of frames for each dot to be drawn
                                        signalDots='same',  # are signal dots 'same' on each frame? (see Scase et al)
                                        noiseDots='direction',
