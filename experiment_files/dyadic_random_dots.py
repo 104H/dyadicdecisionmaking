@@ -119,7 +119,8 @@ class subject:
                     None : "noresponse"
                     }
 
-        self.dotpatch = self.stimulus.dotPatch
+        self.stationarydotpatch = self.stimulus.stationaryDotPatch
+        self.movingdotpatch = self.stimulus.movingDotPatch
 
         # light blue fixation cross for decision phase
         self.bluecross = self.stimulus.bluecross
@@ -243,6 +244,27 @@ def genmandatorybreakscreen ():
 
 
 ##### FUNCTIONS FOR THE TASK ITSELF #####
+def drawMovingDots(subjects):
+    '''
+        draw the dot patch for both subjects
+    '''
+    for s in subjects:
+        s.movingdotpatch.draw()
+
+def drawStationaryDots(dotList):
+    '''
+        draw the dot patch for both subjects
+    '''
+    for stim in dotList:
+        stim.draw()
+        
+def changeStationaryDots(subjects):
+    dotList = []
+    for s in subjects:
+        s.stationarydotpatch = s.stimulus.updateStationaryDots()
+        dotList.append(s.stationarydotpatch)
+    return dotList
+
 def drawFixation(color):
     '''
         draw the fixation crosses for both subjects
@@ -257,31 +279,24 @@ def drawFixation(color):
         sone.greencross.draw()
         sone.greencross.draw()
 
-def drawDots(subjects):
-    '''
-        draw the dot patch for both subjects
-    '''
-    for s in subjects:
-        s.dotpatch.draw()
-
-def genpretrialint (subjects):
+def genpretrialint (dotList):
     # TO BE DONE
     drawFixation("blue")
-    drawDots(subjects)
+    drawStationaryDots(dotList)
 
 def gendecisionint (subjects):
     # TO BE DONE
     drawFixation("blue")
-    drawDots(subjects)
+    drawMovingDots(subjects)
 
-def genfeedbackint (subjects, color, rt_msg="NA"):
+def genfeedbackint (color, dotList, rt_msg="NA"):
     '''
         1. Display static dot screen
         2. Correctness of response indicated by fixation dot color: correct/green,incorrect/light-red
         3. The "do" subject sees response time message
     '''
     drawFixation(color)
-    drawDots(subjects)
+    drawStationaryDots(dotList)
     
     if rt_msg != "NA":
         if stwo.state:
@@ -452,11 +467,15 @@ for blockNumber in blocks:
         exphandler.addData('block', blockNumber)
         exphandler.addData('trial', trialNumber)
         exphandler.addData('s1_state', sone.state)
-        exphandler.addData('direction', sone.dotpatch.dir)
+        exphandler.addData('direction', sone.movingdotpatch.dir)
+        
+        # set up stationary dotpatch for first trial
+        if trialNumber == 0:
+            dotList = changeStationaryDots(subjects)
 
         # pretrial interval: display light blue fixation cross & stationary dots for 4.3 - 5.8s (uniformly distributed)
         for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
-            genpretrialint(subjects)
+            genpretrialint(dotList)
             window.flip()
 
         sone.kb.clearEvents(eventType='keyboard')
@@ -494,13 +513,14 @@ for blockNumber in blocks:
             
         if response[1] > 1500:
             flag = "slow"
-        elif response[1] < 100: 
+        elif response[1] < 100:
             flag = "fast"
+            
+        dotList = changeStationaryDots(subjects)
 
         for frame in secondstoframes(0.7):
-            genfeedbackint(subjects, color, flag)
+            genfeedbackint(color, dotList, flag)
             window.flip()
-
 
         # save response to file
         if not response:

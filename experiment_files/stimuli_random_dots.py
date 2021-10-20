@@ -2,6 +2,7 @@ from __future__ import division
 from __future__ import print_function
 
 from psychopy import visual, event, core
+from random import choice
 from math import tan, pi
 
 # monitor specs global variables
@@ -13,27 +14,66 @@ REFRESH_RATE = 60
 my_dpi = 96 # dpi of the lab monitor
 distance = 60 # distance to screen in cm
 
-dotsSpeed = 0.01
-
 def degrees_to_pix(degrees):
     cm = tan(degrees * pi / 180) * distance
     pix = cm * M_WIDTH / M_WIDTH_CM
-    print(pix)
+    #print(pix)
     return pix
+    
+N = 25
+fsize = degrees_to_pix(10)
+dotsSpeed = 2.5
+dotsNumber = 328
+    
+    
+def createStationaryDots (N, window, xoffset):
+    dotsList = []
+
+    for _ in range(N):
+        tempDots = visual.DotStim(
+            window,
+            color=(1.0, 1.0, 1.0),
+            units='pix',
+            nDots=dotsNumber,
+            fieldShape='circle',
+            fieldPos=[0 + xoffset, 0],
+            fieldSize=fsize,
+            dotLife=-1,
+            speed=0
+        )
+
+        dotsList.append(tempDots)
+
+    return dotsList
+    
 
 class stim:
     def __init__(self, window, xoffset):
         #size of the fixation cross
         self.fixationSize = degrees_to_pix(0.36)
         
+        # list of differently distributed stationary dots
+        self.dotsList = createStationaryDots(N, window, xoffset)
+        
+        # stationary dot patch
+        self.stationaryDotPatch = self.dotsList[0]
+        
         # dot patch
-        self.dotPatch = visual.DotStim(window, color=(1.0, 1.0, 1.0), dir=180, units="pix",
-                                       nDots=328, fieldShape='circle', fieldPos=[0 + xoffset, 0], fieldSize=199,
-                                       dotLife=5,  # number of frames for each dot to be drawn
-                                       signalDots='same',  # are signal dots 'same' on each frame? (see Scase et al)
-                                       noiseDots='direction',
-                                       # do the noise dots follow random- 'walk', 'direction', or 'position'
-                                       speed=dotsSpeed, coherence=0.9)
+        self.movingDotPatch = visual.DotStim(
+            window,
+            color=(1.0, 1.0, 1.0),
+            dir=180,
+            units='pix',
+            nDots=dotsNumber,
+            fieldShape='circle',
+            fieldPos=[0 + xoffset, 0],
+            fieldSize=fsize,
+            dotLife=5,  # number of frames for each dot to be drawn
+            signalDots='same',  # are signal dots 'same' on each frame? (see Scase et al)
+            noiseDots='direction', # do the noise dots follow random- 'walk', 'direction', or 'position'
+            speed=dotsSpeed,
+            coherence=0.9
+        )
 
         # light blue fixation cross for pretrial & decision interval
         self.bluecross = visual.GratingStim(
@@ -66,3 +106,6 @@ class stim:
                 win=window, text="Too Fast", units='pix', pos=[0 + xoffset, 0], color='red'
             )
         }
+        
+    def updateStationaryDots(self):
+        return choice(self.dotsList)
