@@ -274,7 +274,7 @@ def gendecisionint (subjects):
     drawFixation("blue")
     drawDots(subjects)
 
-def genfeedbackint (subjects, color,rt_msg="NA"):
+def genfeedbackint (subjects, color, rt_msg="NA"):
     '''
         1. Display static dot screen
         2. Correctness of response indicated by fixation dot color: correct/green,incorrect/light-red
