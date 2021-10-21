@@ -59,7 +59,7 @@ from numpy.random import random
 # get pair id via command-line argument
 try:
     #pair_id = int(sys.argv[1])
-    pair_id = 100
+    pair_id = 10
 except:
     print('Please enter a number as pair id as command-line argument!')
     sys.exit(-1)
@@ -88,7 +88,7 @@ ofs = window.size[0] / 4
 #run(["amixer", "-D", "pulse", "sset", "Master", "30%,30%", "quiet"])
 
 class subject:
-    def __init__(self, sid, kb):
+    def __init__(self, sid, kb, buttonReverse=False):
         '''
             sid is 1 for chamber 1, and 2 for chamber 2
 
@@ -112,8 +112,15 @@ class subject:
         self.beep = Sound(soundclass, secs=0.5, volume=0.1)
 
         self.stimulus = stimuli.stim(window=window, xoffset=self.xoffset)
-
-        self.buttons = {
+        
+        if buttonReverse:
+            self.buttons = {
+                    keys[1] : "left",
+                    keys[0] : "right",
+                    None : "noresponse"
+                    }
+        else:
+            self.buttons = {
                     keys[1] : "right",
                     keys[0] : "left",
                     None : "noresponse"
@@ -133,8 +140,9 @@ class subject:
 
     def __repr__ (self):
         return str(self.id)
-
-
+        
+        
+        
 def getKeyboards():
     '''
         Search for the appropriate button box in each of the chambers
@@ -162,17 +170,27 @@ def getKeyboards():
             else:
                 k['chtwo'] = keyb['index']
 
+if pair_id <= 13:
+    ''' AT THE LAB:
+    keybs = getKeyboards()
+    sone = subject(1, keyboard.Keyboard( keybs["chone"] ),True)
+    stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ),True)
+    '''
 
-''' AT THE LAB:
-keybs = getKeyboards()
-sone = subject(1, keyboard.Keyboard( keybs["chone"] ))
-stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ))
-'''
+    # if only one keyboard is connected (home testing)
+    sone = subject(1, keyboard.Keyboard(),True)
+    stwo = subject(2, keyboard.Keyboard(),True)    
+else:
+    ''' AT THE LAB:
+    keybs = getKeyboards()
+    sone = subject(1, keyboard.Keyboard( keybs["chone"] ), False)
+    stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ),False)
+    '''
 
-# if only one keyboard is connected (home testing)
-sone = subject(1, keyboard.Keyboard())
-stwo = subject(2, keyboard.Keyboard())
-
+    # if only one keyboard is connected (home testing)
+    sone = subject(1, keyboard.Keyboard(),False)
+    stwo = subject(2, keyboard.Keyboard(),False)
+   
 subjects = [sone, stwo]
 
 expkb = keyboard.Keyboard()
