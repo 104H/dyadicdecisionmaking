@@ -17,7 +17,6 @@ distance = 60 # distance to screen in cm
 def degrees_to_pix(degrees):
     cm = tan(degrees * pi / 180) * distance
     pix = cm * M_WIDTH / M_WIDTH_CM
-    #print(pix)
     return pix
     
 N = 25
@@ -27,6 +26,9 @@ dotsNumber = 328
     
     
 def createStationaryDots (N, window, xoffset):
+    '''
+        creates N different patches of randomly distributed stationary dots
+    '''
     dotsList = []
 
     for _ in range(N):

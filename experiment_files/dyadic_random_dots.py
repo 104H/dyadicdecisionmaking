@@ -126,7 +126,10 @@ class subject:
                     None : "noresponse"
                     }
 
+        # stationary dotpatch for pretrial and feedback phase
         self.stationarydotpatch = self.stimulus.stationaryDotPatch
+        
+        # moving dotpatch for decision phase
         self.movingdotpatch = self.stimulus.movingDotPatch
 
         # light blue fixation cross for decision phase
@@ -264,19 +267,22 @@ def genmandatorybreakscreen ():
 ##### FUNCTIONS FOR THE TASK ITSELF #####
 def drawMovingDots(subjects):
     '''
-        draw the dot patch for both subjects
+        draw the moving dot patch for both subjects
     '''
     for s in subjects:
         s.movingdotpatch.draw()
 
 def drawStationaryDots(dotList):
     '''
-        draw the dot patch for both subjects
+        draw the stationary dot patch for both subjects
     '''
     for stim in dotList:
         stim.draw()
         
 def changeStationaryDots(subjects):
+    '''
+        change the stationary dot patch for both subjects
+    '''
     dotList = []
     for s in subjects:
         s.stationarydotpatch = s.stimulus.updateStationaryDots()
@@ -298,12 +304,10 @@ def drawFixation(color):
         sone.greencross.draw()
 
 def genpretrialint (dotList):
-    # TO BE DONE
     drawFixation("blue")
     drawStationaryDots(dotList)
 
 def gendecisionint (subjects):
-    # TO BE DONE
     drawFixation("blue")
     drawMovingDots(subjects)
 
@@ -533,9 +537,11 @@ for blockNumber in blocks:
             flag = "slow"
         elif response[1] < 100:
             flag = "fast"
-            
+         
+        # change stationary dotpatch for each trial
         dotList = changeStationaryDots(subjects)
 
+        # feedback interval: display the fixation cross color based on the correctness of response & stationary dots for 0.7s
         for frame in secondstoframes(0.7):
             genfeedbackint(color, dotList, flag)
             window.flip()
