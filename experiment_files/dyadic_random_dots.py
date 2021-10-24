@@ -13,7 +13,6 @@ import psychtoolbox as ptb
 from psychopy import visual, event, core, gui, data, prefs, monitors
 from psychopy.hardware import keyboard
 import stimuli_random_dots as stimuli
-from random import choice, shuffle
 import json
 
 ''' REMOVED bc doesn't work ON WINDOWS
@@ -68,6 +67,7 @@ except:
 M_WIDTH = stimuli.M_WIDTH * 2
 M_HEIGHT = stimuli.M_HEIGHT
 REFRESH_RATE = stimuli.REFRESH_RATE
+N = stimuli.N
 
 myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=stimuli.distance)
 myMon.setSizePix([M_WIDTH, M_HEIGHT])
@@ -126,11 +126,12 @@ class subject:
                     None : "noresponse"
                     }
 
-        # stationary dotpatch for pretrial and feedback phase
-        self.stationarydotpatch = self.stimulus.stationaryDotPatch
+        # stationary dot patches for pretrial and feedback phase
+        self.stationarydotslist = self.stimulus.stationaryDotsList
         
-        # moving dotpatch for decision phase
-        self.movingdotpatch = self.stimulus.movingDotPatch
+        # moving dot patches for decision phase
+        self.movingrightdotslist = self.stimulus.movingRightDotsList
+        self.movingleftdotslist = self.stimulus.movingLeftDotsList
 
         # light blue fixation cross for decision phase
         self.bluecross = self.stimulus.bluecross
@@ -201,7 +202,7 @@ expkb = keyboard.Keyboard()
 expinfo = {'pair': pair_id}
 
 blocks = range(2)
-ntrials = 2 # trials per block
+ntrials = 4 # trials per block
 
 
 #### FUNCTIONS TO CREATE DIFFERENT TEXT SCREENS #####
@@ -265,29 +266,28 @@ def genmandatorybreakscreen ():
 
 
 ##### FUNCTIONS FOR THE TASK ITSELF #####
-def drawMovingDots(subjects):
-    '''
-        draw the moving dot patch for both subjects
-    '''
-    for s in subjects:
-        s.movingdotpatch.draw()
-
-def drawStationaryDots(dotList):
+def drawStationaryDots(choice):
     '''
         draw the stationary dot patch for both subjects
     '''
-    for stim in dotList:
-        stim.draw()
-        
-def changeStationaryDots(subjects):
-    '''
-        change the stationary dot patch for both subjects
-    '''
-    dotList = []
     for s in subjects:
-        s.stationarydotpatch = s.stimulus.updateStationaryDots()
-        dotList.append(s.stationarydotpatch)
-    return dotList
+        s.stationarydotslist[choice].draw()
+    
+
+def drawMovingDots(subjects, choice, frame):
+    '''
+        draw the moving dot patch for both subjects, but interleave three
+        different dot patches
+    '''
+    for s in subjects:
+        if frame == 0:
+            s.movingrightdotslist[choice][0].draw()
+        elif frame == 1:
+            s.movingrightdotslist[choice][1].draw()
+        elif frame == 2:
+            s.movingrightdotslist[choice][2].draw()
+        else:
+            print('error in drawMovingDots function')
 
 def drawFixation(color):
     '''
@@ -303,22 +303,22 @@ def drawFixation(color):
         sone.greencross.draw()
         sone.greencross.draw()
 
-def genpretrialint (dotList):
+def genpretrialint (choice):
     drawFixation("blue")
-    drawStationaryDots(dotList)
+    drawStationaryDots(choice)
 
-def gendecisionint (subjects):
+def gendecisionint (subjects, choice, frame):
     drawFixation("blue")
-    drawMovingDots(subjects)
+    drawMovingDots(subjects, choice, frame)
 
-def genfeedbackint (color, dotList, rt_msg="NA"):
+def genfeedbackint (color, choice, rt_msg="NA"):
     '''
         1. Display static dot screen
         2. Correctness of response indicated by fixation dot color: correct/green,incorrect/light-red
         3. The "do" subject sees response time message
     '''
     drawFixation(color)
-    drawStationaryDots(dotList)
+    drawStationaryDots(choice)
     
     if rt_msg != "NA":
         if stwo.state:
@@ -489,16 +489,17 @@ for blockNumber in blocks:
         exphandler.addData('block', blockNumber)
         exphandler.addData('trial', trialNumber)
         exphandler.addData('s1_state', sone.state)
-        exphandler.addData('direction', sone.movingdotpatch.dir)
-        
-        # set up stationary dotpatch for first trial
-        if trialNumber == 0:
-            dotList = changeStationaryDots(subjects)
+        #exphandler.addData('direction', sone.movingdotpatchf1.dir)
 
         # pretrial interval: display light blue fixation cross & stationary dots for 4.3 - 5.8s (uniformly distributed)
-        for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
-            genpretrialint(dotList)
-            window.flip()
+        if trialNumber == 0:
+            for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
+                genpretrialint(0)
+                window.flip()
+        else:
+            for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
+                genpretrialint(stationaryChoice)
+                window.flip()
 
         sone.kb.clearEvents(eventType='keyboard')
         stwo.kb.clearEvents(eventType='keyboard')
@@ -509,11 +510,22 @@ for blockNumber in blocks:
         # preparing time for next window flip, to precisely co-ordinate window flip and beep
         nextflip = window.getFutureFlipTime(clock='ptb')
         beep.play(when=nextflip)
+        
+        # make random choice for stationary dot patches that should be used
+        movingChoice = np.random.randint(0, N)
 
         # decision interval: light blue cross & moving dots
         response = []  # we have no response yet
-        for frame in secondstoframes(1.5):
-            gendecisionint(subjects)
+        for frame in secondstoframes(3):
+        #for frame in secondstoframes(1.5):
+            if frame % 3 == 0:
+                gendecisionint(subjects, movingChoice, 0)
+            elif frame % 3 == 1:
+                gendecisionint(subjects, movingChoice, 1)
+            elif frame % 3 == 2:
+                gendecisionint(subjects, movingChoice, 2)
+            else:
+                print('error in secondstoframes gendecisionint')
             window.flip()
 
             # fetch button press
@@ -533,17 +545,17 @@ for blockNumber in blocks:
         elif response[0] == "right": # right
             color = "green"
             
-        if response[1] > 1500:
-            flag = "slow"
-        elif response[1] < 100:
-            flag = "fast"
+        #if response[1] > 1500:
+        #    flag = "slow"
+        #elif response[1] < 100:
+        #    flag = "fast"
          
-        # change stationary dotpatch for each trial
-        dotList = changeStationaryDots(subjects)
+        # make random choice for stationary dot patch that should be used
+        stationaryChoice = np.random.randint(0, N)
 
         # feedback interval: display the fixation cross color based on the correctness of response & stationary dots for 0.7s
         for frame in secondstoframes(0.7):
-            genfeedbackint(color, dotList, flag)
+            genfeedbackint(color, stationaryChoice, flag)
             window.flip()
 
         # save response to file
