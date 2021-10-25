@@ -13,6 +13,7 @@ import psychtoolbox as ptb
 from psychopy import visual, event, core, gui, data, prefs, monitors
 from psychopy.hardware import keyboard
 import stimuli_random_dots as stimuli
+import random as rn
 import json
 
 ''' REMOVED bc doesn't work ON WINDOWS
@@ -274,20 +275,32 @@ def drawStationaryDots(choice):
         s.stationarydotslist[choice].draw()
     
 
-def drawMovingDots(subjects, choice, frame):
+def drawMovingDots(subjects, choice, direction, frame):
     '''
         draw the moving dot patch for both subjects, but interleave three
         different dot patches
     '''
-    for s in subjects:
-        if frame == 0:
-            s.movingrightdotslist[choice][0].draw()
-        elif frame == 1:
-            s.movingrightdotslist[choice][1].draw()
-        elif frame == 2:
-            s.movingrightdotslist[choice][2].draw()
-        else:
-            print('error in drawMovingDots function')
+    if direction == 'right':
+        for s in subjects:
+            if frame == 0:
+                s.movingrightdotslist[choice][0].draw()
+            elif frame == 1:
+                s.movingrightdotslist[choice][1].draw()
+            elif frame == 2:
+                s.movingrightdotslist[choice][2].draw()
+            else:
+                print('error in drawMovingDots function')
+    else:
+        for s in subjects:
+            if frame == 0:
+                s.movingleftdotslist[choice][0].draw()
+            elif frame == 1:
+                s.movingleftdotslist[choice][1].draw()
+            elif frame == 2:
+                s.movingleftdotslist[choice][2].draw()
+            else:
+                print('error in drawMovingDots function')
+    
 
 def drawFixation(color):
     '''
@@ -307,9 +320,9 @@ def genpretrialint (choice):
     drawFixation("blue")
     drawStationaryDots(choice)
 
-def gendecisionint (subjects, choice, frame):
+def gendecisionint (subjects, choice, direction, frame):
     drawFixation("blue")
-    drawMovingDots(subjects, choice, frame)
+    drawMovingDots(subjects, choice, direction, frame)
 
 def genfeedbackint (color, choice, rt_msg="NA"):
     '''
@@ -410,6 +423,16 @@ def genactingstates ():
         Randomly generate list including the subject states (act/ observe)
     '''
     return np.random.choice(a=[True, False], size=ntrials)
+   
+   
+def genmovingstates ():
+    '''
+        Generates list that contains the movement direction of the moving
+        dot patch (left/ right)
+    '''
+    trials = ntrials//2
+    movingstates = ['left'] * trials + ['right'] * trials
+    return rn.sample(movingstates, len(movingstates))
 
 
 # specifications of output file
@@ -432,8 +455,8 @@ stwo.dotpatch.coherence = practiceCoherence
 
 # practice trials instructions
 
-
 iterstates = iter(genactingstates())
+movingstates = iter(genmovingstates())
 
 for trialNumber in range(0, nPracticeTrials):
 
@@ -465,18 +488,19 @@ for trialNumber in range(0, nPracticeTrials):
     beep.play(when=nextflip)
 
     # make random choice for stationary dot patches that should be used
-    movingChoice = np.random.randint(0, N)
+    dotpatchChoice = np.random.randint(0, N)
+    movingDirection = next(movingstates)
 
     # decision interval: light blue cross & moving dots
     response = []  # we have no response yet
     for frame in secondstoframes(3):
         # for frame in secondstoframes(1.5):
         if frame % 3 == 0:
-            gendecisionint(subjects, movingChoice, 0)
+            gendecisionint(subjects, dotpatchChoice, movingDirection, 0)
         elif frame % 3 == 1:
-            gendecisionint(subjects, movingChoice, 1)
+            gendecisionint(subjects, dotpatchChoice, movingDirection, 1)
         elif frame % 3 == 2:
-                (subjects, movingChoice, 2)
+            gendecisionint(subjects, dotpatchChoice, movingDirection, 2)
         else:
             print('error in secondstoframes gendecisionint')
         window.flip()
@@ -550,6 +574,7 @@ for blockNumber in blocks:
 
     # make an iterator object
     iterstates = iter(genactingstates())
+    movingstates = iter(genmovingstates())
 
     # traverse through trials
     for trialNumber in range(0, ntrials):
@@ -560,12 +585,16 @@ for blockNumber in blocks:
 
         # whose turn it is defines which beep is played
         beep = sone.beep if sone.state == 1 else stwo.beep
+        
+        # make random choice for moving dot patches that should be used and determine the direction
+        dotpatchChoice = np.random.randint(0, N)
+        movingDirection = next(movingstates)
 
         # save trial data to file
         exphandler.addData('block', blockNumber)
         exphandler.addData('trial', trialNumber)
         exphandler.addData('s1_state', sone.state)
-        #exphandler.addData('direction', sone.movingdotpatchf1.dir)
+        exphandler.addData('direction', movingDirection)
 
         # pretrial interval: display light blue fixation cross & stationary dots for 4.3 - 5.8s (uniformly distributed)
         if trialNumber == 0:
@@ -586,20 +615,16 @@ for blockNumber in blocks:
         # preparing time for next window flip, to precisely co-ordinate window flip and beep
         nextflip = window.getFutureFlipTime(clock='ptb')
         beep.play(when=nextflip)
-        
-        # make random choice for stationary dot patches that should be used
-        movingChoice = np.random.randint(0, N)
 
         # decision interval: light blue cross & moving dots
         response = []  # we have no response yet
-        for frame in secondstoframes(3):
-        #for frame in secondstoframes(1.5):
+        for frame in secondstoframes(1.5):
             if frame % 3 == 0:
-                gendecisionint(subjects, movingChoice, 0)
+                gendecisionint(subjects, dotpatchChoice, movingDirection, 0)
             elif frame % 3 == 1:
-                gendecisionint(subjects, movingChoice, 1)
+                gendecisionint(subjects, dotpatchChoice, movingDirection, 1)
             elif frame % 3 == 2:
-                gendecisionint(subjects, movingChoice, 2)
+                gendecisionint(subjects, dotpatchChoice, movingDirection, 2)
             else:
                 print('error in secondstoframes gendecisionint')
             window.flip()
