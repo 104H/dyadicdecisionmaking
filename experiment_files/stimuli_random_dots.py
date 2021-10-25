@@ -39,7 +39,7 @@ def createDots (window, xoffset, dir, dotlife, speed):
         signalDots='same',  # are signal dots 'same' on each frame? (see Scase et al)
         noiseDots='direction', # do the noise dots follow random- 'walk', 'direction', or 'position'
         speed=speed,
-        coherence=0.9
+        coherence=0.5 # coherence of practice trials
     )
     
     

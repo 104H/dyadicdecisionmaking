@@ -425,10 +425,10 @@ exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideTex
 ##################################
 
 nPracticeTrials = 40
+'''
 practiceCoherence = 0.5
-
-sone.dotpatch.coherence = practiceCoherence
-stwo.dotpatch.coherence = practiceCoherence
+coherence of dotpatches is already at 0.5 from initialization 
+'''
 
 # practice trials instructions
 
