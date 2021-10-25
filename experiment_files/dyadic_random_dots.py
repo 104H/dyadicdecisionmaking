@@ -182,8 +182,8 @@ if pair_id <= 13:
     '''
 
     # if only one keyboard is connected (home testing)
-    sone = subject(1, keyboard.Keyboard(),True)
-    stwo = subject(2, keyboard.Keyboard(),True)    
+    sone = subject(1, keyboard.Keyboard(), True)
+    stwo = subject(2, keyboard.Keyboard(), True)
 else:
     ''' AT THE LAB:
     keybs = getKeyboards()
@@ -192,8 +192,8 @@ else:
     '''
 
     # if only one keyboard is connected (home testing)
-    sone = subject(1, keyboard.Keyboard(),False)
-    stwo = subject(2, keyboard.Keyboard(),False)
+    sone = subject(1, keyboard.Keyboard(), False)
+    stwo = subject(2, keyboard.Keyboard(), False)
    
 subjects = [sone, stwo]
 
@@ -314,7 +314,7 @@ def gendecisionint (subjects, choice, frame):
 def genfeedbackint (color, choice, rt_msg="NA"):
     '''
         1. Display static dot screen
-        2. Correctness of response indicated by fixation dot color: correct/green,incorrect/light-red
+        2. Response indicated by fixation dot color: left/ blue or right/ yellow (assignment depends on pair_id)
         3. The "do" subject sees response time message
     '''
     drawFixation(color)
@@ -325,8 +325,6 @@ def genfeedbackint (color, choice, rt_msg="NA"):
             stwo.indicatordict[rt_msg].draw()
         else:
             sone.indicatordict[rt_msg].draw()
-    
-
 
 def fetchbuttonpress (subjects):
     '''
@@ -425,18 +423,96 @@ exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideTex
 ##################################
 ##### PRACTICE TRIALS  START #####
 ##################################
-'''
-    TBD
-    1. one block of 40 practice trials with 50% dot coherence
-    2. compute accuracy: 
-        if <70%
-            if nDonePracticeBlocks >= 3
-                stop experiment 
-            else
-                another block of 40 trials
-        if >= 70%
-            ask if they wanna do another block, if not: continue
-'''
+
+nPracticeTrials = 40
+practiceCoherence = 0.5
+
+sone.dotpatch.coherence = practiceCoherence
+stwo.dotpatch.coherence = practiceCoherence
+
+# practice trials instructions
+
+
+iterstates = iter(genactingstates())
+
+for trialNumber in range(0, nPracticeTrials):
+
+    # subject state update
+    updatestate()
+    flag = "NA"
+
+    # whose turn it is defines which beep is played
+    beep = sone.beep if sone.state == 1 else stwo.beep
+
+    # pretrial interval: display light blue fixation cross & stationary dots for 4.3 - 5.8s (uniformly distributed)
+    if trialNumber == 0:
+        for frame in secondstoframes(np.random.uniform(4.3, 5.8)):
+            genpretrialint(0)
+            window.flip()
+    else:
+        for frame in secondstoframes(np.random.uniform(4.3, 5.8)):
+            genpretrialint(stationaryChoice)
+            window.flip()
+
+    sone.kb.clearEvents(eventType='keyboard')
+    stwo.kb.clearEvents(eventType='keyboard')
+
+    sone.kb.clock.reset()
+    stwo.kb.clock.reset()
+
+    # preparing time for next window flip, to precisely co-ordinate window flip and beep
+    nextflip = window.getFutureFlipTime(clock='ptb')
+    beep.play(when=nextflip)
+
+    # make random choice for stationary dot patches that should be used
+    movingChoice = np.random.randint(0, N)
+
+    # decision interval: light blue cross & moving dots
+    response = []  # we have no response yet
+    for frame in secondstoframes(3):
+        # for frame in secondstoframes(1.5):
+        if frame % 3 == 0:
+            gendecisionint(subjects, movingChoice, 0)
+        elif frame % 3 == 1:
+            gendecisionint(subjects, movingChoice, 1)
+        elif frame % 3 == 2:
+                (subjects, movingChoice, 2)
+        else:
+            print('error in secondstoframes gendecisionint')
+        window.flip()
+
+        # fetch button press
+        if not response:
+            response = fetchbuttonpress(subjects)
+        else:
+            break
+
+    # need to explicity call stop() to go back to the beginning of the track
+    beep.stop()
+
+    # feedback interval (0.7s): color of fixation cross depends on response
+    if not response:
+        color = "blue"
+    elif response[0] == "left":  # left
+        color = "red"
+    elif response[0] == "right":  # right
+        color = "green"
+
+    # if response[1] > 1500:
+    #    flag = "slow"
+    # elif response[1] < 100:
+    #    flag = "fast"
+
+    # make random choice for stationary dot patch that should be used
+    stationaryChoice = np.random.randint(0, N)
+
+    # feedback interval: display the fixation cross color based on the correctness of response & stationary dots for 0.7s
+    for frame in secondstoframes(0.7):
+        genfeedbackint(color, stationaryChoice, flag)
+        window.flip()
+
+
+
 ################################
 ##### PRACTICE TRIALS  END #####
 ################################
