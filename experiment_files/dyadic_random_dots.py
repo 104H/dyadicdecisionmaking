@@ -421,20 +421,19 @@ def getexperimenterack ():
         core.quit()
     '''
 
-def genactingstates ():
+def genactingstates (trials):
     '''
         Randomly generate list including the subject states (act/ observe)
     '''
-    return np.random.choice(a=[True, False], size=ntrials)
+    return np.random.choice(a=[True, False], size=trials)
 
 
-def genmovingstates ():
+def genmovingstates (trials):
     '''
         Generates list that contains the movement direction of the moving
         dot patch (left/ right)
     '''
-    trials = ntrials//2
-    movingstates = ['left'] * trials + ['right'] * trials
+    movingstates = ['left'] * (trials//2) + ['right'] * (trials//2)
     return rn.sample(movingstates, len(movingstates))
 
 
@@ -458,8 +457,8 @@ coherence of dotpatches is already at 0.5 from initialization
 
 # practice trials instructions
 
-iterstates = iter(genactingstates())
-movingstates = iter(genmovingstates())
+iterstates = iter(genactingstates(nPracticeTrials))
+movingstates = iter(genmovingstates(nPracticeTrials))
 
 for trialNumber in range(0, nPracticeTrials):
 
@@ -576,8 +575,8 @@ getacknowledgements()
 for blockNumber in blocks:
 
     # make an iterator object
-    iterstates = iter(genactingstates())
-    movingstates = iter(genmovingstates())
+    iterstates = iter(genactingstates(ntrials))
+    movingstates = iter(genmovingstates(ntrials))
 
     # traverse through trials
     for trialNumber in range(0, ntrials):
