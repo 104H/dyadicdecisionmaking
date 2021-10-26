@@ -71,14 +71,14 @@ N = stimuli.N
 myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=stimuli.distance)
 myMon.setSizePix([M_WIDTH, M_HEIGHT])
 
-'''
+
 window = visual.Window(size=(M_WIDTH, M_HEIGHT), monitor=myMon,
-                       color="black", pos=(0,0), units='pix', blendMode='add',
-                       fullscr=False, useFBO=True, allowGUI=False)
-'''
-window = visual.Window(size=(1000, 800), monitor=myMon,
-                       color="black", pos=(0,0), units='pix', blendMode='add',
-                       fullscr=False, useFBO=True, allowGUI=False)
+                       color="black", pos=(0,0), units='pix', blendMode='avg',
+                       fullscr=False, allowGUI=False)
+
+# window = visual.Window(size=(1000, 800), monitor=myMon,
+#                        color="black", pos=(0,0), units='pix', blendMode='avg',
+#                        fullscr=False, allowGUI=False)
 
 window.mouseVisible = False # hide cursor
 ofs = window.size[0] / 4
@@ -421,20 +421,19 @@ def getexperimenterack ():
         core.quit()
     '''
 
-def genactingstates ():
+def genactingstates (trials):
     '''
         Randomly generate list including the subject states (act/ observe)
     '''
-    return np.random.choice(a=[True, False], size=ntrials)
+    return np.random.choice(a=[True, False], size=trials)
 
 
-def genmovingstates ():
+def genmovingstates (trials):
     '''
         Generates list that contains the movement direction of the moving
         dot patch (left/ right)
     '''
-    trials = ntrials//2
-    movingstates = ['left'] * trials + ['right'] * trials
+    movingstates = ['left'] * (trials//2) + ['right'] * (trials//2)
     return rn.sample(movingstates, len(movingstates))
 
 
@@ -450,7 +449,7 @@ exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideTex
 ##### PRACTICE TRIALS  START #####
 ##################################
 
-nPracticeTrials = 40
+nPracticeTrials = 4
 '''
 practiceCoherence = 0.5
 coherence of dotpatches is already at 0.5 from initialization
@@ -458,8 +457,8 @@ coherence of dotpatches is already at 0.5 from initialization
 
 # practice trials instructions
 
-iterstates = iter(genactingstates())
-movingstates = iter(genmovingstates())
+iterstates = iter(genactingstates(nPracticeTrials))
+movingstates = iter(genmovingstates(nPracticeTrials))
 
 for trialNumber in range(0, nPracticeTrials):
 
@@ -576,8 +575,8 @@ getacknowledgements()
 for blockNumber in blocks:
 
     # make an iterator object
-    iterstates = iter(genactingstates())
-    movingstates = iter(genmovingstates())
+    iterstates = iter(genactingstates(ntrials))
+    movingstates = iter(genmovingstates(ntrials))
 
     # traverse through trials
     for trialNumber in range(0, ntrials):
@@ -599,7 +598,7 @@ for blockNumber in blocks:
         exphandler.addData('s1_state', sone.state)
         exphandler.addData('direction', movingDirection)
 
-        # pretrial interval: display light blue fixation cross & stationary dots for 4.3 - 5.8s (uniformly distributed)
+        # pretrial interval: display green fixation cross & stationary dots for 4.3 - 5.8s (uniformly distributed)
         if trialNumber == 0:
             for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
                 genpretrialint(0)
@@ -643,11 +642,11 @@ for blockNumber in blocks:
 
         # feedback interval (0.7s): color of fixation cross depends on response
         if not response:
-            color = "blue"
-        elif response[0] == "left": # left
-            color = "red"
-        elif response[0] == "right": # right
             color = "green"
+        elif response[0] == "left":  # left
+            color = "yellow"
+        elif response[0] == "right":  # right
+            color = "blue"
 
         #if response[1] > 1500:
         #    flag = "slow"
