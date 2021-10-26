@@ -141,6 +141,9 @@ class subject:
         # red fixation dot for feedback period (red = left)
         self.yellowcross = self.stimulus.fixation_yellow
 
+        # passing the response speed feedback to the stim object
+        self.indicatordict = self.stimulus.indicatordict
+
     def __repr__ (self):
         return str(self.id)
 
@@ -201,7 +204,7 @@ expkb = keyboard.Keyboard()
 expinfo = {'pair': pair_id}
 
 blocks = range(2)
-ntrials = 4 # trials per block
+ntrials = 2 # trials per block
 
 
 #### FUNCTIONS TO CREATE DIFFERENT TEXT SCREENS #####
@@ -450,6 +453,7 @@ exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideTex
 ##################################
 
 nPracticeTrials = 4
+nCorrect = 0
 '''
 practiceCoherence = 0.5
 coherence of dotpatches is already at 0.5 from initialization
@@ -517,6 +521,7 @@ for trialNumber in range(0, nPracticeTrials):
     beep.stop()
 
     # feedback interval (0.7s): color of fixation cross depends on response
+
     if not response:
         color = "green"
     elif response[0] == "left":  # left
@@ -524,10 +529,13 @@ for trialNumber in range(0, nPracticeTrials):
     elif response[0] == "right":  # right
         color = "blue"
 
-    # if response[1] > 1500:
-    #    flag = "slow"
-    # elif response[1] < 100:
-    #    flag = "fast"
+    if response[0] == movingDirection:  # correct response
+        nCorrect += 1
+
+    if response[1] > 1.5:
+        flag = "slow"
+    elif response[1] < 0.1:
+        flag = "fast"
 
     # make random choice for stationary dot patch that should be used
     stationaryChoice = np.random.randint(0, N)
@@ -536,6 +544,9 @@ for trialNumber in range(0, nPracticeTrials):
     for frame in secondstoframes(0.7):
         genfeedbackint(color, stationaryChoice, flag)
         window.flip()
+
+# Print correctness on the terminal for Practice Trials
+print("{0:*>31s} {1:<5.2%}".format('Practice Trials Correct: ',nCorrect/nPracticeTrials))
 
 
 
@@ -641,17 +652,20 @@ for blockNumber in blocks:
         beep.stop()
 
         # feedback interval (0.7s): color of fixation cross depends on response
+
         if not response:
             color = "green"
         elif response[0] == "left":  # left
             color = "yellow"
         elif response[0] == "right":  # right
             color = "blue"
-
-        #if response[1] > 1500:
-        #    flag = "slow"
-        #elif response[1] < 100:
-        #    flag = "fast"
+        
+        """
+        if response[1] > 1.5:
+            flag = "slow"
+        elif response[1] < 0.1:
+            flag = "fast"
+        """
 
         # make random choice for stationary dot patch that should be used
         stationaryChoice = np.random.randint(0, N)
