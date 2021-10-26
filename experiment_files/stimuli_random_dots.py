@@ -41,8 +41,8 @@ def createDots (window, xoffset, dir, dotlife, speed):
         speed=speed,
         coherence=0.5 # coherence of practice trials
     )
-    
-    
+
+
 def createStationaryDots (N, window, xoffset):
     '''
         creates N different patches of randomly distributed stationary dots
@@ -53,7 +53,7 @@ def createStationaryDots (N, window, xoffset):
         dotsList.append(createDots(window, xoffset, 0, -1, 0))
 
     return dotsList
-    
+
 
 def createMovingDots (N, window, xoffset, dir):
     '''
@@ -70,21 +70,21 @@ def createMovingDots (N, window, xoffset, dir):
         dotsList.append(dots)
 
     return dotsList
-    
+
 
 class stim:
     def __init__(self, window, xoffset):
         #size of the fixation cross
         self.fixationSize = degrees_to_pix(0.36)
-        
+
         # list of differently distributed startionary dots
         self.stationaryDotsList = createStationaryDots(N, window, xoffset)
-        
+
         # lists of differently distributed moving dots (first for direction=0,
         # second for direction=180)
         self.movingRightDotsList = createMovingDots(N, window, xoffset, 0)
         self.movingLeftDotsList = createMovingDots(N, window, xoffset, 180)
-        
+
         # TODO: this is still used for titration, the titration needs to be adapted
         self.dotPatch =  visual.DotStim(
             window,
@@ -102,24 +102,58 @@ class stim:
             coherence=0.9
         )
 
-        # light blue fixation cross for pretrial & decision interval
-        self.bluecross = visual.GratingStim(
-            win=window, size=self.fixationSize, units='pix', pos=[0 + xoffset, 0],
-            sf=0, color='blue', mask='cross'
-        )
+# fixation composite targets
+        self.fixation_green =[
+            visual.GratingStim(
+                win=window, size=21, units='pix', pos=[0 + xoffset, 0],
+                sf=0, color="darkgreen", mask='circle'
+            ),
 
-        # red fixation cross for feedback interval
-        self.redcross = visual.GratingStim(
-            win=window, size=self.fixationSize, units='pix', pos=[0 + xoffset, 0],
-            sf=0, color='red', mask='cross'
-        )
+            visual.GratingStim(
+                win=window, size=25, units="pix",  pos=[0 + xoffset, 0],
+                sf=0, color="black", mask="cross"
+            ),
 
-        # green fixation cross for feedback interval
-        self.greencross = visual.GratingStim(
-            win=window, size=self.fixationSize, units='pix', pos=[0 + xoffset, 0],
-            sf=0, color='green', mask='cross'
-        )
-        
+            visual.GratingStim(
+                win=window, size=7, units='pix', pos=[0 + xoffset, 0],
+                sf=0, color="darkgreen", mask='circle'
+            )
+        ]
+
+        self.fixation_blue =[
+            visual.GratingStim(
+                win=window, size=21, units='pix', pos=[0 + xoffset, 0],
+                sf=0, color="darkblue", mask='circle'
+            ),
+
+            visual.GratingStim(
+                win=window, size=25, units="pix",  pos=[0 + xoffset, 0],
+                sf=0, color="black", mask="cross"
+            ),
+
+            visual.GratingStim(
+                win=window, size=7, units='pix', pos=[0 + xoffset, 0],
+                sf=0, color="darkblue", mask='circle'
+            )
+        ]
+
+        self.fixation_yellow =[
+            visual.GratingStim(
+                win=window, size=21, units='pix', pos=[0 + xoffset, 0],
+                sf=0, color="yellow", mask='circle'
+            ),
+
+            visual.GratingStim(
+                win=window, size=25, units="pix",  pos=[0 + xoffset, 0],
+                sf=0, color="black", mask="cross"
+            ),
+
+            visual.GratingStim(
+                win=window, size=7, units='pix', pos=[0 + xoffset, 0],
+                sf=0, color="yellow", mask='circle'
+            )
+        ]
+
         """
         For response time related warning to be shown on top of fixation cross
         a. if response time < 100 ms: Too Fast

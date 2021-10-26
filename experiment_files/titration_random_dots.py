@@ -15,11 +15,8 @@ import stimuli_random_dots as stimuli
 prefs.hardware['audioLib'] = ['PTB']
 sound.setDevice('USB Audio Device: - (hw:3,0)') #(not working on my computer for some reason, works in the lab though)
 
-# TODO: beep should depend on chamber number
-beep = Sound('A', secs=0.5, volume=0.1)
-
 # set the number of trials (for testing)!
-numberOfTrials = 100 # should be 100
+numberOfTrials = 10 # should be 100
 
 # Directory Specs
 HOME = os.getcwd()
@@ -33,6 +30,8 @@ titration_over = False
 
 # monitoring how often the titration has been done
 titration_counter = 0
+
+threshold = .9
 
 # monitor specs global variables
 M_WIDTH = stimuli.M_WIDTH
@@ -51,19 +50,12 @@ def secondstoframes (seconds):
     REFRESH_RATE = 60
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
 
+
 # TODO: change to the better fixation bullseye, maybe change colors to something less associated with go/no-go (traffic lights)
-def drawFixation(bluecross, redcross, greencross, color):
-    '''
-        draw the fixation crosses
-    '''
-    if color == "blue":
-        bluecross.draw()
+def draw_fixation(fixation):
 
-    elif color == "red":
-        redcross.draw()
-
-    elif color == "green":
-        greencross.draw()
+    for grating in fixation:
+        grating.draw()
 
 def drawDots(dotpatch):
     '''
@@ -71,23 +63,23 @@ def drawDots(dotpatch):
     '''
     dotpatch.draw()
 
-def pretrial_interval(bluecross, redcross, greencross, dotpatch):
+def pretrial_interval(fixation, dotpatch):
     # TO BE DONE
-    drawFixation(bluecross, redcross, greencross, "blue")
+    draw_fixation(fixation)
     drawDots(dotpatch)
 
 def decision_interval(dotpatch):
     # TO BE DONE
-    drawFixation(bluecross, redcross, greencross, "blue")
+    draw_fixation(greencross)
     drawDots(dotpatch)
 
-def feedback_interval(bluecross, redcross, greencross, dotpatch, indicatordict, color, rt_msg="NA"):
+def feedback_interval(fixation, dotpatch, indicatordict, rt_msg="NA"):
     '''
         1. Display static dot screen
         2. Correctness of response indicated by fixation dot color: correct/green,incorrect/light-red
         3. The "do" subject sees response time message
     '''
-    drawFixation(bluecross, redcross, greencross, color)
+    draw_fixation(fixation)
     drawDots(dotpatch)
 
     # TODO: there is no indicatordict and no time measurement during titration
@@ -140,6 +132,11 @@ while titration_over == False:
         if chamber not in ["1", "2"]:
             print("Wrong. Enter chamber number (1 or 2):")
             continue
+    # beep depends on the chamber number
+    if chamber == "1":
+        beep = Sound('A', secs=0.5, volume=0.1)
+    else:
+        beep = Sound('E', secs=0.5, volume=0.1)
 
     titration_counter += 1
     subjectData['titration_counter'] = titration_counter
@@ -158,9 +155,9 @@ while titration_over == False:
     dotPatch = stimulus.dotPatch
     dotPatch.coherence = threshold
 
-    bluecross = stimulus.bluecross
-    redcross = stimulus.redcross
-    greencross = stimulus.greencross
+    bluecross = stimulus.fixation_blue
+    greencross = stimulus.fixation_green
+    yellowcross = stimulus.fixation_yellow
 
     indicatordict = stimulus.indicatordict
 
@@ -203,7 +200,7 @@ while titration_over == False:
     #instruction_titration() # display instructions
     #window.flip()
     #key = event.waitKeys(keyList=keys[:1])
-
+    staircase_medians = []
 
     for coherence in staircase:
 
@@ -215,12 +212,13 @@ while titration_over == False:
         # pretrial interval
         for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
             # window.flip() #(for feedback)
-            pretrial_interval(bluecross, redcross, greencross, dotPatch)
+            pretrial_interval(greencross, dotPatch)
             window.flip()
 
         # play beep because next is decision interval (beep should depend on chamber number)
 
-        nextflip = window.getFutureFlipTime(clock='ptb') # (for more precise timing)
+        event.clearEvents()
+        nextflip = window.getFutureFlipTime(clock='ptb')
         beep.play(when=nextflip)
 
         # decision interval: light blue cross & moving dots
@@ -255,6 +253,7 @@ while titration_over == False:
                 else:
                     correct = 0
                 staircase.addResponse(correct)
+                staircase_medians.append(staircase.quantile(0.5))
 
                 #event.clearEvents()
 
@@ -265,25 +264,23 @@ while titration_over == False:
 
         # start feedback interval
         if response == 0: # left
-            drawFixation(bluecross, redcross, greencross, "red")
+            draw_fixation(yellowcross)
             drawDots(dotPatch)
             window.flip()
             core.wait(0.75)
         elif response == 1: #right
-            drawFixation(bluecross, redcross, greencross, "green")
+            draw_fixation(bluecross)
             drawDots(dotPatch)
             window.flip()
             core.wait(0.75)
 
-
     staircase.saveAsExcel(fileName='titration_data'+str(pair_id)+'_'+str(chamber))
-    subjectData['threshold'] = np.average(staircase.reversalIntensities[-6:]) # TODO: needs to be changed to match the quest method
-    subjectData['threshold_list'] = staircase.intensities # all coherence values the participant saw during titration
+    subjectData['threshold'] = subjectData["threshold"] = staircase.mean()
+    subjectData['threshold_list'] = staircase_medians # all coherence values the participant saw during titration
 
-
-    print('reversals:')
-    print(staircase.reversalIntensities)
-    print("The subject's threshold is: = %.5f" % np.average(staircase.reversalIntensities[-6:])) # TODO: needs to be changed to match the quest method
+    # print('reversals:')
+    # print(staircase.reversalIntensities)
+    # print("The subject's threshold is: = %.5f" % np.average(staircase.reversalIntensities[-6:])) # TODO: needs to be changed to match the quest method
 
     endscreen()
     window.flip()

@@ -1,5 +1,3 @@
-# 11 April 2021
-
 '''
     Naming Convention:
         The subjects are either refered to as 'sone' or 'stwo'
@@ -16,11 +14,11 @@ import stimuli_random_dots as stimuli
 import random as rn
 import json
 
-''' REMOVED bc doesn't work ON WINDOWS
-import ctypes
-xlib = ctypes.cdll.LoadLibrary("libX11.so")
-xlib.XInitThreads()
-'''
+# # ''' REMOVED bc doesn't work ON WINDOWS
+# import ctypes
+# xlib = ctypes.cdll.LoadLibrary("libX11.so")
+# xlib.XInitThreads()
+# # '''
 
 
 '''
@@ -28,7 +26,7 @@ xlib.XInitThreads()
     1. adjust fixation: correct size + correct colors
     2. different sounds for both participants
     3. make green/red -- right/left dependent on pair id
-    4. display red text "too fast" if resp time <0.1s, or "too slow" if > 1.5s  
+    4. display red text "too fast" if resp time <0.1s, or "too slow" if > 1.5s
     5. dotpatch: adjust size, speed, circle diameter, density (/pass correct parameters to dotstim method)
     6. make dots move as they're supposed to (see paper); right now they always move in the same direction
     7. feedback interval: replace dots with an isoluminant mask of stationary dots that were randomly distributed within the aperture of the 5° circle
@@ -113,7 +111,7 @@ class subject:
         self.beep = Sound(soundclass, secs=0.5, volume=0.1)
 
         self.stimulus = stimuli.stim(window=window, xoffset=self.xoffset)
-        
+
         if buttonReverse:
             self.buttons = {
                     keys[1] : "left",
@@ -129,25 +127,25 @@ class subject:
 
         # stationary dot patches for pretrial and feedback phase
         self.stationarydotslist = self.stimulus.stationaryDotsList
-        
+
         # moving dot patches for decision phase
         self.movingrightdotslist = self.stimulus.movingRightDotsList
         self.movingleftdotslist = self.stimulus.movingLeftDotsList
 
         # light blue fixation cross for decision phase
-        self.bluecross = self.stimulus.bluecross
+        self.bluecross = self.stimulus.fixation_blue
 
         # green fixation dot for feedback period (green = right)
-        self.greencross = self.stimulus.greencross
+        self.greencross = self.stimulus.fixation_green
 
         # red fixation dot for feedback period (red = left)
-        self.redcross = self.stimulus.redcross
+        self.yellowcross = self.stimulus.fixation_yellow
 
     def __repr__ (self):
         return str(self.id)
-        
-        
-        
+
+
+
 def getKeyboards():
     '''
         Search for the appropriate button box in each of the chambers
@@ -195,7 +193,7 @@ else:
     # if only one keyboard is connected (home testing)
     sone = subject(1, keyboard.Keyboard(), False)
     stwo = subject(2, keyboard.Keyboard(), False)
-   
+
 subjects = [sone, stwo]
 
 expkb = keyboard.Keyboard()
@@ -273,7 +271,7 @@ def drawStationaryDots(choice):
     '''
     for s in subjects:
         s.stationarydotslist[choice].draw()
-    
+
 
 def drawMovingDots(subjects, choice, direction, frame):
     '''
@@ -300,28 +298,33 @@ def drawMovingDots(subjects, choice, direction, frame):
                 s.movingleftdotslist[choice][2].draw()
             else:
                 print('error in drawMovingDots function')
-    
+
 
 def drawFixation(color):
     '''
         draw the fixation crosses for both subjects
     '''
-    if color == "blue":
-        sone.bluecross.draw()
-        stwo.bluecross.draw()
-    elif color == "red":
-        sone.redcross.draw()
-        stwo.redcross.draw()
-    elif color == "green":
-        sone.greencross.draw()
-        sone.greencross.draw()
+    if color == "green":
+        for grating_one, grating_two in zip(sone.greencross, stwo.greencross):
+            grating_one.draw()
+            grating_two.draw()
+
+    elif color == "yellow":
+        for grating_one, grating_two in zip(sone.yellowcross, stwo.yellowcross):
+            grating_one.draw()
+            grating_two.draw()
+
+    elif color == "blue":
+        for grating_one, grating_two in zip(sone.bluecross, stwo.bluecross):
+            grating_one.draw()
+            grating_two.draw()
 
 def genpretrialint (choice):
-    drawFixation("blue")
+    drawFixation("green")
     drawStationaryDots(choice)
 
 def gendecisionint (subjects, choice, direction, frame):
-    drawFixation("blue")
+    drawFixation("green")
     drawMovingDots(subjects, choice, direction, frame)
 
 def genfeedbackint (color, choice, rt_msg="NA"):
@@ -332,7 +335,7 @@ def genfeedbackint (color, choice, rt_msg="NA"):
     '''
     drawFixation(color)
     drawStationaryDots(choice)
-    
+
     if rt_msg != "NA":
         if stwo.state:
             stwo.indicatordict[rt_msg].draw()
@@ -385,17 +388,17 @@ def getacknowledgements ():
 
     '''
     sone_ack, stwo_ack = None, None
-    
+
     while (sone_ack != 'yes') or (stwo_ack != 'yes'):
         resp1 = sone.kb.getKeys(clear=False)
         resp2 = stwo.kb.getKeys(clear=False)
 
         if resp1:
             for r in resp1:
-                if sone_ack != 'yes': sone_ack = sone.buttons[ r.name ] 
+                if sone_ack != 'yes': sone_ack = sone.buttons[ r.name ]
         if resp2:
             for r in resp2:
-                if stwo_ack != 'yes': stwo_ack = stwo.buttons[ r.name ] 
+                if stwo_ack != 'yes': stwo_ack = stwo.buttons[ r.name ]
     sone.kb.clearEvents(eventType="keyboard")
     stwo.kb.clearEvents(eventType="keyboard")
     '''
@@ -423,8 +426,8 @@ def genactingstates ():
         Randomly generate list including the subject states (act/ observe)
     '''
     return np.random.choice(a=[True, False], size=ntrials)
-   
-   
+
+
 def genmovingstates ():
     '''
         Generates list that contains the movement direction of the moving
@@ -450,7 +453,7 @@ exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideTex
 nPracticeTrials = 40
 '''
 practiceCoherence = 0.5
-coherence of dotpatches is already at 0.5 from initialization 
+coherence of dotpatches is already at 0.5 from initialization
 '''
 
 # practice trials instructions
@@ -516,11 +519,11 @@ for trialNumber in range(0, nPracticeTrials):
 
     # feedback interval (0.7s): color of fixation cross depends on response
     if not response:
-        color = "blue"
-    elif response[0] == "left":  # left
-        color = "red"
-    elif response[0] == "right":  # right
         color = "green"
+    elif response[0] == "left":  # left
+        color = "yellow"
+    elif response[0] == "right":  # right
+        color = "blue"
 
     # if response[1] > 1500:
     #    flag = "slow"
@@ -549,8 +552,8 @@ for trialNumber in range(0, nPracticeTrials):
     TBD
     1. One block of 200 trials of randomly interleaved dot coherences (0, 10, 20, 40 or 80% coherence, 40 trials each)
     2. calculate individual 85% accuracy threshold using the proportional-rate diffusion model
-        - IF performance on this block is too poor for estimation of a reliable psychometric function 
-                (in paper: mean estimated dot coherence for 85% accuracy: 85.36 +- 17.5%) 
+        - IF performance on this block is too poor for estimation of a reliable psychometric function
+                (in paper: mean estimated dot coherence for 85% accuracy: 85.36 +- 17.5%)
                 → stop testing and exclude subjects from analysis
 
 '''
@@ -585,7 +588,7 @@ for blockNumber in blocks:
 
         # whose turn it is defines which beep is played
         beep = sone.beep if sone.state == 1 else stwo.beep
-        
+
         # make random choice for moving dot patches that should be used and determine the direction
         dotpatchChoice = np.random.randint(0, N)
         movingDirection = next(movingstates)
@@ -645,12 +648,12 @@ for blockNumber in blocks:
             color = "red"
         elif response[0] == "right": # right
             color = "green"
-            
+
         #if response[1] > 1500:
         #    flag = "slow"
         #elif response[1] < 100:
         #    flag = "fast"
-         
+
         # make random choice for stationary dot patch that should be used
         stationaryChoice = np.random.randint(0, N)
 
