@@ -73,7 +73,7 @@ myMon.setSizePix([M_WIDTH, M_HEIGHT])
 
 
 window = visual.Window(size=(M_WIDTH, M_HEIGHT), monitor=myMon,
-                       color="black", pos=(0,0), units='pix', blendMode='avg',
+                       color="black", pos=(0,0), units='pix', blendMode='avg', # have to use 'avg' to avoid artefacts
                        fullscr=False, allowGUI=False)
 
 # window = visual.Window(size=(1000, 800), monitor=myMon,
