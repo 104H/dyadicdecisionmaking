@@ -106,11 +106,14 @@ class subject:
         self.state = False
         self.xoffset = ofs if sid == 1 else -ofs
         self.response = None
+        
+        # TODO: needs to be adapted
+        self.coherence = 0.9
 
         soundclass = 'A' if sid == 1 else 'E'
         self.beep = Sound(soundclass, secs=0.5, volume=0.1)
 
-        self.stimulus = stimuli.stim(window=window, xoffset=self.xoffset)
+        self.stimulus = stimuli.stim(window=window, xoffset=self.xoffset, coherence=self.coherence)
 
         if buttonReverse:
             self.buttons = {
@@ -127,8 +130,12 @@ class subject:
 
         # stationary dot patches for pretrial and feedback phase
         self.stationarydotslist = self.stimulus.stationaryDotsList
+        
+        # moving dot patches for decision phase in practice trials
+        self.movingrightdotslistpractice = self.stimulus.movingRightDotsListPractice
+        self.movingleftdotslistpractice = self.stimulus.movingLeftDotsListPractice
 
-        # moving dot patches for decision phase
+        # moving dot patches for decision phase in main experiment
         self.movingrightdotslist = self.stimulus.movingRightDotsList
         self.movingleftdotslist = self.stimulus.movingLeftDotsList
 
@@ -274,12 +281,41 @@ def drawStationaryDots(choice):
     '''
     for s in subjects:
         s.stationarydotslist[choice].draw()
+        
+
+def drawMovingDotsPractice(subjects, choice, direction, frame):
+    '''
+        draw the moving dot patch for both subjects for the practice
+        trials, but interleave three different dot patches
+        (probably not an optimal solution yet, but a fast one)
+    '''
+    if direction == 'right':
+        for s in subjects:
+            if frame == 0:
+                s.movingrightdotslistpractice[choice][0].draw()
+            elif frame == 1:
+                s.movingrightdotslistpractice[choice][1].draw()
+            elif frame == 2:
+                s.movingrightdotslistpractice[choice][2].draw()
+            else:
+                print('error in drawMovingDots function')
+    else:
+        for s in subjects:
+            if frame == 0:
+                s.movingleftdotslistpractice[choice][0].draw()
+            elif frame == 1:
+                s.movingleftdotslistpractice[choice][1].draw()
+            elif frame == 2:
+                s.movingleftdotslistpractice[choice][2].draw()
+            else:
+                print('error in drawMovingDots function')
 
 
 def drawMovingDots(subjects, choice, direction, frame):
     '''
-        draw the moving dot patch for both subjects, but interleave three
-        different dot patches
+        draw the moving dot patch for both subjects for the
+        main experiment, but interleave three different
+        dot patches
     '''
     if direction == 'right':
         for s in subjects:
@@ -326,10 +362,14 @@ def genpretrialint (choice):
     drawFixation("green")
     drawStationaryDots(choice)
 
-def gendecisionint (subjects, choice, direction, frame):
-    drawFixation("green")
-    drawMovingDots(subjects, choice, direction, frame)
-
+def gendecisionint (subjects, choice, direction, frame, section):
+    if section == 'main':
+        drawFixation("green")
+        drawMovingDots(subjects, choice, direction, frame)
+    else:
+        drawFixation("green")
+        drawMovingDotsPractice(subjects, choice, direction, frame)
+    
 def genfeedbackint (color, choice, rt_msg="NA"):
     '''
         1. Display static dot screen
@@ -502,11 +542,11 @@ for trialNumber in range(0, nPracticeTrials):
     for frame in secondstoframes(3):
         # for frame in secondstoframes(1.5):
         if frame % 3 == 0:
-            gendecisionint(subjects, dotpatchChoice, movingDirection, 0)
+            gendecisionint(subjects, dotpatchChoice, movingDirection, 0, 'practice')
         elif frame % 3 == 1:
-            gendecisionint(subjects, dotpatchChoice, movingDirection, 1)
+            gendecisionint(subjects, dotpatchChoice, movingDirection, 1, 'practice')
         elif frame % 3 == 2:
-            gendecisionint(subjects, dotpatchChoice, movingDirection, 2)
+            gendecisionint(subjects, dotpatchChoice, movingDirection, 2, 'practice')
         else:
             print('error in secondstoframes gendecisionint')
         window.flip()
@@ -634,11 +674,11 @@ for blockNumber in blocks:
         response = []  # we have no response yet
         for frame in secondstoframes(1.5):
             if frame % 3 == 0:
-                gendecisionint(subjects, dotpatchChoice, movingDirection, 0)
+                gendecisionint(subjects, dotpatchChoice, movingDirection, 0, 'main')
             elif frame % 3 == 1:
-                gendecisionint(subjects, dotpatchChoice, movingDirection, 1)
+                gendecisionint(subjects, dotpatchChoice, movingDirection, 1, 'main')
             elif frame % 3 == 2:
-                gendecisionint(subjects, dotpatchChoice, movingDirection, 2)
+                gendecisionint(subjects, dotpatchChoice, movingDirection, 2, 'main')
             else:
                 print('error in secondstoframes gendecisionint')
             window.flip()
