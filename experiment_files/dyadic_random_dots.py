@@ -529,13 +529,14 @@ for trialNumber in range(0, nPracticeTrials):
     elif response[0] == "right":  # right
         color = "blue"
 
-    if response[0] == movingDirection:  # correct response
-        nCorrect += 1
+    if response:
+        if response[0] == movingDirection:  # correct response
+            nCorrect += 1
 
-    if response[1] > 1.5:
-        flag = "slow"
-    elif response[1] < 0.1:
-        flag = "fast"
+        if response[1] > 1.5:
+            flag = "slow"
+        elif response[1] < 0.1:
+            flag = "fast"
 
     # make random choice for stationary dot patch that should be used
     stationaryChoice = np.random.randint(0, N)
