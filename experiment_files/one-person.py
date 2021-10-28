@@ -81,7 +81,7 @@ class subject:
         self.actingheadphonebalance = "30%,0%" if sid == 2 else "0%,30%"
         self.threshold = 0.9
 
-        self.stimulus = stimuli.stim(window=window,xoffset=0)
+        self.stimulus = stimuli.stim(window=window,xoffset=0,coherence=0.9)
 
         # stationary dot patches for pretrial and feedback phase
         self.stationarydotslist = self.stimulus.stationaryDotsList
@@ -344,7 +344,7 @@ for blockNumber in blocks:
 
         response = [[None, 0]]
         # decision interval: cross & moving dots
-        for frame in secondstoframes(1.5):
+        for frame in secondstoframes(15):
             if frame % 3 == 0:
                 gendecisionint(subjects, dotpatchChoice, movingDirection, 0)
             elif frame % 3 == 1:
