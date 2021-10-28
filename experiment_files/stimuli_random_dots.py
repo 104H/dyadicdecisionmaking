@@ -17,6 +17,7 @@ N = 25 # number of prepared dot patches
 
 dotlife = 5
 speed = 2.5
+practiceTrialCoherence = 0.5
 
 
 def degrees_to_pix(degrees):
@@ -25,7 +26,7 @@ def degrees_to_pix(degrees):
     return pix
 
 
-def createDots (window, xoffset, dir, dotlife, speed):
+def createDots (window, xoffset, dir, dotlife, speed, coherence):
     return visual.DotStim(
         window,
         color=(1.0, 1.0, 1.0),
@@ -39,23 +40,23 @@ def createDots (window, xoffset, dir, dotlife, speed):
         signalDots='same',  # are signal dots 'same' on each frame? (see Scase et al)
         noiseDots='direction', # do the noise dots follow random- 'walk', 'direction', or 'position'
         speed=speed,
-        coherence=0.5 # coherence of practice trials
+        coherence=coherence # coherence of practice trials
     )
 
 
-def createStationaryDots (N, window, xoffset):
+def createStationaryDots (N, window, xoffset, coherence):
     '''
         creates N different patches of randomly distributed stationary dots
     '''
     dotsList = []
 
     for _ in range(N):
-        dotsList.append(createDots(window, xoffset, 0, -1, 0))
+        dotsList.append(createDots(window, xoffset, 0, -1, 0, coherence))
 
     return dotsList
 
 
-def createMovingDots (N, window, xoffset, dir):
+def createMovingDots (N, window, xoffset, dir, coherence):
     '''
         creates 3xN different patches of randomly distributed moving dots
         3 patches are then used for the interleaving frames
@@ -65,7 +66,24 @@ def createMovingDots (N, window, xoffset, dir):
 
     for _ in range(N):
         for count in range(3):
-                dots.append(createDots(window, xoffset, dir, dotlife, speed))
+                dots.append(createDots(window, xoffset, dir, dotlife, speed, coherence))
+
+        dotsList.append(dots)
+
+    return dotsList
+    
+
+def createMovingDotsPractice (N, window, xoffset, dir, coherence):
+    '''
+        creates 3xN different patches of randomly distributed moving dots
+        3 patches are then used for the interleaving frames
+    '''
+    dots = []
+    dotsList = []
+
+    for _ in range(N):
+        for count in range(3):
+                dots.append(createDots(window, xoffset, dir, dotlife, speed, coherence))
 
         dotsList.append(dots)
 
@@ -73,17 +91,22 @@ def createMovingDots (N, window, xoffset, dir):
 
 
 class stim:
-    def __init__(self, window, xoffset):
+    def __init__(self, window, xoffset, coherence):
         #size of the fixation cross
         self.fixationSize = degrees_to_pix(0.36)
 
         # list of differently distributed startionary dots
-        self.stationaryDotsList = createStationaryDots(N, window, xoffset)
+        self.stationaryDotsList = createStationaryDots(N, window, xoffset, 0)
+        
+        # lists of differently distributed moving dots (first for direction=0,
+        # second for direction=180) for practice trials
+        self.movingRightDotsListPractice = createMovingDotsPractice(N, window, xoffset, 0, practiceTrialCoherence)
+        self.movingLeftDotsListPractice = createMovingDotsPractice(N, window, xoffset, 180, practiceTrialCoherence)
 
         # lists of differently distributed moving dots (first for direction=0,
-        # second for direction=180)
-        self.movingRightDotsList = createMovingDots(N, window, xoffset, 0)
-        self.movingLeftDotsList = createMovingDots(N, window, xoffset, 180)
+        # second for direction=180) for main experiment
+        self.movingRightDotsList = createMovingDots(N, window, xoffset, 0, coherence)
+        self.movingLeftDotsList = createMovingDots(N, window, xoffset, 180, coherence)
 
         # TODO: this is still used for titration, the titration needs to be adapted
         self.dotPatch =  visual.DotStim(
