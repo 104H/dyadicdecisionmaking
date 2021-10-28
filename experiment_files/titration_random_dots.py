@@ -13,7 +13,7 @@ import stimuli_random_dots as stimuli
 
 # set up sound for beeps
 prefs.hardware['audioLib'] = ['PTB']
-sound.setDevice('USB Audio Device: - (hw:3,0)') #(not working on my computer for some reason, works in the lab though)
+# sound.setDevice('USB Audio Device: - (hw:3,0)') #(not working on my computer for some reason, works in the lab though)
 
 # set the number of trials (for testing)!
 numberOfTrials = 10 # should be 100
@@ -25,7 +25,7 @@ DATA = '/data/'
 # Subject data dictionary
 subjectData = {'pair_id': [], 'titration_counter': [], 'chamber':[], 'threshold': [], 'threshold_list': [] }
 
-# monitoring the while loop with..
+# monitoring the while loop with.
 titration_over = False
 
 # monitoring how often the titration has been done
@@ -50,8 +50,6 @@ def secondstoframes (seconds):
     REFRESH_RATE = 60
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
 
-
-# TODO: change to the better fixation bullseye, maybe change colors to something less associated with go/no-go (traffic lights)
 def draw_fixation(fixation):
 
     for grating in fixation:
@@ -146,12 +144,11 @@ while titration_over == False:
     keys = ["2", "1"] if chamber == "1" else ["7", "8"] # first one is yes
 
     # the screen
-    window = psychopy.visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', screen=int(chamber), fullscr=False, pos=None, blendMode='add', useFBO=True, color =[-1,-1,-1])
+    window = psychopy.visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', screen=int(chamber), fullscr=False, pos=None, color =[-1,-1,-1])
     window.mouseVisible = False # hide cursor
     xoffset = 0
     # the stimulus
-    #stimulus = stimuli.stim(window=window, xoffset=0, threshold=threshold)
-    stimulus = stimuli.stim(window=window, xoffset=xoffset)
+    stimulus = stimuli.stim(window=window, xoffset=xoffset,coherence=0.5)
     dotPatch = stimulus.dotPatch
     dotPatch.coherence = threshold
 
