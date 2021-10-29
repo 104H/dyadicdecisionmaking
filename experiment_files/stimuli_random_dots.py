@@ -88,13 +88,30 @@ def createMovingDotsPractice (N, window, xoffset, dir, coherence):
         dotsList.append(dots)
 
     return dotsList
+    
+
+def createFixation (window, xoffset, color):
+    fixationList = [
+        visual.GratingStim(
+            win=window, size=21, units='pix', pos=[0 + xoffset, 0],
+            sf=0, color=color, mask='circle'
+        ),
+
+        visual.GratingStim(
+            win=window, size=25, units="pix",  pos=[0 + xoffset, 0],
+            sf=0, color="black", mask="cross"
+        ),
+
+        visual.GratingStim(
+            win=window, size=7, units='pix', pos=[0 + xoffset, 0],
+            sf=0, color=color, mask='circle'
+        )
+    ]
+    return fixationList
 
 
-class stim:
+class mainstim:
     def __init__(self, window, xoffset, coherence):
-        #size of the fixation cross
-        self.fixationSize = degrees_to_pix(0.36)
-
         # list of differently distributed startionary dots
         self.stationaryDotsList = createStationaryDots(N, window, xoffset, 0)
         
@@ -108,6 +125,28 @@ class stim:
         self.movingRightDotsList = createMovingDots(N, window, xoffset, 0, coherence)
         self.movingLeftDotsList = createMovingDots(N, window, xoffset, 180, coherence)
 
+        # fixation composite targets
+        self.fixation_green = createFixation(window, xoffset, "darkgreen")
+        self.fixation_blue = createFixation(window, xoffset, "darkblue")
+        self.fixation_yellow = createFixation(window, xoffset, "yellow")
+
+        """
+        For response time related warning to be shown on top of fixation cross
+        a. if response time < 100 ms: Too Fast
+        b. response time > 1500 ms: Too Slow
+        """
+        self.indicatordict = {
+            "slow": visual.TextStim(
+                win=window, text="Too Slow", units='pix', pos=[0 + xoffset, 0], color='red'
+            ),
+            "fast": visual.TextStim(
+                win=window, text="Too Fast", units='pix', pos=[0 + xoffset, 0], color='red'
+            )
+        }
+        
+
+class titrationstim:
+    def __init__(self, window, xoffset, coherence):
         # TODO: this is still used for titration, the titration needs to be adapted
         self.dotPatch =  visual.DotStim(
             window,
@@ -125,68 +164,9 @@ class stim:
             coherence=0.9
         )
 
-# fixation composite targets
-        self.fixation_green =[
-            visual.GratingStim(
-                win=window, size=21, units='pix', pos=[0 + xoffset, 0],
-                sf=0, color="darkgreen", mask='circle'
-            ),
-
-            visual.GratingStim(
-                win=window, size=25, units="pix",  pos=[0 + xoffset, 0],
-                sf=0, color="black", mask="cross"
-            ),
-
-            visual.GratingStim(
-                win=window, size=7, units='pix', pos=[0 + xoffset, 0],
-                sf=0, color="darkgreen", mask='circle'
-            )
-        ]
-
-        self.fixation_blue =[
-            visual.GratingStim(
-                win=window, size=21, units='pix', pos=[0 + xoffset, 0],
-                sf=0, color="darkblue", mask='circle'
-            ),
-
-            visual.GratingStim(
-                win=window, size=25, units="pix",  pos=[0 + xoffset, 0],
-                sf=0, color="black", mask="cross"
-            ),
-
-            visual.GratingStim(
-                win=window, size=7, units='pix', pos=[0 + xoffset, 0],
-                sf=0, color="darkblue", mask='circle'
-            )
-        ]
-
-        self.fixation_yellow =[
-            visual.GratingStim(
-                win=window, size=21, units='pix', pos=[0 + xoffset, 0],
-                sf=0, color="yellow", mask='circle'
-            ),
-
-            visual.GratingStim(
-                win=window, size=25, units="pix",  pos=[0 + xoffset, 0],
-                sf=0, color="black", mask="cross"
-            ),
-
-            visual.GratingStim(
-                win=window, size=7, units='pix', pos=[0 + xoffset, 0],
-                sf=0, color="yellow", mask='circle'
-            )
-        ]
-
-        """
-        For response time related warning to be shown on top of fixation cross
-        a. if response time < 100 ms: Too Fast
-        b. response time > 1500 ms: Too Slow
-        """
-        self.indicatordict = {
-            "slow": visual.TextStim(
-                win=window, text="Too Slow", units='pix', pos=[0 + xoffset, 0], color='red'
-            ),
-            "fast": visual.TextStim(
-                win=window, text="Too Fast", units='pix', pos=[0 + xoffset, 0], color='red'
-            )
+        # fixation composite targets
+        self.fixation_green = createFixation(window, xoffset, "darkgreen")
+        self.fixation_blue = createFixation(window, xoffset, "darkblue")
+        self.fixation_yellow = createFixation(window, xoffset, "yellow")
         }
+

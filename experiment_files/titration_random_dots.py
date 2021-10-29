@@ -148,7 +148,7 @@ while titration_over == False:
     window.mouseVisible = False # hide cursor
     xoffset = 0
     # the stimulus
-    stimulus = stimuli.stim(window=window, xoffset=xoffset,coherence=0.5)
+    stimulus = stimuli.titrationstim(window=window, xoffset=xoffset,coherence=0.5)
     dotPatch = stimulus.dotPatch
     dotPatch.coherence = threshold
 

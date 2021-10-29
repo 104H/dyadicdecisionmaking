@@ -113,7 +113,7 @@ class subject:
         soundclass = 'A' if sid == 1 else 'E'
         self.beep = Sound(soundclass, secs=0.5, volume=0.1)
 
-        self.stimulus = stimuli.stim(window=window, xoffset=self.xoffset, coherence=self.coherence)
+        self.stimulus = stimuli.mainstim(window=window, xoffset=self.xoffset, coherence=self.coherence)
 
         if buttonReverse:
             self.buttons = {
