@@ -168,5 +168,5 @@ class titrationstim:
         self.fixation_green = createFixation(window, xoffset, "darkgreen")
         self.fixation_blue = createFixation(window, xoffset, "darkblue")
         self.fixation_yellow = createFixation(window, xoffset, "yellow")
-        }
+
 

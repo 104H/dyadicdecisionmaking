@@ -81,7 +81,7 @@ class subject:
         self.actingheadphonebalance = "30%,0%" if sid == 2 else "0%,30%"
         self.threshold = 0.9
 
-        self.stimulus = stimuli.stim(window=window,xoffset=0,coherence=0.9)
+        self.stimulus = stimuli.mainstim(window=window,xoffset=0,coherence=0.9)
 
         # stationary dot patches for pretrial and feedback phase
         self.stationarydotslist = self.stimulus.stationaryDotsList
@@ -240,32 +240,12 @@ def drawStationaryDots(choice):
         s.stationarydotslist[choice].draw()
 
 
-
-def drawMovingDots(subjects, choice, direction, frame):
+def drawMovingDots(subjects, stimOne):
     '''
         draw the moving dot patch for both subjects, but interleave three
         different dot patches
     '''
-    if direction == 'right':
-        for s in subjects:
-            if frame == 0:
-                s.movingrightdotslist[choice][0].draw()
-            elif frame == 1:
-                s.movingrightdotslist[choice][1].draw()
-            elif frame == 2:
-                s.movingrightdotslist[choice][2].draw()
-            else:
-                print('error in drawMovingDots function')
-    else:
-        for s in subjects:
-            if frame == 0:
-                s.movingleftdotslist[choice][0].draw()
-            elif frame == 1:
-                s.movingleftdotslist[choice][1].draw()
-            elif frame == 2:
-                s.movingleftdotslist[choice][2].draw()
-            else:
-                print('error in drawMovingDots function')
+    stimOne.draw()
 
 
 def genfeedbackint (color, choice):
@@ -281,9 +261,9 @@ def genpretrialint (choice):
     drawFixation("green")
     drawStationaryDots(choice)
 
-def gendecisionint (subjects, choice, direction, frame):
+def gendecisionint (subjects, stimOne):
     drawFixation("green")
-    drawMovingDots(subjects, choice, direction, frame)
+    drawMovingDots(subjects, stimOne)
 
 # specifications of output file
 _thisDir = os.path.dirname(os.path.abspath(__file__))
@@ -343,14 +323,20 @@ for blockNumber in blocks:
         responsetime.reset()
 
         response = [[None, 0]]
+        
+        if movingDirection == 'right':
+            stimOne = sone.movingleftdotslist[dotpatchChoice]
+        else:
+            stimOne = sone.movingrightdotslist[dotpatchChoice]
+        
         # decision interval: cross & moving dots
         for frame in secondstoframes(15):
             if frame % 3 == 0:
-                gendecisionint(subjects, dotpatchChoice, movingDirection, 0)
+                gendecisionint(subjects, stimOne[0])
             elif frame % 3 == 1:
-                gendecisionint(subjects, dotpatchChoice, movingDirection, 1)
+                gendecisionint(subjects, stimOne[1])
             elif frame % 3 == 2:
-                gendecisionint(subjects, dotpatchChoice, movingDirection, 2)
+                gendecisionint(subjects, stimOne[2])
             else:
                 print('error in secondstoframes gendecisionint')
             window.flip()
