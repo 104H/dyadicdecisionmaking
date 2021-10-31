@@ -8,6 +8,7 @@ from psychopy import visual, event, core, prefs, sound
 from psychopy.sound import Sound
 from psychopy.data import StairHandler
 from psychopy.data import QuestHandler
+from stimuli_random_dots import createDots
 import stimuli_random_dots as stimuli
 
 
@@ -36,6 +37,9 @@ threshold = .9
 # monitor specs global variables
 M_WIDTH = stimuli.M_WIDTH
 M_HEIGHT = stimuli.M_HEIGHT
+N = stimuli.N
+dotlife = stimuli.dotlife
+speed = stimuli.speed
 
 # get pair id via command-line argument
 try:
@@ -49,9 +53,14 @@ subjectData['pair_id'] = pair_id
 def secondstoframes (seconds):
     REFRESH_RATE = 60
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
+    
+def createDotPatch(window, xoffset, direction, coherence):
+    stimList = []
+    for _ in range(3):
+        stimList.append(createDots(window, xoffset, direction, dotlife, speed, coherence))
+    return stimList
 
 def draw_fixation(fixation):
-
     for grating in fixation:
         grating.draw()
 
@@ -62,12 +71,10 @@ def drawDots(dotpatch):
     dotpatch.draw()
 
 def pretrial_interval(fixation, dotpatch):
-    # TO BE DONE
     draw_fixation(fixation)
     drawDots(dotpatch)
 
 def decision_interval(dotpatch):
-    # TO BE DONE
     draw_fixation(greencross)
     drawDots(dotpatch)
 
@@ -148,9 +155,9 @@ while titration_over == False:
     window.mouseVisible = False # hide cursor
     xoffset = 0
     # the stimulus
-    stimulus = stimuli.titrationstim(window=window, xoffset=xoffset,coherence=0.5)
-    dotPatch = stimulus.dotPatch
-    dotPatch.coherence = threshold
+    stimulus = stimuli.mainstim(window=window, xoffset=xoffset, coherence=0.5)
+    stationaryDotsList = stimulus.stationaryDotsList
+    stationaryDotPatch = stationaryDotsList[0]
 
     bluecross = stimulus.fixation_blue
     greencross = stimulus.fixation_green
@@ -201,15 +208,15 @@ while titration_over == False:
 
     for coherence in staircase:
 
-        # randomly pick dot motion direction
-        dotPatch.direction = np.random.choice(np.array([0, 180]))
+        # randomly pick dot motion direction and set coherence
+        direction = np.random.choice(np.array([0, 180]))
+        movingDotPatch = createDotPatch(window, xoffset, direction, coherence)
         key = []
-        dotPatch.coherence = coherence # set coherence to the value from the staircase
 
         # pretrial interval
         for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
             # window.flip() #(for feedback)
-            pretrial_interval(greencross, dotPatch)
+            pretrial_interval(greencross, stationaryDotPatch)
             window.flip()
 
         # play beep because next is decision interval (beep should depend on chamber number)
@@ -221,7 +228,14 @@ while titration_over == False:
         # decision interval: light blue cross & moving dots
         response = None  # we have no response yet
         for frame in secondstoframes(7.5):
-            decision_interval(dotPatch)
+            if frame % 3 == 0:
+                decision_interval(movingDotPatch[0])
+            elif frame % 3 == 1:
+                decision_interval(movingDotPatch[1])
+            elif frame % 3 == 2:
+                decision_interval(movingDotPatch[2])
+            else:
+                print('error in secondstoframes decision_interval')
             window.flip()
 
             # fetch button press: response 0 is right, response 1 is left
@@ -238,7 +252,7 @@ while titration_over == False:
 
             else:
 
-                if dotPatch.direction == 180:
+                if direction == 180:
                     print("true left")
                     direction_left = 1
                 else:
@@ -258,16 +272,19 @@ while titration_over == False:
                 break
 
         beep.stop()
+        
+        # randomly pick a stationary dot patch
+        stationaryDotPatch = stationaryDotsList[np.random.randint(0, N)]
 
         # start feedback interval
         if response == 0: # left
             draw_fixation(yellowcross)
-            drawDots(dotPatch)
+            drawDots(stationaryDotPatch)
             window.flip()
             core.wait(0.75)
         elif response == 1: #right
             draw_fixation(bluecross)
-            drawDots(dotPatch)
+            drawDots(stationaryDotPatch)
             window.flip()
             core.wait(0.75)
 
