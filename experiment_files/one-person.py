@@ -321,15 +321,15 @@ for blockNumber in blocks:
         beep.play(when=nextflip)
         # display stimulus
         responsetime.reset()
-
+        
+        # decision interval: cross & moving dots
         response = [[None, 0]]
         
         if movingDirection == 'right':
-            stimOne = sone.movingleftdotslist[dotpatchChoice]
-        else:
             stimOne = sone.movingrightdotslist[dotpatchChoice]
-        
-        # decision interval: cross & moving dots
+        else:
+            stimOne = sone.movingleftdotslist[dotpatchChoice]
+            
         for frame in secondstoframes(15):
             if frame % 3 == 0:
                 gendecisionint(subjects, stimOne[0])

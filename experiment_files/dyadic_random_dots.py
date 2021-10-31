@@ -283,60 +283,24 @@ def drawStationaryDots(choice):
         s.stationarydotslist[choice].draw()
         
 
-def drawMovingDotsPractice(subjects, choice, direction, frame):
+def drawMovingDotsPractice(subjects, stimOne, stimTwo):
     '''
         draw the moving dot patch for both subjects for the practice
         trials, but interleave three different dot patches
         (probably not an optimal solution yet, but a fast one)
     '''
-    if direction == 'right':
-        for s in subjects:
-            if frame == 0:
-                s.movingrightdotslistpractice[choice][0].draw()
-            elif frame == 1:
-                s.movingrightdotslistpractice[choice][1].draw()
-            elif frame == 2:
-                s.movingrightdotslistpractice[choice][2].draw()
-            else:
-                print('error in drawMovingDots function')
-    else:
-        for s in subjects:
-            if frame == 0:
-                s.movingleftdotslistpractice[choice][0].draw()
-            elif frame == 1:
-                s.movingleftdotslistpractice[choice][1].draw()
-            elif frame == 2:
-                s.movingleftdotslistpractice[choice][2].draw()
-            else:
-                print('error in drawMovingDots function')
+    stimOne.draw()
+    stimTwo.draw()
 
 
-def drawMovingDots(subjects, choice, direction, frame):
+def drawMovingDots(subjects, stimOne, stimTwo):
     '''
         draw the moving dot patch for both subjects for the
         main experiment, but interleave three different
         dot patches
     '''
-    if direction == 'right':
-        for s in subjects:
-            if frame == 0:
-                s.movingrightdotslist[choice][0].draw()
-            elif frame == 1:
-                s.movingrightdotslist[choice][1].draw()
-            elif frame == 2:
-                s.movingrightdotslist[choice][2].draw()
-            else:
-                print('error in drawMovingDots function')
-    else:
-        for s in subjects:
-            if frame == 0:
-                s.movingleftdotslist[choice][0].draw()
-            elif frame == 1:
-                s.movingleftdotslist[choice][1].draw()
-            elif frame == 2:
-                s.movingleftdotslist[choice][2].draw()
-            else:
-                print('error in drawMovingDots function')
+    stimOne.draw()
+    stimTwo.draw()
 
 
 def drawFixation(color):
@@ -362,13 +326,13 @@ def genpretrialint (choice):
     drawFixation("green")
     drawStationaryDots(choice)
 
-def gendecisionint (subjects, choice, direction, frame, section):
+def gendecisionint (subjects, section, stimOne, stimTwo):
     if section == 'main':
         drawFixation("green")
-        drawMovingDots(subjects, choice, direction, frame)
+        drawMovingDots(subjects, stimOne, stimTwo)
     else:
         drawFixation("green")
-        drawMovingDotsPractice(subjects, choice, direction, frame)
+        drawMovingDotsPractice(subjects, stimOne, stimTwo)
     
 def genfeedbackint (color, choice, rt_msg="NA"):
     '''
@@ -539,14 +503,20 @@ for trialNumber in range(0, nPracticeTrials):
 
     # decision interval: light blue cross & moving dots
     response = []  # we have no response yet
-    for frame in secondstoframes(3):
-        # for frame in secondstoframes(1.5):
+    if movingDirection == 'right':
+        stimOne = sone.movingrightdotslist[dotpatchChoice]
+        stimTwo = stwo.movingrightdotslist[dotpatchChoice]
+    else:
+        stimOne = sone.movingleftdotslist[dotpatchChoice]
+        stimTwo = stwo.movingleftdotslist[dotpatchChoice]
+    
+    for frame in secondstoframes(1.5):
         if frame % 3 == 0:
-            gendecisionint(subjects, dotpatchChoice, movingDirection, 0, 'practice')
+            gendecisionint(subjects, 'practice', stimOne[0], stimTwo[0])
         elif frame % 3 == 1:
-            gendecisionint(subjects, dotpatchChoice, movingDirection, 1, 'practice')
+            gendecisionint(subjects, 'practice', stimOne[1], stimTwo[1])
         elif frame % 3 == 2:
-            gendecisionint(subjects, dotpatchChoice, movingDirection, 2, 'practice')
+            gendecisionint(subjects, 'practice', stimOne[2], stimTwo[2])
         else:
             print('error in secondstoframes gendecisionint')
         window.flip()
@@ -672,13 +642,21 @@ for blockNumber in blocks:
 
         # decision interval: light blue cross & moving dots
         response = []  # we have no response yet
+        
+        if movingDirection == 'right':
+            stimOne = sone.movingrightdotslist[dotpatchChoice]
+            stimTwo = stwo.movingrightdotslist[dotpatchChoice]
+        else:
+            stimOne = sone.movingleftdotslist[dotpatchChoice]
+            stimTwo = stwo.movingleftdotslist[dotpatchChoice]
+        
         for frame in secondstoframes(1.5):
             if frame % 3 == 0:
-                gendecisionint(subjects, dotpatchChoice, movingDirection, 0, 'main')
+                gendecisionint(subjects, 'main', stimOne[0], stimTwo[0])
             elif frame % 3 == 1:
-                gendecisionint(subjects, dotpatchChoice, movingDirection, 1, 'main')
+                gendecisionint(subjects, 'main', stimOne[1], stimTwo[1])
             elif frame % 3 == 2:
-                gendecisionint(subjects, dotpatchChoice, movingDirection, 2, 'main')
+                gendecisionint(subjects, 'main', stimOne[2], stimTwo[2])
             else:
                 print('error in secondstoframes gendecisionint')
             window.flip()
@@ -741,7 +719,7 @@ for blockNumber in blocks:
 
 genendscreen()
 window.flip()
-core.wait(10)
+core.wait(5)
 
 
 ################################
