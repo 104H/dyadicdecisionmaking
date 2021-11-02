@@ -15,6 +15,7 @@ my_dpi = 96 # dpi of the lab monitor
 distance = 60 # distance to screen in cm
 N = 25 # number of prepared dot patches
 
+ndots = 328
 dotlife = 5
 speed = 2.5
 practiceTrialCoherence = 0.5
@@ -26,13 +27,13 @@ def degrees_to_pix(degrees):
     return pix
 
 
-def createDots (window, xoffset, dir, dotlife, speed, coherence):
+def createDots (window, xoffset, dir, ndots, dotlife, speed, coherence):
     return visual.DotStim(
         window,
         color=(1.0, 1.0, 1.0),
         dir = dir,
         units='pix',
-        nDots=328,
+        nDots=ndots,
         fieldShape='circle',
         fieldPos=[0 + xoffset, 0],
         fieldSize=degrees_to_pix(10),
@@ -51,7 +52,7 @@ def createStationaryDots (N, window, xoffset, coherence):
     dotsList = []
 
     for _ in range(N):
-        dotsList.append(createDots(window, xoffset, 0, -1, 0, coherence))
+        dotsList.append(createDots(window, xoffset, 0, ndots, -1, 0, coherence))
 
     return dotsList
 
@@ -66,7 +67,7 @@ def createMovingDots (N, window, xoffset, dir, coherence):
 
     for _ in range(N):
         for count in range(3):
-                dots.append(createDots(window, xoffset, dir, dotlife, speed, coherence))
+                dots.append(createDots(window, xoffset, dir, ndots//3, dotlife, speed, coherence))
 
         dotsList.append(dots)
 
@@ -83,7 +84,7 @@ def createMovingDotsPractice (N, window, xoffset, dir, coherence):
 
     for _ in range(N):
         for count in range(3):
-                dots.append(createDots(window, xoffset, dir, dotlife, speed, coherence))
+                dots.append(createDots(window, xoffset, dir, ndots//3, dotlife, speed, coherence))
 
         dotsList.append(dots)
 

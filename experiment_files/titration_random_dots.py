@@ -38,6 +38,7 @@ threshold = .9
 M_WIDTH = stimuli.M_WIDTH
 M_HEIGHT = stimuli.M_HEIGHT
 N = stimuli.N
+ndots = stimuli.ndots
 dotlife = stimuli.dotlife
 speed = stimuli.speed
 
@@ -57,7 +58,7 @@ def secondstoframes (seconds):
 def createDotPatch(window, xoffset, direction, coherence):
     stimList = []
     for _ in range(3):
-        stimList.append(createDots(window, xoffset, direction, dotlife, speed, coherence))
+        stimList.append(createDots(window, xoffset, direction, ndots//3, dotlife, speed, coherence))
     return stimList
 
 def draw_fixation(fixation):
@@ -101,10 +102,6 @@ def endscreen():
 # TODO:
 def instruction_titration():
     instructions = "Please read the instructions carefully.\n\
-    1. Now we will determine your individual threshold for recognizing the vertical grating.\n\
-    2. The procedure is the same as before: Press the green key if you saw a grating, and the red key if you didn’t.\n\
-    3. Fixate on the red dot in the center of the circle.\n\
-    4. The visibility of the grating will be adjusted throughout the trials.\n\n\
     Press yes to continue"
 
     visual.TextStim(window,
@@ -114,17 +111,16 @@ def instruction_titration():
 # TODO:
 def instruction_familiarization():
     instructions = "Please read the instructions carefully.\n\
-    1. Place your index finger on the left key and your middle finger on the right key.\n\
-    2. First, you will become familiar with the stimulus and the handling of the button box.\n\
-    3. For the stimulus, a red dot is shown in the middle of the screen, surrounded by a circular pattern that looks similar to white noise.\n\
-    4. You need to indicate whether you saw a vertical grating on top of the noise.\n\
-    5. Fixate on the dot in the center of the circular pattern.\n\
-    6. Press the green key for 'yes' and the red key for 'no'.\n\n\
     Press yes to continue"
 
     visual.TextStim(window,
                     text=instructions, pos=(0, 0),
                     color='white', height=20).draw()
+
+
+###########################
+##### TITRATION START #####
+###########################
 
 while titration_over == False:
     # input the chamber number in which titration takes place
@@ -165,29 +161,95 @@ while titration_over == False:
 
     indicatordict = stimulus.indicatordict
 
+
     '''
     1. Familiarization (TODO)
     '''
-    # instruction_familiarization() # display instructions
-    # window.flip()
-    # key = event.waitKeys(keyList=keys[:1])
-    #
-    # famcoherence = [0.5,0.1,0.8]
-    # nfamtrials = len(famcoherence)
-    #
-    # for coh in famcoherence:
-    #     key = []
-    #     dotPatch.coherence = coh
-    #     while not key:
-    #         #draw_stim(noise, dotPatch, reddot) # draw the stimulus
-    #         #window.flip()
-    #         key = event.getKeys(keyList=keys)
+    
+    instruction_familiarization() # display instructions
+    window.flip()
+    key = event.waitKeys(keyList=keys[:1])
+
+    famcoherence = [0.5, 0.1, 0.8, 0.5, 0.1]
+    
+    # TODO: refactor? - this code is also used for the staircase procedure
+    
+    for coh in famcoherence:
+        direction = np.random.choice(np.array([0, 180]))
+        movingDotPatch = createDotPatch(window, xoffset, direction, coh)
+        key = []
+        
+        for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
+            pretrial_interval(greencross, stationaryDotPatch)
+            window.flip()
+            
+        # play beep because next is decision interval (beep should depend on chamber number)
+
+        event.clearEvents()
+        nextflip = window.getFutureFlipTime(clock='ptb')
+        beep.play(when=nextflip)
+        
+        # decision interval: light blue cross & moving dots
+        response = None  # we have no response yet
+        for frame in secondstoframes(7.5):
+            if frame % 3 == 0:
+                decision_interval(movingDotPatch[0])
+            elif frame % 3 == 1:
+                decision_interval(movingDotPatch[1])
+            elif frame % 3 == 2:
+                decision_interval(movingDotPatch[2])
+            else:
+                print('error in secondstoframes decision_interval')
+            window.flip()
+            
+            # fetch button press: response 0 is right, response 1 is left
+            if response is None:
+                #event.clearEvents()
+                key = event.getKeys(keyList=keys)
+                if keys[1] in key:
+                    print("left")
+                    response = 0
+
+                elif keys[0] in key:
+                    print("right")
+                    response = 1
+            else:
+                if direction == 180:
+                    print("true left")
+                    direction_left = 1
+                else:
+                    print("true right")
+                    direction_left = 0
+                # check whether response and direction are matching and add to staircase
+                if not (response or direction_left) or (response and direction_left):
+                    correct = 1
+                else:
+                    correct = 0
+                    
+                # end decision interval
+                break
+
+        beep.stop()
+        
+        # randomly pick a stationary dot patch
+        stationaryDotPatch = stationaryDotsList[np.random.randint(0, N)]
+
+        # start feedback interval
+        if response == 0: # left
+            draw_fixation(yellowcross)
+            drawDots(stationaryDotPatch)
+            window.flip()
+            core.wait(0.75)
+        elif response == 1: #right
+            draw_fixation(bluecross)
+            drawDots(stationaryDotPatch)
+            window.flip()
+            core.wait(0.75)
+
 
     '''
     2. Titration
     '''
-
-
 
     staircase = QuestHandler(
                                     startVal=0.5,
@@ -201,9 +263,9 @@ while titration_over == False:
                                     method='quantile'
                                     )
 
-    #instruction_titration() # display instructions
-    #window.flip()
-    #key = event.waitKeys(keyList=keys[:1])
+    instruction_titration() # display instructions
+    window.flip()
+    key = event.waitKeys(keyList=keys[:1])
     staircase_medians = []
 
     for coherence in staircase:
@@ -319,3 +381,7 @@ while titration_over == False:
                 json.dump(subjectData, fp)
         elif answer == 'n':
             Titration_over = False
+            
+#########################
+##### TITRATION END #####
+#########################
