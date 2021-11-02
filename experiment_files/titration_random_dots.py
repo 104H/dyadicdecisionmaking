@@ -17,7 +17,7 @@ prefs.hardware['audioLib'] = ['PTB']
 # sound.setDevice('USB Audio Device: - (hw:3,0)') #(not working on my computer for some reason, works in the lab though)
 
 # set the number of trials (for testing)!
-numberOfTrials = 10 # should be 100
+numberOfTrials = 65 # should be 100
 
 # Directory Specs
 HOME = os.getcwd()
@@ -54,7 +54,7 @@ subjectData['pair_id'] = pair_id
 def secondstoframes (seconds):
     REFRESH_RATE = 60
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
-    
+
 def createDotPatch(window, xoffset, direction, coherence):
     stimList = []
     for _ in range(3):
@@ -162,89 +162,89 @@ while titration_over == False:
     indicatordict = stimulus.indicatordict
 
 
-    '''
-    1. Familiarization (TODO)
-    '''
-    
-    instruction_familiarization() # display instructions
-    window.flip()
-    key = event.waitKeys(keyList=keys[:1])
-
-    famcoherence = [0.5, 0.1, 0.8, 0.5, 0.1]
-    
-    # TODO: refactor? - this code is also used for the staircase procedure
-    
-    for coh in famcoherence:
-        direction = np.random.choice(np.array([0, 180]))
-        movingDotPatch = createDotPatch(window, xoffset, direction, coh)
-        key = []
-        
-        for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
-            pretrial_interval(greencross, stationaryDotPatch)
-            window.flip()
-            
-        # play beep because next is decision interval (beep should depend on chamber number)
-
-        event.clearEvents()
-        nextflip = window.getFutureFlipTime(clock='ptb')
-        beep.play(when=nextflip)
-        
-        # decision interval: light blue cross & moving dots
-        response = None  # we have no response yet
-        for frame in secondstoframes(7.5):
-            if frame % 3 == 0:
-                decision_interval(movingDotPatch[0])
-            elif frame % 3 == 1:
-                decision_interval(movingDotPatch[1])
-            elif frame % 3 == 2:
-                decision_interval(movingDotPatch[2])
-            else:
-                print('error in secondstoframes decision_interval')
-            window.flip()
-            
-            # fetch button press: response 0 is right, response 1 is left
-            if response is None:
-                #event.clearEvents()
-                key = event.getKeys(keyList=keys)
-                if keys[1] in key:
-                    print("left")
-                    response = 0
-
-                elif keys[0] in key:
-                    print("right")
-                    response = 1
-            else:
-                if direction == 180:
-                    print("true left")
-                    direction_left = 1
-                else:
-                    print("true right")
-                    direction_left = 0
-                # check whether response and direction are matching and add to staircase
-                if not (response or direction_left) or (response and direction_left):
-                    correct = 1
-                else:
-                    correct = 0
-                    
-                # end decision interval
-                break
-
-        beep.stop()
-        
-        # randomly pick a stationary dot patch
-        stationaryDotPatch = stationaryDotsList[np.random.randint(0, N)]
-
-        # start feedback interval
-        if response == 0: # left
-            draw_fixation(yellowcross)
-            drawDots(stationaryDotPatch)
-            window.flip()
-            core.wait(0.75)
-        elif response == 1: #right
-            draw_fixation(bluecross)
-            drawDots(stationaryDotPatch)
-            window.flip()
-            core.wait(0.75)
+    # '''
+    # 1. Familiarization (TODO)
+    # '''
+    #
+    # instruction_familiarization() # display instructions
+    # window.flip()
+    # key = event.waitKeys(keyList=keys[:1])
+    #
+    # famcoherence = [0.5, 0.1, 0.8, 0.5, 0.1]
+    #
+    # # TODO: refactor? - this code is also used for the staircase procedure
+    #
+    # for coh in famcoherence:
+    #     direction = np.random.choice(np.array([0, 180]))
+    #     movingDotPatch = createDotPatch(window, xoffset, direction, coh)
+    #     key = []
+    #
+    #     for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
+    #         pretrial_interval(greencross, stationaryDotPatch)
+    #         window.flip()
+    #
+    #     # play beep because next is decision interval (beep should depend on chamber number)
+    #
+    #     event.clearEvents()
+    #     nextflip = window.getFutureFlipTime(clock='ptb')
+    #     beep.play(when=nextflip)
+    #
+    #     # decision interval: light blue cross & moving dots
+    #     response = None  # we have no response yet
+    #     for frame in secondstoframes(7.5):
+    #         if frame % 3 == 0:
+    #             decision_interval(movingDotPatch[0])
+    #         elif frame % 3 == 1:
+    #             decision_interval(movingDotPatch[1])
+    #         elif frame % 3 == 2:
+    #             decision_interval(movingDotPatch[2])
+    #         else:
+    #             print('error in secondstoframes decision_interval')
+    #         window.flip()
+    #
+    #         # fetch button press: response 0 is right, response 1 is left
+    #         if response is None:
+    #             #event.clearEvents()
+    #             key = event.getKeys(keyList=keys)
+    #             if keys[1] in key:
+    #                 print("left")
+    #                 response = 0
+    #
+    #             elif keys[0] in key:
+    #                 print("right")
+    #                 response = 1
+    #         else:
+    #             if direction == 180:
+    #                 print("true left")
+    #                 direction_left = 0
+    #             else:
+    #                 print("true right")
+    #                 direction_left = 1
+    #             # check whether response and direction are matching and add to staircase
+    #             if not (response or direction_left) or (response and direction_left):
+    #                 correct = 1
+    #             else:
+    #                 correct = 0
+    #
+    #             # end decision interval
+    #             break
+    #
+    #     beep.stop()
+    #
+    #     # randomly pick a stationary dot patch
+    #     stationaryDotPatch = stationaryDotsList[np.random.randint(0, N)]
+    #
+    #     # start feedback interval
+    #     if response == 0: # left
+    #         draw_fixation(yellowcross)
+    #         drawDots(stationaryDotPatch)
+    #         window.flip()
+    #         core.wait(0.75)
+    #     elif response == 1: #right
+    #         draw_fixation(bluecross)
+    #         drawDots(stationaryDotPatch)
+    #         window.flip()
+    #         core.wait(0.75)
 
 
     '''
@@ -252,14 +252,14 @@ while titration_over == False:
     '''
 
     staircase = QuestHandler(
-                                    startVal=0.5,
-                                    startValSd=0.3,
+                                    startVal=0.2,
+                                    startValSd=0.1,
                                     pThreshold=0.82, # gives 75 % for 2IFC
                                     gamma=0.5,
                                     #stopInterval=0,
                                     nTrials=numberOfTrials,
                                     minVal=0.0005,
-                                    maxVal=1,
+                                    maxVal=0.5,
                                     method='quantile'
                                     )
 
@@ -306,11 +306,11 @@ while titration_over == False:
                 key = event.getKeys(keyList=keys)
                 if keys[1] in key:
                     print("left")
-                    response = 0
+                    response = 1
 
                 elif keys[0] in key:
                     print("right")
-                    response = 1
+                    response = 0
 
             else:
 
@@ -321,8 +321,9 @@ while titration_over == False:
                     print("true right")
                     direction_left = 0
                 # check whether response and direction are matching and add to staircase
-                if not (response or direction_left) or (response and direction_left):
+                if response == direction_left:
                     correct = 1
+                    print("Good")
                 else:
                     correct = 0
                 staircase.addResponse(correct)
@@ -334,29 +335,30 @@ while titration_over == False:
                 break
 
         beep.stop()
-        
+
         # randomly pick a stationary dot patch
         stationaryDotPatch = stationaryDotsList[np.random.randint(0, N)]
 
         # start feedback interval
-        if response == 0: # left
+        if response == 1: # left
             draw_fixation(yellowcross)
             drawDots(stationaryDotPatch)
             window.flip()
             core.wait(0.75)
-        elif response == 1: #right
+        elif response == 0: #right
             draw_fixation(bluecross)
             drawDots(stationaryDotPatch)
             window.flip()
             core.wait(0.75)
 
-    staircase.saveAsExcel(fileName='titration_data'+str(pair_id)+'_'+str(chamber))
-    subjectData['threshold'] = subjectData["threshold"] = staircase.mean()
+    subjectData['threshold'] = staircase.mean()
     subjectData['threshold_list'] = staircase_medians # all coherence values the participant saw during titration
 
     # print('reversals:')
     # print(staircase.reversalIntensities)
     # print("The subject's threshold is: = %.5f" % np.average(staircase.reversalIntensities[-6:])) # TODO: needs to be changed to match the quest method
+
+    print(f"threshold is {staircase.mean()}")
 
     endscreen()
     window.flip()
@@ -381,7 +383,7 @@ while titration_over == False:
                 json.dump(subjectData, fp)
         elif answer == 'n':
             Titration_over = False
-            
+
 #########################
 ##### TITRATION END #####
 #########################
