@@ -286,6 +286,7 @@ for blockNumber in blocks:
 
     # make an iterator object
     movingstates = iter(genmovingstates(ntrials))
+    nCorrect = nLeftCorrect = 0
 
     # traverse through trials
     for trialNumber in range(0, ntrials):
@@ -355,8 +356,13 @@ for blockNumber in blocks:
             color = "green"
         elif response[0][0] == "1":  # left
             color = "yellow"
+            if movingDirection == "left":
+                nCorrect += 1
+                nLeftCorrect += 1
         elif response[0][0] == "2":  # right
             color = "blue"
+            if movingDirection == "right":
+                nCorrect += 1
 
 
         # make random choice for stationary dot patch that should be used
@@ -392,3 +398,8 @@ for blockNumber in blocks:
 genendscreen()
 window.flip()
 core.wait(5)
+
+#code to calculate and show the performance metrics
+print("Overall Accuracy: {0:<5.2%}".format( nCorrect/ntrials))
+print("Left Accuracy   : {0:<5.2%}".format(2 * nLeftCorrect/ntrials))
+print("Right Accuracy  : {0:<5.2%}".format(2 * (nCorrect - nLeftCorrect)/ntrials))
