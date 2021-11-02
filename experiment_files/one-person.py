@@ -79,7 +79,7 @@ class subject:
         self.id = sid
         self.response = None
         self.actingheadphonebalance = "30%,0%" if sid == 2 else "0%,30%"
-        self.threshold = 0.1
+        self.threshold = 0.095914589
 
         self.stimulus = stimuli.mainstim(window=window,xoffset=0,coherence=self.threshold)
 
@@ -114,7 +114,7 @@ responsetime = core.Clock()
 expinfo = {'chamber': chamber_id, 'threshold': sone.threshold}
 
 blocks = range(2)
-ntrials = 2 # trials per block
+ntrials = 30 # trials per block
 
 def secondstoframes (seconds):
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
@@ -322,15 +322,15 @@ for blockNumber in blocks:
         beep.play(when=nextflip)
         # display stimulus
         responsetime.reset()
-        
+
         # decision interval: cross & moving dots
         response = [[None, 0]]
-        
+
         if movingDirection == 'right':
             stimOne = sone.movingrightdotslist[dotpatchChoice]
         else:
             stimOne = sone.movingleftdotslist[dotpatchChoice]
-            
+
         for frame in secondstoframes(15):
             if frame % 3 == 0:
                 gendecisionint(subjects, stimOne[0])
