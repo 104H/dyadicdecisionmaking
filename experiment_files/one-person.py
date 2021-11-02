@@ -79,9 +79,9 @@ class subject:
         self.id = sid
         self.response = None
         self.actingheadphonebalance = "30%,0%" if sid == 2 else "0%,30%"
-        self.threshold = 0.9
+        self.threshold = 0.1
 
-        self.stimulus = stimuli.mainstim(window=window,xoffset=0,coherence=0.9)
+        self.stimulus = stimuli.mainstim(window=window,xoffset=0,coherence=self.threshold)
 
         # stationary dot patches for pretrial and feedback phase
         self.stationarydotslist = self.stimulus.stationaryDotsList
