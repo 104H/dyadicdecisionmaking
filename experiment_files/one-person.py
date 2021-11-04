@@ -341,7 +341,6 @@ for blockNumber in blocks:
             window.flip()
 
             # fetch button press
-            print(response)
             if response[0][0] is None:
                 response = fetchbuttonpress(sone, responsetime)
             else:
