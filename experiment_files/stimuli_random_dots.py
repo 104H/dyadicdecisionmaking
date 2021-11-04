@@ -3,7 +3,7 @@ from __future__ import print_function
 
 from psychopy import visual, event, core
 from random import choice
-from math import tan, pi
+from math import tan, pi, atan
 
 # monitor specs global variables
 M_WIDTH = 1920
@@ -17,7 +17,7 @@ N = 25 # number of prepared dot patches
 
 ndots = 328
 dotlife = 5
-speed = 2.5
+speed = degrees_to_pix(5) / REFRESH_RATE
 practiceTrialCoherence = 0.5
 
 
@@ -26,6 +26,10 @@ def degrees_to_pix(degrees):
     pix = cm * M_WIDTH / M_WIDTH_CM
     return pix
 
+def pix_to_degrees(pix):
+    conversion_factor = M_WIDTH_CM / M_WIDTH
+    degrees = atan( (pix * conversion_factor) / distance)
+    return degrees
 
 def createDots (window, xoffset, dir, ndots, dotlife, speed, coherence):
     return visual.DotStim(
@@ -40,7 +44,7 @@ def createDots (window, xoffset, dir, ndots, dotlife, speed, coherence):
         dotLife=dotlife, # number of frames for each dot to be drawn
         signalDots='same',  # are signal dots 'same' on each frame? (see Scase et al)
         noiseDots='direction', # do the noise dots follow random- 'walk', 'direction', or 'position'
-        speed=speed,
+        speed=speed, #  degrees_to_pix(5) / REFRESH_RATE
         coherence=coherence # coherence of practice trials
     )
 
