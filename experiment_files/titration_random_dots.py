@@ -72,12 +72,12 @@ def drawDots(dotpatch):
     dotpatch.draw()
 
 def pretrial_interval(fixation, dotpatch):
-    draw_fixation(fixation)
     drawDots(dotpatch)
+    draw_fixation(fixation)
 
 def decision_interval(dotpatch):
-    draw_fixation(greencross)
     drawDots(dotpatch)
+    draw_fixation(greencross)
 
 def feedback_interval(fixation, dotpatch, indicatordict, rt_msg="NA"):
     '''
@@ -85,8 +85,8 @@ def feedback_interval(fixation, dotpatch, indicatordict, rt_msg="NA"):
         2. Correctness of response indicated by fixation dot color: correct/green,incorrect/light-red
         3. The "do" subject sees response time message
     '''
-    draw_fixation(fixation)
     drawDots(dotpatch)
+    draw_fixation(fixation)
 
     # TODO: there is no indicatordict and no time measurement during titration
     if rt_msg != "NA":
@@ -276,7 +276,7 @@ while titration_over == False:
         key = []
 
         # pretrial interval
-        for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
+        for frame in secondstoframes( np.random.uniform(1, 2) ):
             # window.flip() #(for feedback)
             pretrial_interval(greencross, stationaryDotPatch)
             window.flip()
@@ -289,7 +289,7 @@ while titration_over == False:
 
         # decision interval: light blue cross & moving dots
         response = None  # we have no response yet
-        for frame in secondstoframes(7.5):
+        for frame in secondstoframes(100):
             if frame % 3 == 0:
                 decision_interval(movingDotPatch[0])
             elif frame % 3 == 1:
@@ -341,13 +341,13 @@ while titration_over == False:
 
         # start feedback interval
         if response == 1: # left
-            draw_fixation(yellowcross)
             drawDots(stationaryDotPatch)
+            draw_fixation(yellowcross)
             window.flip()
             core.wait(0.75)
         elif response == 0: #right
-            draw_fixation(bluecross)
             drawDots(stationaryDotPatch)
+            draw_fixation(bluecross)
             window.flip()
             core.wait(0.75)
 

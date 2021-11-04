@@ -11,6 +11,11 @@ M_WIDTH_CM = 51.84
 M_HEIGHT = 1200
 REFRESH_RATE = 60
 
+def degrees_to_pix(degrees):
+    cm = tan(degrees * pi / 180) * distance
+    pix = cm * M_WIDTH / M_WIDTH_CM
+    return pix
+
 my_dpi = 96 # dpi of the lab monitor
 distance = 60 # distance to screen in cm
 N = 25 # number of prepared dot patches
@@ -20,11 +25,6 @@ dotlife = 5
 speed = degrees_to_pix(5) / REFRESH_RATE
 practiceTrialCoherence = 0.5
 
-
-def degrees_to_pix(degrees):
-    cm = tan(degrees * pi / 180) * distance
-    pix = cm * M_WIDTH / M_WIDTH_CM
-    return pix
 
 def pix_to_degrees(pix):
     conversion_factor = M_WIDTH_CM / M_WIDTH
@@ -148,30 +148,3 @@ class mainstim:
                 win=window, text="Too Fast", units='pix', pos=[0 + xoffset, 0], color='red'
             )
         }
-        
-
-class titrationstim:
-    def __init__(self, window, xoffset, coherence):
-        # TODO: this is still used for titration, the titration needs to be adapted
-        self.dotPatch =  visual.DotStim(
-            window,
-            color=(1.0, 1.0, 1.0),
-            dir = 0,
-            units='pix',
-            nDots=328,
-            fieldShape='circle',
-            fieldPos=[0 + xoffset, 0],
-            fieldSize=degrees_to_pix(10),
-            dotLife=dotlife, # number of frames for each dot to be drawn
-            signalDots='same',  # are signal dots 'same' on each frame? (see Scase et al)
-            noiseDots='direction', # do the noise dots follow random- 'walk', 'direction', or 'position'
-            speed=speed,
-            coherence=0.9
-        )
-
-        # fixation composite targets
-        self.fixation_green = createFixation(window, xoffset, "darkgreen")
-        self.fixation_blue = createFixation(window, xoffset, "darkblue")
-        self.fixation_yellow = createFixation(window, xoffset, "yellow")
-
-

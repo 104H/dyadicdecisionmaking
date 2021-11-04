@@ -29,9 +29,9 @@ try:
     chamber_id = int(sys.argv[1])
 except:
     print('Please enter a number as chamber id as command-line argument!')
-    sys.exit(-1)
+    chamber_id = input()
 
-keys = ["1", "2"] if chamber_id == 1 else ["8", "7"] # 2 and 7 are green buttons (21.09.2021)
+#keys = ["1", "2"] if chamber_id == 1 else ["8", "7"] # 2 and 7 are green buttons (21.09.2021)
 
 # monitor specs global variables
 M_WIDTH = stimuli.M_WIDTH
@@ -43,7 +43,7 @@ myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=60)
 myMon.setSizePix([M_WIDTH, M_HEIGHT])
 
 
-window = visual.Window(size=(M_WIDTH, M_HEIGHT), color="black", monitor=myMon, units='pix', fullscr=True, allowGUI=False, pos=(0,0))
+window = visual.Window(size=(M_WIDTH, M_HEIGHT), color="black", monitor=myMon, units='pix', fullscr=False, allowGUI=False, pos=(0,0))
 window.mouseVisible = False # hide cursor
 
 
@@ -230,8 +230,6 @@ def drawFixation(color):
             grating_one.draw()
 
 
-
-
 def drawStationaryDots(choice):
     '''
         draw the stationary dot patch for both subjects
@@ -254,16 +252,16 @@ def genfeedbackint (color, choice):
         2. Response indicated by fixation dot color: left/ blue or right/ yellow (assignment depends on pair_id)
         3. The "do" subject sees response time message
     '''
-    drawFixation(color)
     drawStationaryDots(choice)
+    drawFixation(color)
 
 def genpretrialint (choice):
-    drawFixation("green")
     drawStationaryDots(choice)
+    drawFixation("green")
 
 def gendecisionint (subjects, stimOne):
-    drawFixation("green")
     drawMovingDots(subjects, stimOne)
+    drawFixation("green")
 
 # specifications of output file
 _thisDir = os.path.dirname(os.path.abspath(__file__))
@@ -304,13 +302,13 @@ for blockNumber in blocks:
         exphandler.addData('trial', trialNumber)
         exphandler.addData('direction', movingDirection)
 
-        # pretrial interval: display green fixation cross & stationary dots for 4.3 - 5.8s (uniformly distributed)
+        # pretrial interval: display green fixation cross & stationary dots for 1 - 2 s (uniformly distributed)
         if trialNumber == 0:
-            for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
+            for frame in secondstoframes( np.random.uniform(1, 2) ):
                 genpretrialint(0)
                 window.flip()
         else:
-            for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
+            for frame in secondstoframes( np.random.uniform(1, 2) ):
                 genpretrialint(stationaryChoice)
                 window.flip()
 
@@ -331,7 +329,7 @@ for blockNumber in blocks:
         else:
             stimOne = sone.movingleftdotslist[dotpatchChoice]
 
-        for frame in secondstoframes(15):
+        for frame in secondstoframes(100):
             if frame % 3 == 0:
                 gendecisionint(subjects, stimOne[0])
             elif frame % 3 == 1:
@@ -343,6 +341,7 @@ for blockNumber in blocks:
             window.flip()
 
             # fetch button press
+            print(response)
             if response[0][0] is None:
                 response = fetchbuttonpress(sone, responsetime)
             else:

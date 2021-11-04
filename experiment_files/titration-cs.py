@@ -76,12 +76,12 @@ def drawDots(dotpatch):
     dotpatch.draw()
 
 def pretrial_interval(fixation, dotpatch):
-    draw_fixation(fixation)
     drawDots(dotpatch)
+    draw_fixation(fixation)
 
 def decision_interval(dotpatch):
-    draw_fixation(greencross)
     drawDots(dotpatch)
+    draw_fixation(greencross)
 
 def feedback_interval(fixation, dotpatch, indicatordict, rt_msg="NA"):
     '''
@@ -89,8 +89,8 @@ def feedback_interval(fixation, dotpatch, indicatordict, rt_msg="NA"):
         2. Correctness of response indicated by fixation dot color: correct/green,incorrect/light-red
         3. The "do" subject sees response time message
     '''
-    draw_fixation(fixation)
     drawDots(dotpatch)
+    draw_fixation(fixation)
 
     # TODO: there is no indicatordict and no time measurement during titration
     if rt_msg != "NA":
@@ -235,7 +235,7 @@ while titration_over == False:
 
         # decision interval: light blue cross & moving dots
         response = None  # we have no response yet
-        for frame in secondstoframes(7.5):
+        for frame in secondstoframes(100):
             if frame % 3 == 0:
                 decision_interval(movingDotPatch[0])
             elif frame % 3 == 1:

@@ -60,7 +60,7 @@ try:
     pair_id = 10
 except:
     print('Please enter a number as pair id as command-line argument!')
-    sys.exit(-1)
+    pair_id = input()
 
 # monitor specs global variables
 M_WIDTH = stimuli.M_WIDTH * 2
@@ -323,16 +323,16 @@ def drawFixation(color):
             grating_two.draw()
 
 def genpretrialint (choice):
-    drawFixation("green")
     drawStationaryDots(choice)
+    drawFixation("green")
 
 def gendecisionint (subjects, section, stimOne, stimTwo):
     if section == 'main':
-        drawFixation("green")
         drawMovingDots(subjects, stimOne, stimTwo)
-    else:
         drawFixation("green")
+    else:
         drawMovingDotsPractice(subjects, stimOne, stimTwo)
+        drawFixation("green")
     
 def genfeedbackint (color, choice, rt_msg="NA"):
     '''
@@ -340,8 +340,8 @@ def genfeedbackint (color, choice, rt_msg="NA"):
         2. Response indicated by fixation dot color: left/ blue or right/ yellow (assignment depends on pair_id)
         3. The "do" subject sees response time message
     '''
-    drawFixation(color)
     drawStationaryDots(choice)
+    drawFixation(color)
 
     if rt_msg != "NA":
         if stwo.state:
@@ -422,7 +422,7 @@ def getexperimenterack ():
         key = sone.kb.getKeys()
 
     '''
-    keys = expkb.waitKeys(keyList=["q", "space"], clear=True)
+    keys = expkb.waitKeys(keyList=["qs", "space"], clear=True)
     if "q" in keys: # exit experiment
         window.close()
         core.quit()
@@ -477,13 +477,13 @@ for trialNumber in range(0, nPracticeTrials):
     # whose turn it is defines which beep is played
     beep = sone.beep if sone.state == 1 else stwo.beep
 
-    # pretrial interval: display light blue fixation cross & stationary dots for 4.3 - 5.8s (uniformly distributed)
+    # pretrial interval: display light blue fixation cross & stationary dots for 1 - 2 s (uniformly distributed)
     if trialNumber == 0:
-        for frame in secondstoframes(np.random.uniform(4.3, 5.8)):
+        for frame in secondstoframes(np.random.uniform(1, 2)):
             genpretrialint(0)
             window.flip()
     else:
-        for frame in secondstoframes(np.random.uniform(4.3, 5.8)):
+        for frame in secondstoframes(np.random.uniform(1, 2)):
             genpretrialint(stationaryChoice)
             window.flip()
 
@@ -510,7 +510,7 @@ for trialNumber in range(0, nPracticeTrials):
         stimOne = sone.movingleftdotslist[dotpatchChoice]
         stimTwo = stwo.movingleftdotslist[dotpatchChoice]
     
-    for frame in secondstoframes(1.5):
+    for frame in secondstoframes(100):
         if frame % 3 == 0:
             gendecisionint(subjects, 'practice', stimOne[0], stimTwo[0])
         elif frame % 3 == 1:
@@ -620,13 +620,13 @@ for blockNumber in blocks:
         exphandler.addData('s1_state', sone.state)
         exphandler.addData('direction', movingDirection)
 
-        # pretrial interval: display green fixation cross & stationary dots for 4.3 - 5.8s (uniformly distributed)
+        # pretrial interval: display green fixation cross & stationary dots for 1 - 2 s (uniformly distributed)
         if trialNumber == 0:
-            for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
+            for frame in secondstoframes( np.random.uniform(1, 2) ):
                 genpretrialint(0)
                 window.flip()
         else:
-            for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
+            for frame in secondstoframes( np.random.uniform(1, 2) ):
                 genpretrialint(stationaryChoice)
                 window.flip()
 
@@ -650,7 +650,7 @@ for blockNumber in blocks:
             stimOne = sone.movingleftdotslist[dotpatchChoice]
             stimTwo = stwo.movingleftdotslist[dotpatchChoice]
         
-        for frame in secondstoframes(1.5):
+        for frame in secondstoframes(100):
             if frame % 3 == 0:
                 gendecisionint(subjects, 'main', stimOne[0], stimTwo[0])
             elif frame % 3 == 1:
