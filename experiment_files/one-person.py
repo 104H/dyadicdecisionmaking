@@ -151,15 +151,28 @@ def genstartscreen ():
 
 def geninstructionspractice ():
     instructions = "Please read the instructions carefully.\n\
-    X\n\n\
-    Press yes to continue"
+1. Place your index finger on the left key and your middle finger on the right key.\n\
+2. Now, you will have a few practice trials to see how the experiment works.\n\
+3. You will do the task together with your partner.\n\
+4. The stimulus will be the same as you saw before: a set of moving dots.\n\
+5. Press the blue key for left/right and the yellow key for left/right.\n\
+6. It’s very important that you respond as quickly and as accurately as possible!\
+Press blue/yellow to continue"
 
     gentext(instructions)
 
 def geninstructionsexperiment ():
     instructions = "Now you’re ready to start the experiment. Please remember:\n\
-    X\n\n\
-    Press yes when you’re ready to start the experiment"
+1. Place your index finger on the left key and your middle finger on the right key.\n\
+2. Fixate on the dot in the center.\n\
+3. When you hear a beep a new trial has started. A high pitch beep is your queue to respond, a lower pitch beep means you have to observe your partner's reponse. \n\
+4. Observe the movement of dots on the screen and determine their general direction.\
+5. Press the blue key for left/right and the yellow key for left/right.\n\
+6. Please respond as quickly and as accurately as possible! \n\
+7. Once you've finished one block, you’ll be asked if you’re ready for the next block.\n\
+8. After every second block, you will have a break.\n\
+9. There will be a total of 12 blocks.\n\n\
+Press yes when you’re ready to start the experiment"
 
     gentext(instructions)
 
