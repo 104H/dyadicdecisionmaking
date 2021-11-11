@@ -17,7 +17,7 @@ prefs.hardware['audioLib'] = ['PTB']
 # sound.setDevice('USB Audio Device: - (hw:3,0)') #(not working on my computer for some reason, works in the lab though)
 
 # set the number of trials (for testing)!
-numberOfTrials = 65 # should be 100
+numberOfTrials = 80 # should be 100
 
 # Directory Specs
 HOME = os.getcwd()
@@ -252,14 +252,15 @@ while titration_over == False:
     '''
 
     staircase = QuestHandler(
-                                    startVal=0.2,
-                                    startValSd=0.1,
+                                    startVal=0.5,
+                                    startValSd=0.5,
                                     pThreshold=0.82, # gives 75 % for 2IFC
                                     gamma=0.5,
+                                    delta=0.01,
                                     #stopInterval=0,
                                     nTrials=numberOfTrials,
-                                    minVal=0.0005,
-                                    maxVal=0.5,
+                                    minVal=0.035,
+                                    maxVal=0.8,
                                     method='quantile'
                                     )
 
