@@ -20,7 +20,7 @@ my_dpi = 96 # dpi of the lab monitor
 distance = 60 # distance to screen in cm
 N = 25 # number of prepared dot patches
 
-ndots = 328
+ndots = 164
 dotlife = 5
 speed = degrees_to_pix(5) / REFRESH_RATE
 practiceTrialCoherence = 0.5
@@ -40,7 +40,7 @@ def createDots (window, xoffset, dir, ndots, dotlife, speed, coherence):
         nDots=ndots,
         fieldShape='circle',
         fieldPos=[0 + xoffset, 0],
-        fieldSize=degrees_to_pix(10),
+        fieldSize=degrees_to_pix(5),
         dotLife=dotlife, # number of frames for each dot to be drawn
         signalDots='same',  # are signal dots 'same' on each frame? (see Scase et al)
         noiseDots='direction', # do the noise dots follow random- 'walk', 'direction', or 'position'
@@ -76,7 +76,7 @@ def createMovingDots (N, window, xoffset, dir, coherence):
         dotsList.append(dots)
 
     return dotsList
-    
+
 
 def createMovingDotsPractice (N, window, xoffset, dir, coherence):
     '''
@@ -93,7 +93,7 @@ def createMovingDotsPractice (N, window, xoffset, dir, coherence):
         dotsList.append(dots)
 
     return dotsList
-    
+
 
 def createFixation (window, xoffset, color):
     fixationList = [
@@ -119,7 +119,7 @@ class mainstim:
     def __init__(self, window, xoffset, coherence):
         # list of differently distributed startionary dots
         self.stationaryDotsList = createStationaryDots(N, window, xoffset, 0)
-        
+
         # lists of differently distributed moving dots (first for direction=0,
         # second for direction=180) for practice trials
         self.movingRightDotsListPractice = createMovingDotsPractice(N, window, xoffset, 0, practiceTrialCoherence)
@@ -131,8 +131,8 @@ class mainstim:
         self.movingLeftDotsList = createMovingDots(N, window, xoffset, 180, coherence)
 
         # fixation composite targets
-        self.fixation_green = createFixation(window, xoffset, "darkgreen")
-        self.fixation_blue = createFixation(window, xoffset, "darkblue")
+        self.fixation_green = createFixation(window, xoffset, "forestgreen")
+        self.fixation_blue = createFixation(window, xoffset, "deepskyblue")
         self.fixation_yellow = createFixation(window, xoffset, "yellow")
 
         """
