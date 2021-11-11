@@ -12,6 +12,7 @@ from psychopy.sound import Sound
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import random
 
 
 # set up sound for beeps
@@ -105,9 +106,9 @@ def endscreen():
 # TODO:
 def instruction_titration():
     instructions = "Please read the instructions carefully.\n\
-    1. Stay fixated on the green dot in the center of the screen.\n\
-    2. After the beep, you will see some moving dots. Hit the left button if the dots are moving left, and the right button if the dots move right.\n\
-    Press yes to continue"
+    1. During the experiment, stay fixated on the dot in the center of the screen.\n\
+    2. After the beep, you will see some dots moving either to the left or to the right. Hit the left (yellow) button if the dots are moving left, and the right (blue) button if the dots move right.\n\
+    Press the right (blue) button to continue"
 
     visual.TextStim(window,
                     text=instructions, pos=(0, 0),
@@ -115,14 +116,11 @@ def instruction_titration():
 
 # TODO:
 def instruction_familiarization():
-    instructions = "Please read the instructions carefully.\n\
-    1. Place your index finger on the left button and your middle finger on the right button.\n\
-    2. \n\
-    3. \n\
-    4. \n\
-    5. Fixate on the dot in the center.\n\
-    6. Press the .\n\n\
-    Press yes to continue"
+    instructions = "Welcome to our experiment!\n\n\
+    Please read the instructions carefully.\n\
+    1. During the experiment, stay fixated on the dot in the center of the screen.\n\
+    2. After the beep, you will see some dots moving either to the left or to the right. Hit the left (yellow) button if the dots are moving left, and the right (blue) button if the dots move right.\n\
+    Press the right (blue) button to start practice trials!11!1!"
 
     visual.TextStim(window,
                     text=instructions, pos=(0, 0),
@@ -165,7 +163,7 @@ while titration_over == False:
     subjectData['chamber'] = chamber
 
     # variables for button box input
-    keys = ["2", "1"] if chamber == "1" else ["7", "8"] # first one is yes
+    keys = ["2", "1"] if chamber == "1" else ["7", "8"] # first one is right
 
     # the screen
     window = psychopy.visual.Window(size=(M_WIDTH, M_HEIGHT), units='pix', screen=int(chamber), fullscr=False, pos=None, color =[-1,-1,-1])
@@ -186,6 +184,90 @@ while titration_over == False:
     # 1. Familiarization
     # '''
 
+    instruction_familiarization() # display instructions
+    window.flip()
+    key = event.waitKeys(keyList=keys[:1])
+
+    practice_trials = [0.05, 0.1, 0.2, 0.4, 0.8]*3
+    random.shuffle(practice_trials)
+    for coherence in practice_trials:
+
+        # randomly pick dot motion direction and set coherence
+        direction = np.random.choice(np.array([0, 180]))
+        movingDotPatch = createDotPatch(window, xoffset, direction, coherence)
+        key = []
+
+        # pretrial interval
+        for frame in secondstoframes( np.random.uniform(1, 2) ):
+            # window.flip() #(for feedback)
+            pretrial_interval(greencross, stationaryDotPatch)
+            window.flip()
+
+        # play beep because next is decision interval (beep should depend on chamber number)
+
+        event.clearEvents()
+        nextflip = window.getFutureFlipTime(clock='ptb')
+        beep.play(when=nextflip)
+
+        # decision interval: light blue cross & moving dots
+        response = None  # we have no response yet
+        for frame in secondstoframes(100):
+            if frame % 3 == 0:
+                decision_interval(movingDotPatch[0])
+            elif frame % 3 == 1:
+                decision_interval(movingDotPatch[1])
+            elif frame % 3 == 2:
+                decision_interval(movingDotPatch[2])
+            else:
+                print('error in secondstoframes decision_interval')
+            window.flip()
+
+            # fetch button press: response 0 is right, response 1 is left
+            if response is None:
+                #event.clearEvents()
+                key = event.getKeys(keyList=keys)
+                if keys[1] in key:
+                    print("left")
+                    response = 1
+
+                elif keys[0] in key:
+                    print("right")
+                    response = 0
+
+            else:
+
+                if direction == 180:
+                    print("true left")
+                    direction_left = 1
+                else:
+                    print("true right")
+                    direction_left = 0
+                # check whether response and direction are matching and add to staircase
+                if response == direction_left:
+                    correct = 1
+                    print("Good")
+                else:
+                    correct = 0
+                break
+
+        beep.stop()
+
+        # randomly pick a stationary dot patch
+        stationaryDotPatch = stationaryDotsList[np.random.randint(0, N)]
+
+        # start feedback interval
+        if response == 1: # left
+            draw_fixation(yellowcross)
+            drawDots(stationaryDotPatch)
+            window.flip()
+            core.wait(0.75)
+        elif response == 0: #right
+            draw_fixation(bluecross)
+            drawDots(stationaryDotPatch)
+            window.flip()
+            core.wait(0.75)
+
+
 
     '''
     2. Titration
@@ -194,9 +276,9 @@ while titration_over == False:
     # min_coherence = 0.01
     # max_coherence = 0.8
     #coherences = np.linspace(min_coherence, max_coherence, 5)
-    coherences = [0, 0.1, 0.2, 0.4, 0.8] # this is taken from Murphy et al 2014
+    coherences = [0.05, 0.1, 0.2, 0.4, 0.8] # this is taken from Murphy et al 2014
     thresholds = [{'coherence': c} for c in coherences]
-    num_repetitions = 2
+    num_repetitions = 40
 
     # the trialhandler
     trials = data.TrialHandler(thresholds, num_repetitions, method='random')
