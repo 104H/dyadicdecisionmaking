@@ -1,3 +1,8 @@
+blocks = range(2)
+ntrials = 50 # trials per block
+threshold= 0.21597
+
+
 import os
 import sys
 from subprocess import run
@@ -9,7 +14,7 @@ from random import choice, shuffle, sample
 import json
 import pandas as pd
 
-'''
+'''2
 To obtain your sounddevices run the following line on the terminal
 python3 -c "from psychopy.sound.backend_sounddevice import getDevices;print(getDevices())"
 Copy the `name` attribute of your device to the audioDevice
@@ -31,7 +36,8 @@ except:
     print('Please enter a number as chamber id as command-line argument!')
     chamber_id = input()
 
-#keys = ["1", "2"] if chamber_id == 1 else ["8", "7"] # 2 and 7 are green buttons (21.09.2021)
+
+keys = ["1", "2"] if chamber_id == 1 else ["8", "7"] # 2 and 7 are green buttons (21.09.2021)
 
 # monitor specs global variables
 M_WIDTH = stimuli.M_WIDTH
@@ -49,7 +55,7 @@ window.mouseVisible = False # hide cursor
 
 
 class subject:
-    def __init__(self, sid):
+    def __init__(self, sid,threshold=threshold):
         '''
             sid is 1 for chamber 1, and 2 for chamber 2
             kb is the psychopy keyboard object to connect to the button box
@@ -69,6 +75,9 @@ class subject:
         #else:
         #    self.threshold = data["threshold"]
 
+        self.threshold = threshold
+
+
         keys = ["1", "2"] if sid == 1 else ["8", "7"]
         self.buttons = {
                 keys[1] : "left",
@@ -79,7 +88,7 @@ class subject:
         self.id = sid
         self.response = None
         self.actingheadphonebalance = "30%,0%" if sid == 2 else "0%,30%"
-        self.threshold = 0.095914589
+
 
         self.stimulus = stimuli.mainstim(window=window,xoffset=0,coherence=self.threshold)
 
@@ -113,8 +122,7 @@ responsetime = core.Clock()
 
 expinfo = {'chamber': chamber_id, 'threshold': sone.threshold}
 
-blocks = range(2)
-ntrials = 30 # trials per block
+
 
 def secondstoframes (seconds):
     return range( int( np.rint(seconds * REFRESH_RATE) ) )
@@ -141,21 +149,18 @@ def gentext (instr):
 
 
 def genstartscreen ():
-    instructions = "Welcome to our experiment! \n\n\
-    X.\n\
-    X.\n\n\
-    Press the green key to continue"
+    instructions = "Congratulations, you've made it to the next part of the experiment! \n\n\
+    Press the blue button to continue"
 
     gentext(instructions)
 
 
 def geninstructionspractice ():
     instructions = "Please read the instructions carefully.\n\
-1. Place your index finger on the left key and your middle finger on the right key.\n\
+1. Place your index finger on the left (yellow) key and your middle or ring finger on the right (blue) key.\n\
 2. Now, you will have a few practice trials to see how the experiment works.\n\
-3. You will do the task together with your partner.\n\
-4. The stimulus will be the same as you saw before: a set of moving dots.\n\
-5. Press the blue key for left/right and the yellow key for left/right.\n\
+4. You will again see dots moving either left or right.\n\
+5. Press the yellow (left) key for dots moving left and the blue (right) key for dots moving to the right.\n\
 6. It’s very important that you respond as quickly and as accurately as possible!\
 Press blue/yellow to continue"
 
@@ -163,15 +168,13 @@ Press blue/yellow to continue"
 
 def geninstructionsexperiment ():
     instructions = "Now you’re ready to start the experiment. Please remember:\n\
-1. Place your index finger on the left key and your middle finger on the right key.\n\
+1. Place your index finger on the left (yellow) key and your middle or ring finger on the right (blue) key.\n\
 2. Fixate on the dot in the center.\n\
-3. When you hear a beep a new trial has started. A high pitch beep is your queue to respond, a lower pitch beep means you have to observe your partner's reponse. \n\
-4. Observe the movement of dots on the screen and determine their general direction.\
-5. Press the blue key for left/right and the yellow key for left/right.\n\
-6. Please respond as quickly and as accurately as possible! \n\
-7. Once you've finished one block, you’ll be asked if you’re ready for the next block.\n\
-8. After every second block, you will have a break.\n\
-9. There will be a total of 12 blocks.\n\n\
+3. Press the left (yellow) button if the dots are moving to the left and the right (blue) button if the dots are moving to the right. \n\
+3. Please respond as quickly and as accurately as possible! \n\
+4. Once you've finished one block, you’ll be asked if you’re ready for the next block.\n\
+5. After every second block, you will have a break.\n\
+6. There will be a total of 12 blocks.\n\n\
 Press yes when you’re ready to start the experiment"
 
     gentext(instructions)
@@ -206,7 +209,7 @@ def genmandatorybreakscreen ():
         Generate the screen shown when the mandatory break is in progress
     '''
     instructions = "Enjoy your break. Please inform the experimenter.\n\n\
-    The experimenter will resume the experiment after a short break."
+    Press the right (blue) button to continue."
 
     gentext(instructions)
 
@@ -292,6 +295,11 @@ exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideTex
 ##### MAIN EXPERIMENT START #####
 
 # display instructions for experiment
+genstartscreen() # display instructions
+window.flip()
+key = event.waitKeys(keyList=[keys[1]])
+
+
 # start main experiment
 for blockNumber in blocks:
 
@@ -399,12 +407,12 @@ for blockNumber in blocks:
     if blockNumber % 2 == 0 and blockNumber != (blocks[-1]):
         genmandatorybreakscreen()
         window.flip()
-        core.wait(4)
+        event.waitKeys(keyList=[keys[1]])
     # otherwise, wait for the subjects to start their next block
     else:
         genbreakscreen()
         window.flip()
-        continue
+        event.waitKeys(keyList=[keys[1]])
 
 genendscreen()
 window.flip()
