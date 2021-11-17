@@ -21,6 +21,16 @@ import json
 # # '''
 
 
+# coherence
+coherence_s1= 0.157
+coherence_s2= 0.22
+
+blocks = range(4)
+ntrials = 80 # trials per block
+
+nPracticeTrials = 2
+nCorrect = 0
+
 '''
     TO DO
     1. adjust fixation: correct size + correct colors
@@ -56,8 +66,8 @@ from numpy.random import random
 
 # get pair id via command-line argument
 try:
-    #pair_id = int(sys.argv[1])
-    pair_id = 10
+    pair_id = int(sys.argv[1])
+    # pair_id = 10
 except:
     print('Please enter a number as pair id as command-line argument!')
     pair_id = input()
@@ -87,7 +97,7 @@ ofs = window.size[0] / 4
 #run(["amixer", "-D", "pulse", "sset", "Master", "30%,30%", "quiet"])
 
 class subject:
-    def __init__(self, sid, kb, buttonReverse=False):
+    def __init__(self, sid, kb, buttonReverse=False, coherence=0.5):
         '''
             sid is 1 for chamber 1, and 2 for chamber 2
 
@@ -106,9 +116,9 @@ class subject:
         self.state = False
         self.xoffset = ofs if sid == 1 else -ofs
         self.response = None
-        
+
         # TODO: needs to be adapted
-        self.coherence = 0.9
+        self.coherence = coherence
 
         soundclass = 'A' if sid == 1 else 'E'
         self.beep = Sound(soundclass, secs=0.5, volume=0.1)
@@ -130,7 +140,7 @@ class subject:
 
         # stationary dot patches for pretrial and feedback phase
         self.stationarydotslist = self.stimulus.stationaryDotsList
-        
+
         # moving dot patches for decision phase in practice trials
         self.movingrightdotslistpractice = self.stimulus.movingRightDotsListPractice
         self.movingleftdotslistpractice = self.stimulus.movingLeftDotsListPractice
@@ -184,25 +194,25 @@ def getKeyboards():
                 k['chtwo'] = keyb['index']
 
 if pair_id <= 13:
-    ''' AT THE LAB:
+    # ''' AT THE LAB:
     keybs = getKeyboards()
-    sone = subject(1, keyboard.Keyboard( keybs["chone"] ),True)
-    stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ),True)
-    '''
+    sone = subject(1, keyboard.Keyboard( keybs["chone"] ),True, coherence_s1)
+    stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ),True, coherence_s2)
+    # '''
 
     # if only one keyboard is connected (home testing)
-    sone = subject(1, keyboard.Keyboard(), True)
-    stwo = subject(2, keyboard.Keyboard(), True)
+    # sone = subject(1, keyboard.Keyboard(), True)
+    # stwo = subject(2, keyboard.Keyboard(), True)
 else:
-    ''' AT THE LAB:
+    # AT THE LAB:
     keybs = getKeyboards()
-    sone = subject(1, keyboard.Keyboard( keybs["chone"] ), False)
-    stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ),False)
-    '''
+    sone = subject(1, keyboard.Keyboard( keybs["chone"] ), False, coherence_s1)
+    stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ),False, coherence_s2)
+    # '''
 
     # if only one keyboard is connected (home testing)
-    sone = subject(1, keyboard.Keyboard(), False)
-    stwo = subject(2, keyboard.Keyboard(), False)
+    # sone = subject(1, keyboard.Keyboard(), False)
+    # stwo = subject(2, keyboard.Keyboard(), False)
 
 subjects = [sone, stwo]
 
@@ -210,8 +220,7 @@ expkb = keyboard.Keyboard()
 
 expinfo = {'pair': pair_id}
 
-blocks = range(2)
-ntrials = 2 # trials per block
+
 
 
 #### FUNCTIONS TO CREATE DIFFERENT TEXT SCREENS #####
@@ -294,7 +303,7 @@ def drawStationaryDots(choice):
     '''
     for s in subjects:
         s.stationarydotslist[choice].draw()
-        
+
 
 def drawMovingDotsPractice(subjects, stimOne, stimTwo):
     '''
@@ -346,7 +355,7 @@ def gendecisionint (subjects, section, stimOne, stimTwo):
     else:
         drawMovingDotsPractice(subjects, stimOne, stimTwo)
         drawFixation("green")
-    
+
 def genfeedbackint (color, choice, rt_msg="NA"):
     '''
         1. Display static dot screen
@@ -469,8 +478,7 @@ exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideTex
 ##### PRACTICE TRIALS  START #####
 ##################################
 
-nPracticeTrials = 4
-nCorrect = 0
+
 '''
 practiceCoherence = 0.5
 coherence of dotpatches is already at 0.5 from initialization
@@ -522,7 +530,7 @@ for trialNumber in range(0, nPracticeTrials):
     else:
         stimOne = sone.movingleftdotslist[dotpatchChoice]
         stimTwo = stwo.movingleftdotslist[dotpatchChoice]
-    
+
     for frame in secondstoframes(100):
         if frame % 3 == 0:
             gendecisionint(subjects, 'practice', stimOne[0], stimTwo[0])
@@ -655,14 +663,14 @@ for blockNumber in blocks:
 
         # decision interval: light blue cross & moving dots
         response = []  # we have no response yet
-        
+
         if movingDirection == 'right':
             stimOne = sone.movingrightdotslist[dotpatchChoice]
             stimTwo = stwo.movingrightdotslist[dotpatchChoice]
         else:
             stimOne = sone.movingleftdotslist[dotpatchChoice]
             stimTwo = stwo.movingleftdotslist[dotpatchChoice]
-        
+
         for frame in secondstoframes(100):
             if frame % 3 == 0:
                 gendecisionint(subjects, 'main', stimOne[0], stimTwo[0])
@@ -691,7 +699,7 @@ for blockNumber in blocks:
             color = "yellow"
         elif response[0] == "right":  # right
             color = "blue"
-        
+
         """
         if response[1] > 1.5:
             flag = "slow"
