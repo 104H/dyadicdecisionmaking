@@ -10,6 +10,7 @@ from psychopy.data import StairHandler
 from psychopy.data import QuestHandler
 from stimuli_random_dots import createDots
 import stimuli_random_dots as stimuli
+import random
 
 
 # set up sound for beeps
@@ -31,8 +32,6 @@ titration_over = False
 
 # monitoring how often the titration has been done
 titration_counter = 0
-
-threshold = .9
 
 # monitor specs global variables
 M_WIDTH = stimuli.M_WIDTH
@@ -93,8 +92,7 @@ def feedback_interval(fixation, dotpatch, indicatordict, rt_msg="NA"):
         indicatordict[rt_msg].draw()
 
 def endscreen():
-    instructions = "You have finished the titration.\n\n\
-    Please wait"
+    instructions = "You have finished the first part of the experiment."
 
     visual.TextStim(window,
                     text=instructions, pos=(0, 0),
@@ -102,7 +100,9 @@ def endscreen():
 # TODO:
 def instruction_titration():
     instructions = "Please read the instructions carefully.\n\
-    Press yes to continue"
+    1. During the experiment, stay fixated on the dot in the center of the screen.\n\
+    2. After the beep, you will see some dots moving either to the left or to the right. Hit the left (yellow) button if the dots are moving left, and the right (blue) button if the dots move right.\n\
+    Press the right (blue) button to continue"
 
     visual.TextStim(window,
                     text=instructions, pos=(0, 0),
@@ -110,8 +110,11 @@ def instruction_titration():
 
 # TODO:
 def instruction_familiarization():
-    instructions = "Please read the instructions carefully.\n\
-    Press yes to continue"
+    instructions = "Welcome to our experiment!\n\n\
+    Please read the instructions carefully.\n\
+    1. During the experiment, stay fixated on the dot in the center of the screen.\n\
+    2. After the beep, you will see some dots moving either to the left or to the right. Hit the left (yellow) button if the dots are moving left, and the right (blue) button if the dots move right.\n\
+    Press the right (blue) button to start practice trials!"
 
     visual.TextStim(window,
                     text=instructions, pos=(0, 0),
@@ -133,11 +136,12 @@ while titration_over == False:
         if chamber not in ["1", "2"]:
             print("Wrong. Enter chamber number (1 or 2):")
             continue
-    # beep depends on the chamber number
+
+    # create beep for decision interval
     if chamber == "1":
-        beep = Sound('A', secs=0.5, volume=0.1)
+        beep = Sound('C', secs=0.5, volume=0.1, octave=5)
     else:
-        beep = Sound('E', secs=0.5, volume=0.1)
+        beep = Sound('F', secs=0.5, volume=0.1, octave=4)
 
     titration_counter += 1
     subjectData['titration_counter'] = titration_counter
@@ -161,90 +165,104 @@ while titration_over == False:
 
     indicatordict = stimulus.indicatordict
 
+    # '''
+    # 1. Familiarization
+    # '''
 
-    # '''
-    # 1. Familiarization (TODO)
-    # '''
-    #
-    # instruction_familiarization() # display instructions
-    # window.flip()
-    # key = event.waitKeys(keyList=keys[:1])
-    #
-    # famcoherence = [0.5, 0.1, 0.8, 0.5, 0.1]
-    #
-    # # TODO: refactor? - this code is also used for the staircase procedure
-    #
-    # for coh in famcoherence:
-    #     direction = np.random.choice(np.array([0, 180]))
-    #     movingDotPatch = createDotPatch(window, xoffset, direction, coh)
-    #     key = []
-    #
-    #     for frame in secondstoframes( np.random.uniform(4.3, 5.8) ):
-    #         pretrial_interval(greencross, stationaryDotPatch)
-    #         window.flip()
-    #
-    #     # play beep because next is decision interval (beep should depend on chamber number)
-    #
-    #     event.clearEvents()
-    #     nextflip = window.getFutureFlipTime(clock='ptb')
-    #     beep.play(when=nextflip)
-    #
-    #     # decision interval: light blue cross & moving dots
-    #     response = None  # we have no response yet
-    #     for frame in secondstoframes(7.5):
-    #         if frame % 3 == 0:
-    #             decision_interval(movingDotPatch[0])
-    #         elif frame % 3 == 1:
-    #             decision_interval(movingDotPatch[1])
-    #         elif frame % 3 == 2:
-    #             decision_interval(movingDotPatch[2])
-    #         else:
-    #             print('error in secondstoframes decision_interval')
-    #         window.flip()
-    #
-    #         # fetch button press: response 0 is right, response 1 is left
-    #         if response is None:
-    #             #event.clearEvents()
-    #             key = event.getKeys(keyList=keys)
-    #             if keys[1] in key:
-    #                 print("left")
-    #                 response = 0
-    #
-    #             elif keys[0] in key:
-    #                 print("right")
-    #                 response = 1
-    #         else:
-    #             if direction == 180:
-    #                 print("true left")
-    #                 direction_left = 0
-    #             else:
-    #                 print("true right")
-    #                 direction_left = 1
-    #             # check whether response and direction are matching and add to staircase
-    #             if not (response or direction_left) or (response and direction_left):
-    #                 correct = 1
-    #             else:
-    #                 correct = 0
-    #
-    #             # end decision interval
-    #             break
-    #
-    #     beep.stop()
-    #
-    #     # randomly pick a stationary dot patch
-    #     stationaryDotPatch = stationaryDotsList[np.random.randint(0, N)]
-    #
-    #     # start feedback interval
-    #     if response == 0: # left
-    #         draw_fixation(yellowcross)
-    #         drawDots(stationaryDotPatch)
-    #         window.flip()
-    #         core.wait(0.75)
-    #     elif response == 1: #right
-    #         draw_fixation(bluecross)
-    #         drawDots(stationaryDotPatch)
-    #         window.flip()
-    #         core.wait(0.75)
+    instruction_familiarization() # display instructions
+    window.flip()
+    key = event.waitKeys(keyList=keys[:1])
+
+    practice_trials = [0.05, 0.1, 0.2, 0.4, 0.8]*3
+    random.shuffle(practice_trials)
+    for coherence in practice_trials:
+
+        flag = "NA"
+
+        # randomly pick dot motion direction and set coherence
+        direction = np.random.choice(np.array([0, 180]))
+        movingDotPatch = createDotPatch(window, xoffset, direction, coherence)
+        key = []
+
+        # pretrial interval
+        for frame in secondstoframes( np.random.uniform(1, 2) ):
+            # window.flip() #(for feedback)
+            pretrial_interval(greencross, stationaryDotPatch)
+            window.flip()
+
+        # play beep because next is decision interval (beep should depend on chamber number)
+
+        event.clearEvents()
+        nextflip = window.getFutureFlipTime(clock='ptb')
+        beep.play(when=nextflip)
+
+        # decision interval: light blue cross & moving dots
+        response = None  # we have no response yet
+        for frame in secondstoframes(100):
+            if frame % 3 == 0:
+                decision_interval(movingDotPatch[0])
+            elif frame % 3 == 1:
+                decision_interval(movingDotPatch[1])
+            elif frame % 3 == 2:
+                decision_interval(movingDotPatch[2])
+            else:
+                print('error in secondstoframes decision_interval')
+            window.flip()
+
+            # fetch button press: response 0 is right, response 1 is left
+            if response is None:
+                #event.clearEvents()
+                key = event.getKeys(keyList=keys)
+                if keys[1] in key:
+                    print("left")
+                    response = 1
+
+                elif keys[0] in key:
+                    print("right")
+                    response = 0
+
+            else:
+
+                if frame > int( np.rint(1.5 * stimuli.REFRESH_RATE) ):
+                    flag = "slow"
+                elif frame < int( np.rint(0.1 * stimuli.REFRESH_RATE) ):
+                    flag = "fast"
+
+                if direction == 180:
+                    print("true left")
+                    direction_left = 1
+                else:
+                    print("true right")
+                    direction_left = 0
+                # check whether response and direction are matching and add to staircase
+                if response == direction_left:
+                    correct = 1
+                    print("Good")
+                else:
+                    correct = 0
+                break
+
+        beep.stop()
+
+        # randomly pick a stationary dot patch
+        stationaryDotPatch = stationaryDotsList[np.random.randint(0, N)]
+
+        # start feedback interval
+        if response == 1: # left
+            draw_fixation(yellowcross)
+            drawDots(stationaryDotPatch)
+            if flag != "NA":
+                indicatordict[flag].draw()
+            window.flip()
+            core.wait(1)
+        elif response == 0: #right
+            draw_fixation(bluecross)
+            drawDots(stationaryDotPatch)
+            if flag != "NA":
+                indicatordict[flag].draw()
+            window.flip()
+            core.wait(1)
+
 
 
     '''
@@ -268,6 +286,9 @@ while titration_over == False:
     window.flip()
     key = event.waitKeys(keyList=keys[:1])
     staircase_medians = []
+
+    thresholds = []
+    responses = []
 
     for coherence in staircase:
 
@@ -342,15 +363,19 @@ while titration_over == False:
 
         # start feedback interval
         if response == 1: # left
-            drawDots(stationaryDotPatch)
             draw_fixation(yellowcross)
-            window.flip()
-            core.wait(0.75)
-        elif response == 0: #right
             drawDots(stationaryDotPatch)
-            draw_fixation(bluecross)
+            if flag != "NA":
+                indicatordict[flag].draw()
             window.flip()
-            core.wait(0.75)
+            core.wait(1)
+        elif response == 0: #right
+            draw_fixation(bluecross)
+            drawDots(stationaryDotPatch)
+            if flag != "NA":
+                indicatordict[flag].draw()
+            window.flip()
+            core.wait(1)
 
     subjectData['threshold'] = staircase.mean()
     subjectData['threshold_list'] = staircase_medians # all coherence values the participant saw during titration
