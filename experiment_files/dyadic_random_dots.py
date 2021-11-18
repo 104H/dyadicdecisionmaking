@@ -21,10 +21,10 @@ import json
 # # '''
 
 
-blocks = range(4)
-ntrials = 80 # trials per block
+blocks = range(6)
+ntrials = 100 # trials per block
 
-nPracticeTrials = 2
+nPracticeTrials = 20
 
 '''
     TO DO
@@ -92,7 +92,7 @@ ofs = window.size[0] / 4
 #run(["amixer", "-D", "pulse", "sset", "Master", "30%,30%", "quiet"])
 
 class subject:
-    def __init__(self, sid, kb, buttonReverse=False):
+    def __init__(self, sid, kb):
         '''
             sid is 1 for chamber 1, and 2 for chamber 2
 
@@ -120,23 +120,18 @@ class subject:
         self.xoffset = ofs if sid == 1 else -ofs
         self.response = None
 
-        soundclass = 'A' if sid == 1 else 'E'
-        self.beep = Sound(soundclass, secs=0.5, volume=0.1)
+        if sid == 1:
+            self.beep = Sound('C', secs=0.5, volume=0.1, octave=5, name="S1")
+        else:
+            self.beep = Sound('F', secs=0.5, volume=0.1, octave=4, name="S2")
 
         self.stimulus = stimuli.mainstim(window=window, xoffset=self.xoffset, coherence=self.coherence)
 
-        if buttonReverse:
-            self.buttons = {
-                    keys[1] : "left",
-                    keys[0] : "right",
-                    None : "noresponse"
-                    }
-        else:
-            self.buttons = {
-                    keys[1] : "right",
-                    keys[0] : "left",
-                    None : "noresponse"
-                    }
+        self.buttons = {
+                keys[1] : "right",
+                keys[0] : "left",
+                None : "noresponse"
+                }
 
         # stationary dot patches for pretrial and feedback phase
         self.stationarydotslist = self.stimulus.stationaryDotsList
@@ -193,34 +188,16 @@ def getKeyboards():
             else:
                 k['chtwo'] = keyb['index']
 
-if pair_id <= 13:
-    # ''' AT THE LAB:
-    keybs = getKeyboards()
-    sone = subject(1, keyboard.Keyboard( keybs["chone"] ),True)
-    stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ),True)
-    # '''
+keybs = getKeyboards()
+sone = subject(1, keyboard.Keyboard( keybs["chone"] ))
+stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ))
 
-    # if only one keyboard is connected (home testing)
-    # sone = subject(1, keyboard.Keyboard(), True)
-    # stwo = subject(2, keyboard.Keyboard(), True)
-else:
-    # AT THE LAB:
-    keybs = getKeyboards()
-    sone = subject(1, keyboard.Keyboard( keybs["chone"] ), False)
-    stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ),False)
-    # '''
-
-    # if only one keyboard is connected (home testing)
-    # sone = subject(1, keyboard.Keyboard(), False)
-    # stwo = subject(2, keyboard.Keyboard(), False)
 
 subjects = [sone, stwo]
 
 expkb = keyboard.Keyboard()
 
 expinfo = {'pair': pair_id}
-
-
 
 
 #### FUNCTIONS TO CREATE DIFFERENT TEXT SCREENS #####
@@ -237,37 +214,31 @@ def gentext (instr):
                     color='white', height=20).draw()
 
 def genstartscreen ():
-    instructions = "Welcome to our experiment! \n\n\
-    X.\n\
-    X.\n\n\
-    Press the green key to continue"
+    instructions = "Welcome to the main part of the experiment! \n\n\
+    Press the right (blue) button to continue"
 
     gentext(instructions)
 
 def geninstructionspractice ():
     instructions = "Please read the instructions carefully.\n\
-1. Place your index finger on the left key and your middle finger on the right key.\n\
-2. Now, you will have a few practice trials to see how the experiment works.\n\
-3. You will do the task together with your partner.\n\
-4. The stimulus will be the same as you saw before: a set of moving dots.\n\
-5. Press the blue key for left/right and the yellow key for left/right.\n\
-6. It’s very important that you respond as quickly and as accurately as possible!\
-Press blue/yellow to continue"
+1. Place your index finger on the yellow (left) button, and your middle finger on the blue (right) button. Fixate on the dot in the center of the screen.\n\
+2. First you will have a few practice trials.\n\
+3. You will do the task together with your experiment partner.\n\
+4. You will again see a cloud of moving dots. If you hear your beep, it's your turn to respond. If you hear your partner's beep, it's their turn. To respond, press the yellow button if the dots move left, and the blue button if they move right.\n\
+5. It’s very important that you respond as quickly and as accurately as possible!\
+Press the blue button to continue"
 
     gentext(instructions)
 
 def geninstructionsexperiment ():
-    instructions = "Now you’re ready to start the experiment. Please remember:\n\
-1. Place your index finger on the left key and your middle finger on the right key.\n\
+    instructions = "Now you’re ready to start the next part of the experiment. Please remember:\n\
+1. Place your index finger on the left button and your middle finger on the right button.\n\
 2. Fixate on the dot in the center.\n\
-3. When you hear a beep a new trial has started. A high pitch beep is your queue to respond, a lower pitch beep means you have to observe your partner's reponse. \n\
-4. Observe the movement of dots on the screen and determine their general direction.\
-5. Press the blue key for left/right and the yellow key for left/right.\n\
-6. Please respond as quickly and as accurately as possible! \n\
-7. Once you've finished one block, you’ll be asked if you’re ready for the next block.\n\
-8. After every second block, you will have a break.\n\
-9. There will be a total of 12 blocks.\n\n\
-Press yes when you’re ready to start the experiment"
+3. Please respond as quickly and as accurately as possible! \n\
+4. Once you've finished one block, you’ll be asked if you’re ready for the next block.\n\
+5. After every second block, you will have a break.\n\
+6. There will be a total of 10 blocks.\n\n\
+Press the blue button when you’re ready to start the experiment"
 
     gentext(instructions)
 
@@ -405,7 +376,7 @@ def secondstoframes (seconds):
 def getacknowledgements ():
     '''
         Wait until both subjects have confirmed they are ready by pressing "yes"
-    '''
+
     sone.kb.clearEvents(eventType="keyboard")
     stwo.kb.clearEvents(eventType="keyboard")
     key = []
@@ -418,26 +389,25 @@ def getacknowledgements ():
     '''
     sone_ack, stwo_ack = None, None
 
-    while (sone_ack != 'yes') or (stwo_ack != 'yes'):
+    while (sone_ack != 'right') or (stwo_ack != 'right'):
         resp1 = sone.kb.getKeys(clear=False)
         resp2 = stwo.kb.getKeys(clear=False)
 
         if resp1:
             for r in resp1:
-                if sone_ack != 'yes': sone_ack = sone.buttons[ r.name ]
+                if sone_ack != 'right': sone_ack = sone.buttons[ r.name ]
         if resp2:
             for r in resp2:
-                if stwo_ack != 'yes': stwo_ack = stwo.buttons[ r.name ]
+                if stwo_ack != 'right': stwo_ack = stwo.buttons[ r.name ]
     sone.kb.clearEvents(eventType="keyboard")
     stwo.kb.clearEvents(eventType="keyboard")
-    '''
 
 def getexperimenterack ():
     '''
         Wait for the experimenter input
             q: quit experiment (data is saved)
             space: continue
-    '''
+
 
     key = []
     while not key:
@@ -448,7 +418,6 @@ def getexperimenterack ():
     if "q" in keys: # exit experiment
         window.close()
         core.quit()
-    '''
 
 def genactingstates (trials):
     '''
@@ -465,6 +434,54 @@ def genmovingstates (trials):
     movingstates = ['left'] * (trials//2) + ['right'] * (trials//2)
     return rn.sample(movingstates, len(movingstates))
 
+def sound_familiarisation():
+
+    your_beep = "When you hear this, it's your turn to respond."
+    partner_beep = "When you hear this, your partner will respond."
+    for _ in range(5):
+
+        for frame in secondstoframes(1):
+            visual.TextStim(window,
+                    text=your_beep, pos=[0 + sone.xoffset, 0],
+                    color='green', height=20).draw()
+            visual.TextStim(window,
+                        text=partner_beep, pos=[0 + stwo.xoffset, 0],
+                        color='red', height=20).draw()
+            window.flip()
+        nextflip = window.getFutureFlipTime(clock='ptb')
+        sone.beep.play(when=nextflip)
+
+        for frame in secondstoframes(3):
+            visual.TextStim(window,
+                    text=your_beep, pos=[0 + sone.xoffset, 0],
+                    color='green', height=20).draw()
+            visual.TextStim(window,
+                        text=partner_beep, pos=[0 + stwo.xoffset, 0],
+                        color='red', height=20).draw()
+            window.flip()
+
+        for frame in secondstoframes(1):
+            visual.TextStim(window,
+                    text=your_beep, pos=[0 + stwo.xoffset, 0],
+                    color='green', height=20).draw()
+            visual.TextStim(window,
+                        text=partner_beep, pos=[0 + sone.xoffset, 0],
+                        color='red', height=20).draw()
+            window.flip()
+        sone.beep.stop()
+        nextflip = window.getFutureFlipTime(clock='ptb')
+        stwo.beep.play(when=nextflip)
+
+        for frame in secondstoframes(3):
+            visual.TextStim(window,
+                    text=your_beep, pos=[0 + stwo.xoffset, 0],
+                    color='green', height=20).draw()
+            visual.TextStim(window,
+                        text=partner_beep, pos=[0 + sone.xoffset, 0],
+                        color='red', height=20).draw()
+            window.flip()
+        stwo.beep.stop()
+
 
 # specifications of output file
 _thisDir = os.path.dirname(os.path.abspath(__file__))
@@ -472,6 +489,8 @@ expName = 'DDM'
 filename = _thisDir + os.sep + u'data/%s_pair%s_%s' % (expName, expinfo['pair'], data.getDateStr())
 
 exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideText=True, dataFileName=filename)
+
+
 
 
 ##################################
@@ -483,8 +502,12 @@ exphandler = data.ExperimentHandler(name=expName, extraInfo=expinfo, saveWideTex
 practiceCoherence = 0.5
 coherence of dotpatches is already at 0.5 from initialization
 '''
+sound_familiarisation()
 
-# practice trials instructions
+geninstructionspractice()
+window.flip()
+getacknowledgements()
+
 
 iterstates = iter(genactingstates(nPracticeTrials))
 movingstates = iter(genmovingstates(nPracticeTrials))
@@ -573,7 +596,7 @@ for trialNumber in range(0, nPracticeTrials):
     stationaryChoice = np.random.randint(0, N)
 
     # feedback interval: display the fixation cross color based on the correctness of response & stationary dots for 0.7s
-    for frame in secondstoframes(0.7):
+    for frame in secondstoframes(1):
         genfeedbackint(color, stationaryChoice, flag)
         window.flip()
 
@@ -711,7 +734,8 @@ for blockNumber in blocks:
     if blockNumber % 2 == 0 and blockNumber != (blocks[-1]):
         genmandatorybreakscreen()
         window.flip()
-        getexperimenterack()
+        # getexperimenterack()
+        getacknowledgements()
     # otherwise, wait for the subjects to start their next block
     else:
         genbreakscreen()
