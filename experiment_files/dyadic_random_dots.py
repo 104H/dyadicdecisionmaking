@@ -21,15 +21,10 @@ import json
 # # '''
 
 
-# coherence
-coherence_s1= 0.157
-coherence_s2= 0.22
-
 blocks = range(4)
 ntrials = 80 # trials per block
 
 nPracticeTrials = 2
-
 
 '''
     TO DO
@@ -97,7 +92,7 @@ ofs = window.size[0] / 4
 #run(["amixer", "-D", "pulse", "sset", "Master", "30%,30%", "quiet"])
 
 class subject:
-    def __init__(self, sid, kb, buttonReverse=False, coherence=0.5):
+    def __init__(self, sid, kb, buttonReverse=False):
         '''
             sid is 1 for chamber 1, and 2 for chamber 2
 
@@ -108,17 +103,22 @@ class subject:
         '''
 
         # for now: right key = green (2, 7), left key = red (1, 8)
-
         keys = ["1", "2"] if sid == 1 else ["8", "7"]
+        # fetching subject titration thresholds
+        try:
+            f = open("data/" + str(pair_id) + "/data_chamber" + str(sid) + ".json", "r")
+            data = json.load(f)
+        except FileNotFoundError:
+            print("Titration file not found for subject in chamber {}".format(sid))
+            exit(-1)
+        else:
+            self.coherence = data["threshold"]
 
         self.id = sid
         self.kb = kb
         self.state = False
         self.xoffset = ofs if sid == 1 else -ofs
         self.response = None
-
-        # TODO: needs to be adapted
-        self.coherence = coherence
 
         soundclass = 'A' if sid == 1 else 'E'
         self.beep = Sound(soundclass, secs=0.5, volume=0.1)
@@ -196,8 +196,8 @@ def getKeyboards():
 if pair_id <= 13:
     # ''' AT THE LAB:
     keybs = getKeyboards()
-    sone = subject(1, keyboard.Keyboard( keybs["chone"] ),True, coherence_s1)
-    stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ),True, coherence_s2)
+    sone = subject(1, keyboard.Keyboard( keybs["chone"] ),True)
+    stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ),True)
     # '''
 
     # if only one keyboard is connected (home testing)
@@ -206,8 +206,8 @@ if pair_id <= 13:
 else:
     # AT THE LAB:
     keybs = getKeyboards()
-    sone = subject(1, keyboard.Keyboard( keybs["chone"] ), False, coherence_s1)
-    stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ),False, coherence_s2)
+    sone = subject(1, keyboard.Keyboard( keybs["chone"] ), False)
+    stwo = subject(2, keyboard.Keyboard( keybs["chtwo"] ),False)
     # '''
 
     # if only one keyboard is connected (home testing)
