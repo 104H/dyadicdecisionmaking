@@ -308,7 +308,7 @@ while titration_over == False:
     responses = []
 
     for trial in trials:
-
+        flag = "NA"
         # randomly pick dot motion direction and set coherence
         direction = np.random.choice(np.array([0, 180]))
         coherence = trial['coherence'] # update the coherence value
@@ -354,7 +354,11 @@ while titration_over == False:
                     response = 0
 
             else:
-
+                if frame > int( np.rint(1.5 * stimuli.REFRESH_RATE) ):
+                    flag = "slow"
+                elif frame < int( np.rint(0.1 * stimuli.REFRESH_RATE) ):
+                    flag = "fast"
+                
                 if direction == 180:
                     print("true left")
                     direction_left = 1
