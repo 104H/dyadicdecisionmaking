@@ -31,8 +31,6 @@ titration_over = False
 # monitoring how often the titration has been done
 titration_counter = 0
 
-threshold = 0.1
-
 # monitor specs global variables
 M_WIDTH = stimuli.M_WIDTH
 M_HEIGHT = stimuli.M_HEIGHT
@@ -41,7 +39,7 @@ ndots = stimuli.ndots
 dotlife = stimuli.dotlife
 speed = stimuli.speed
 
-myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=80)
+myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=stimuli.distance)
 myMon.setSizePix([M_WIDTH, M_HEIGHT])
 
 # get pair id via command-line argument
@@ -117,7 +115,7 @@ def instruction_familiarization():
     Please read the instructions carefully.\n\
     1. During the experiment, stay fixated on the dot in the center of the screen.\n\
     2. After the beep, you will see some dots moving either to the left or to the right. Hit the left (yellow) button if the dots are moving left, and the right (blue) button if the dots move right.\n\
-    Press the right (blue) button to start practice trials!11!1!"
+    Press the right (blue) button to start practice trials!"
 
     visual.TextStim(window,
                     text=instructions, pos=(0, 0),
@@ -161,8 +159,10 @@ while titration_over == False:
     subjectData['chamber'] = chamber
 
     # create beep for decision interval
-    soundclass = 'A' if chamber == "1" else 'E'
-    beep = Sound(soundclass, secs=0.5, volume=0.1)
+    if chamber == "1":
+        beep = Sound('C', secs=0.5, volume=0.1, octave=5)
+    else:
+        beep = Sound('F', secs=0.5, volume=0.1, octave=4)
 
     # variables for button box input
     keys = ["2", "1"] if chamber == "1" else ["7", "8"] # first one is right
@@ -271,14 +271,14 @@ while titration_over == False:
             if flag != "NA":
                 indicatordict[flag].draw()
             window.flip()
-            core.wait(0.75)
+            core.wait(1)
         elif response == 0: #right
             draw_fixation(bluecross)
             drawDots(stationaryDotPatch)
             if flag != "NA":
                 indicatordict[flag].draw()
             window.flip()
-            core.wait(0.75)
+            core.wait(1)
 
 
 
@@ -380,13 +380,17 @@ while titration_over == False:
         if response == 1: # left
             draw_fixation(yellowcross)
             drawDots(stationaryDotPatch)
+            if flag != "NA":
+                indicatordict[flag].draw()
             window.flip()
-            core.wait(0.75)
+            core.wait(1)
         elif response == 0: #right
             draw_fixation(bluecross)
             drawDots(stationaryDotPatch)
+            if flag != "NA":
+                indicatordict[flag].draw()
             window.flip()
-            core.wait(0.75)
+            core.wait(1)
 
     # fill subject dictionary with threshold and staircase value list
     subjectData['threshold_list'] = thresholds
