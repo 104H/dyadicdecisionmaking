@@ -29,7 +29,7 @@ blocks = range(4)
 ntrials = 80 # trials per block
 
 nPracticeTrials = 2
-nCorrect = 0
+
 
 '''
     TO DO
@@ -488,6 +488,7 @@ coherence of dotpatches is already at 0.5 from initialization
 
 iterstates = iter(genactingstates(nPracticeTrials))
 movingstates = iter(genmovingstates(nPracticeTrials))
+nCorrect = 0
 
 for trialNumber in range(0, nPracticeTrials):
 
@@ -563,7 +564,6 @@ for trialNumber in range(0, nPracticeTrials):
     if response:
         if response[0] == movingDirection:  # correct response
             nCorrect += 1
-
         if response[1] > 1.5:
             flag = "slow"
         elif response[1] < 0.1:
@@ -585,24 +585,6 @@ print("{0:*>31s} {1:<5.2%}".format('Practice Trials Correct: ',nCorrect/nPractic
 ################################
 ##### PRACTICE TRIALS  END #####
 ################################
-
-
-###########################
-##### TITRATION START #####
-###########################
-'''
-    TBD
-    1. One block of 200 trials of randomly interleaved dot coherences (0, 10, 20, 40 or 80% coherence, 40 trials each)
-    2. calculate individual 85% accuracy threshold using the proportional-rate diffusion model
-        - IF performance on this block is too poor for estimation of a reliable psychometric function
-                (in paper: mean estimated dot coherence for 85% accuracy: 85.36 +- 17.5%)
-                → stop testing and exclude subjects from analysis
-
-'''
-#########################
-##### TITRATION END #####
-#########################
-
 
 
 #################################
@@ -700,12 +682,11 @@ for blockNumber in blocks:
         elif response[0] == "right":  # right
             color = "blue"
 
-        """
-        if response[1] > 1.5:
-            flag = "slow"
-        elif response[1] < 0.1:
-            flag = "fast"
-        """
+        if response:
+            if response[1] > 1.5:
+                flag = "slow"
+            elif response[1] < 0.1:
+                flag = "fast"
 
         # make random choice for stationary dot patch that should be used
         stationaryChoice = np.random.randint(0, N)
