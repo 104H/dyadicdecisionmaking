@@ -335,6 +335,10 @@ while titration_over == False:
                     response = 0
 
             else:
+                if frame > int( np.rint(1.5 * stimuli.REFRESH_RATE) ):
+                    flag = "slow"
+                elif frame < int( np.rint(0.1 * stimuli.REFRESH_RATE) ):
+                    flag = "fast"
 
                 if direction == 180:
                     print("true left")
