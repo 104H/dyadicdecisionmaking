@@ -44,9 +44,6 @@ speed = stimuli.speed
 myMon = monitors.Monitor('DellU2412M', width=M_WIDTH, distance=80)
 myMon.setSizePix([M_WIDTH, M_HEIGHT])
 
-# create beep for decision interval
-beep = Sound('A', secs=0.5, volume=0.1)
-
 # get pair id via command-line argument
 try:
     pair_id = int(sys.argv[1])
@@ -149,6 +146,7 @@ def get_threshold(intensities,responses):
 
 while titration_over == False:
     # input the chamber number in which titration takes place
+
     chamber = []
     if chamber == []:
         print("Enter chamber number (1 or 2):")
@@ -161,6 +159,10 @@ while titration_over == False:
     titration_counter += 1
     subjectData['titration_counter'] = titration_counter
     subjectData['chamber'] = chamber
+
+    # create beep for decision interval
+    soundclass = 'A' if chamber == "1" else 'E'
+    beep = Sound(soundclass, secs=0.5, volume=0.1)
 
     # variables for button box input
     keys = ["2", "1"] if chamber == "1" else ["7", "8"] # first one is right
@@ -191,6 +193,8 @@ while titration_over == False:
     practice_trials = [0.05, 0.1, 0.2, 0.4, 0.8]*3
     random.shuffle(practice_trials)
     for coherence in practice_trials:
+
+        flag = "NA"
 
         # randomly pick dot motion direction and set coherence
         direction = np.random.choice(np.array([0, 180]))
@@ -236,6 +240,11 @@ while titration_over == False:
 
             else:
 
+                if frame > int( np.rint(1.5 * stimuli.REFRESH_RATE) ):
+                    flag = "slow"
+                elif frame < int( np.rint(0.1 * stimuli.REFRESH_RATE) ):
+                    flag = "fast"
+
                 if direction == 180:
                     print("true left")
                     direction_left = 1
@@ -259,11 +268,15 @@ while titration_over == False:
         if response == 1: # left
             draw_fixation(yellowcross)
             drawDots(stationaryDotPatch)
+            if flag != "NA":
+                indicatordict[flag].draw()
             window.flip()
             core.wait(0.75)
         elif response == 0: #right
             draw_fixation(bluecross)
             drawDots(stationaryDotPatch)
+            if flag != "NA":
+                indicatordict[flag].draw()
             window.flip()
             core.wait(0.75)
 
