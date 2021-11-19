@@ -25,7 +25,6 @@ dotlife = 5
 speed = degrees_to_pix(5) / REFRESH_RATE
 practiceTrialCoherence = 0.5
 
-
 def pix_to_degrees(pix):
     conversion_factor = M_WIDTH_CM / M_WIDTH
     degrees = atan( (pix * conversion_factor) / distance)
@@ -48,7 +47,6 @@ def createDots (window, xoffset, dir, ndots, dotlife, speed, coherence):
         coherence=coherence # coherence of practice trials
     )
 
-
 def createStationaryDots (N, window, xoffset, coherence):
     '''
         creates N different patches of randomly distributed stationary dots
@@ -59,7 +57,6 @@ def createStationaryDots (N, window, xoffset, coherence):
         dotsList.append(createDots(window, xoffset, 0, ndots, -1, 0, coherence))
 
     return dotsList
-
 
 def createMovingDots (N, window, xoffset, dir, coherence):
     '''
