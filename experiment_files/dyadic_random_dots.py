@@ -731,7 +731,7 @@ for blockNumber in blocks:
         exphandler.nextEntry()
 
     # after every second block (unless after the last block), there will be a mandatory break which only the experimenter can end
-    if blockNumber % 2 == 0 and blockNumber != (blocks[-1]):
+    if (blockNumber+1) % 2 == 0 and blockNumber != (blocks[-1]):
         genmandatorybreakscreen()
         window.flip()
         # getexperimenterack()
